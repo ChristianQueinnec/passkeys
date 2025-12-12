@@ -1,6 +1,7 @@
 <script lang="ts">
     let { item, onSave, onCancel } = $props();
 
+    // Initialize state from props (item is expected to be stable per mount)
     let title = $state(item?.title || "");
     let username = $state(item?.username || "");
     let password = $state(item?.password || "");
@@ -12,7 +13,6 @@
         onSave({
             ...item,
             title,
-            console,
             username,
             password,
             site,
@@ -26,31 +26,29 @@
 </script>
 
 <div class="editor">
-    <h2>{item?.filename ? "Edit Item" : "New Item"}</h2>
-
     <div class="field">
-        <label>Title *</label>
-        <input type="text" bind:value={title} />
+        <label for="title">Title *</label>
+        <input id="title" type="text" bind:value={title} />
     </div>
     <div class="field">
-        <label>Site URL</label>
-        <input type="text" bind:value={site} />
+        <label for="site">Site URL</label>
+        <input id="site" type="text" bind:value={site} />
     </div>
     <div class="field">
-        <label>Username</label>
-        <input type="text" bind:value={username} />
+        <label for="username">Username</label>
+        <input id="username" type="text" bind:value={username} />
     </div>
     <div class="field">
-        <label>Password</label>
-        <input type="text" bind:value={password} />
+        <label for="password">Password</label>
+        <input id="password" type="text" bind:value={password} />
     </div>
     <div class="field">
-        <label>Tags (comma separated)</label>
-        <input type="text" bind:value={tags} />
+        <label for="tags">Tags (comma separated)</label>
+        <input id="tags" type="text" bind:value={tags} />
     </div>
     <div class="field">
-        <label>Notes</label>
-        <textarea bind:value={notes}></textarea>
+        <label for="notes">Notes</label>
+        <textarea id="notes" bind:value={notes}></textarea>
     </div>
 
     <div class="actions">
@@ -85,5 +83,6 @@
     button {
         padding: 0.5rem 1rem;
         margin-right: 0.5rem;
+        cursor: pointer;
     }
 </style>

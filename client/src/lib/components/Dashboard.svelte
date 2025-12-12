@@ -1,90 +1,54 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import { api } from "../api";
     import { decrypt, encrypt } from "../crypto";
     import Editor from "./Editor.svelte";
+    import Modal from "./Modal.svelte";
 
     let { encryptionKey, username } = $props();
 
-    let files = $state<any[]>([]);
+    let items = $state<any[]>([]);
     let filteredFiles = $state<any[]>([]);
     let filter = $state("");
-    let selectedFile = $state<any>(null);
-    let decryptedContent = $state<any>(null);
-    let isEditing = $state(false);
 
-    // Load files on mount
-    onMount(loadFiles);
+    let selectedItem = $state<any>(null); // For details view
+    let editingItem = $state<any>(null); // For editor
+    let isCreating = $state(false);
 
-    async function loadFiles() {
+    // Load vault on mount
+    onMount(loadVault);
+
+    async function loadVault() {
         try {
-            const list = await api.listFiles();
-            files = list;
-            applyFilter();
+            const start = Date.now();
+            const encryptedContent = await api.getLatestVault();
+            if (!encryptedContent) {
+                // New vault
+                items = [];
+            } else {
+                // Decrypt entire vault
+                const encryptedData = JSON.parse(encryptedContent);
+                const jsonStr = await decrypt(
+                    encryptedData.cipher,
+                    encryptedData.iv,
+                    encryptionKey,
+                );
+                items = JSON.parse(jsonStr);
+            }
+            console.log(`Vault loaded in ${Date.now() - start}ms`);
         } catch (e) {
-            console.error(e);
+            console.error("Failed to load vault", e);
+            alert("Failed to decrypt vault. Wrong password?");
+            // In real app, redirect to unlock
         }
     }
 
-    function applyFilter() {
-        if (!filter) {
-            filteredFiles = files;
-            return;
-        }
-        // Filter logic (needs decrypted content to filter effectively?
-        // The README says "The filter is a text that may appear in all the textual fields of an information."
-        // But we only have encrypted files listed.
-        // Wait, the README says: "Once deciphered, the information titles are displayed and may be filtered."
-        // This implies we need to download and decrypt ALL files to filter them?
-        // Or maybe the title is separate? README says "Information are made of a title...".
-        // "Once deciphered... titles are displayed".
-        // So we download all files and decrypt them? That might be heavy if there are many.
-        // For MVP, lets assume we download all and decrypt titles.
-        // Actually, `listFiles` only returns metadata (name, size).
-        // We probably need to fetch content for all of them to filter?
-        // Let's implement lazy loading: we list files. We only decrypt when needed?
-        // "Once deciphered... titles are displayed". This suggests automatic decryption of everything upon unlock?
-        // Let's try to fetch all files content and decrypt them for the list.
-
-        // For now, simple filter on filename if we can't decrypt everything instantly.
-        // But let's follow the requirement: display titles.
-        // So we need to fetch all contents.
+    async function saveVault() {
+        // Encrypt all items
+        const jsonStr = JSON.stringify(items);
+        const encrypted = await encrypt(jsonStr, encryptionKey);
+        await api.saveVault(JSON.stringify(encrypted));
     }
-
-    // Refined approach: fetch all files, decrypt, then show list.
-    let items = $state<any[]>([]);
-
-    async function loadAndDecryptAll() {
-        const list = await api.listFiles();
-        const decryptedItems = await Promise.all(
-            list.map(async (file: any) => {
-                try {
-                    const res = await api.getFile(file.name);
-                    const contentStr = res.content;
-                    // contentStr is JSON { iv, cipher }
-                    const encryptedData = JSON.parse(contentStr);
-                    const jsonStr = await decrypt(
-                        encryptedData.cipher,
-                        encryptedData.iv,
-                        encryptionKey,
-                    );
-                    const data = JSON.parse(jsonStr);
-                    return { ...data, filename: file.name, original: file };
-                } catch (e) {
-                    console.error("Failed to decrypt", file.name, e);
-                    return {
-                        title: "Error Decrypting",
-                        filename: file.name,
-                        error: true,
-                    };
-                }
-            }),
-        );
-        items = decryptedItems;
-    }
-
-    // We'll call loadAndDecryptAll instead of loadFiles
-    onMount(loadAndDecryptAll);
 
     // Derived filtered items
     $effect(() => {
@@ -93,7 +57,6 @@
         } else {
             const lowerFilter = filter.toLowerCase();
             filteredFiles = items.filter((item) => {
-                if (item.error) return false;
                 return (
                     item.title?.toLowerCase().includes(lowerFilter) ||
                     item.username?.toLowerCase().includes(lowerFilter) ||
@@ -108,16 +71,13 @@
     });
 
     function selectItem(item: any) {
-        selectedFile = item;
-        isEditing = false;
-    }
-
-    function startEdit() {
-        isEditing = true;
+        selectedItem = item;
     }
 
     function startCreate() {
-        selectedFile = {
+        // Temporary ID for new item, will be replaced or kept
+        editingItem = {
+            id: crypto.randomUUID(),
             title: "",
             username: "",
             password: "",
@@ -125,31 +85,42 @@
             tags: [],
             notes: "",
         };
-        isEditing = true;
+        isCreating = true;
+    }
+
+    function startEdit(item: any) {
+        editingItem = JSON.parse(JSON.stringify(item)); // Deep copy
+        isCreating = false;
+        selectedItem = null; // Close detail modal
     }
 
     async function handleSave(updatedItem: any) {
-        // Encrypt and save
-        const filename = updatedItem.filename || `entry-${Date.now()}.json`;
-        // We don't save filename in content usually, but we need to track it.
-        // Filter out filename from content to save
-        const { filename: _, original: __, ...toSave } = updatedItem;
-        const jsonStr = JSON.stringify(toSave);
-        const encrypted = await encrypt(jsonStr, encryptionKey);
-
-        await api.saveFile(filename, JSON.stringify(encrypted));
-
-        isEditing = false;
-        selectedFile = null;
-        await loadAndDecryptAll();
+        if (isCreating) {
+            items = [...items, updatedItem];
+        } else {
+            const index = items.findIndex((i) => i.id === updatedItem.id);
+            if (index !== -1) {
+                items[index] = updatedItem;
+            } else {
+                items = [...items, updatedItem];
+            }
+        }
+        isCreating = false;
+        editingItem = null;
+        await saveVault();
     }
 
     async function handleDelete(item: any) {
         if (confirm("Delete " + item.title + "?")) {
-            await api.deleteFile(item.filename);
-            selectedFile = null;
-            await loadAndDecryptAll();
+            items = items.filter((i) => i.id !== item.id);
+            selectedItem = null;
+            await saveVault();
         }
+    }
+
+    function closeModals() {
+        selectedItem = null;
+        editingItem = null;
     }
 
     function copyToClipboard(text: string) {
@@ -165,71 +136,75 @@
         </div>
         <div class="list">
             {#each filteredFiles as item}
-                <div
-                    class="list-item"
-                    class:selected={selectedFile === item}
-                    onclick={() => selectItem(item)}
-                >
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div class="list-item" onclick={() => selectItem(item)}>
                     <strong>{item.title}</strong>
                     {#if item.username}<small>{item.username}</small>{/if}
                 </div>
             {/each}
         </div>
     </div>
-    <div class="main">
-        {#if isEditing}
-            <Editor
-                item={selectedFile}
-                onSave={handleSave}
-                onCancel={() => (isEditing = false)}
-            />
-        {:else if selectedFile}
-            <div class="details">
-                <h2>{selectedFile.title}</h2>
-                <div class="field">
-                    <label>Site:</label>
-                    <a href={selectedFile.site} target="_blank"
-                        >{selectedFile.site}</a
-                    >
-                </div>
-                <div class="field">
-                    <label>Username:</label>
-                    <span>{selectedFile.username}</span>
-                    <button
-                        onclick={() => copyToClipboard(selectedFile.username)}
-                        >Copy</button
-                    >
-                </div>
-                <div class="field">
-                    <label>Password:</label>
-                    <span>********</span>
-                    <button
-                        onclick={() => copyToClipboard(selectedFile.password)}
-                        >Copy</button
-                    >
-                </div>
-                <div class="field">
-                    <label>Tags:</label>
-                    <span>{selectedFile.tags?.join(", ")}</span>
-                </div>
-                <div class="field">
-                    <label>Notes:</label>
-                    <pre>{selectedFile.notes}</pre>
-                </div>
-
-                <div class="actions">
-                    <button onclick={startEdit}>Edit</button>
-                    <button
-                        onclick={() => handleDelete(selectedFile)}
-                        class="danger">Delete</button
-                    >
-                </div>
-            </div>
-        {:else}
-            <p class="placeholder">Select an item to view details</p>
-        {/if}
-    </div>
 </div>
+
+<!-- Details Modal -->
+<Modal
+    isOpen={!!selectedItem}
+    onClose={closeModals}
+    title={selectedItem?.title}
+>
+    {#if selectedItem}
+        <div class="details">
+            <div class="field">
+                <label>Site:</label>
+                <a href={selectedItem.site} target="_blank"
+                    >{selectedItem.site}</a
+                >
+            </div>
+            <div class="field">
+                <label>Username:</label>
+                <span>{selectedItem.username}</span>
+                <button onclick={() => copyToClipboard(selectedItem.username)}
+                    >Copy</button
+                >
+            </div>
+            <div class="field">
+                <label>Password:</label>
+                <span>********</span>
+                <button onclick={() => copyToClipboard(selectedItem.password)}
+                    >Copy</button
+                >
+            </div>
+            <div class="field">
+                <label>Tags:</label>
+                <span>{selectedItem.tags?.join(", ")}</span>
+            </div>
+            <div class="field">
+                <label>Notes:</label>
+                <pre>{selectedItem.notes}</pre>
+            </div>
+
+            <div class="actions">
+                <button onclick={() => startEdit(selectedItem)}>Edit</button>
+                <button
+                    onclick={() => handleDelete(selectedItem)}
+                    class="danger">Delete</button
+                >
+            </div>
+        </div>
+    {/if}
+</Modal>
+
+<!-- Editor Modal -->
+<Modal
+    isOpen={!!editingItem}
+    onClose={closeModals}
+    title={isCreating ? "New Item" : "Edit Item"}
+>
+    {#if editingItem}
+        <Editor item={editingItem} onSave={handleSave} onCancel={closeModals} />
+    {/if}
+</Modal>
 
 <style>
     .dashboard {
@@ -237,10 +212,12 @@
         height: 100vh;
     }
     .sidebar {
-        width: 300px;
+        width: 100%;
+        max-width: 400px;
         border-right: 1px solid #ccc;
         display: flex;
         flex-direction: column;
+        margin: 0 auto;
     }
     .controls {
         padding: 1rem;
@@ -258,14 +235,6 @@
     .list-item:hover {
         background: #f9f9f9;
     }
-    .list-item.selected {
-        background: #eef;
-    }
-    .main {
-        flex: 1;
-        padding: 2rem;
-        overflow-y: auto;
-    }
     .field {
         margin-bottom: 1rem;
     }
@@ -280,6 +249,9 @@
     button {
         padding: 0.5rem 1rem;
         cursor: pointer;
+    }
+    button {
+        margin-left: 10px;
     }
     input {
         width: 100%;

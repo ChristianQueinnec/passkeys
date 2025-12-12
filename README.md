@@ -20,9 +20,10 @@ code of the client side.
 
 The server has no clue about how to decipher the vaults that is, the
 crypted files of information. The server stores these vaults
-with their date in a directory proper to every user.
+with their date in a directory proper to every user. The vault file
+is a JSON file that also contains a date property.
 
-Users' names and their passwords are stored in a json file only
+Users' names and their hashed passwords are stored in a json file only
 available to the server side.
 
 All the accesses to the server are logged. The server
@@ -30,9 +31,11 @@ will be ultimately deployed as a Docker container mounting the `data`
 directory where are stored information files.
 
 The client side will run in any modern browser. It will allow some
-user to authenticate and get the most recent associated vault. It will
-then ask for the pass phrase allowing to decipher that file. It must
-be possible to see temporarily the pass phrase.
+user to authenticate and get the most recent associated vault. When
+authenticated, the name of the user appears along a `logout` button.
+The webapp will then ask for the pass phrase allowing to decipher that
+file. It must be possible to see temporarily the pass phrase.
+Report if the vault cannot be deciphered.
 
 Information stored in a vault are made of a title, a username, a
 password, a site URL, some tags (simple words) as well as some textual
@@ -46,8 +49,9 @@ is rendered with stars), the site url when clicked will display the
 site in another tab. the username and the password may be clicked and
 copied in order to be pasted elsewhere.
 
-Information may be individually managed that is, removed or edited and
-finally ciphered and saved on the server.
+Information may be individually managed that is, removed or edited.
+When the vault is modified, propose a button to save it on the
+server after ciphering it.
 
 Of course, tests should also be created to test the server and the
 client sides. Use the preferred test framework of Svelte5.

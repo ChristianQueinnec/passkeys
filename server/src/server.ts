@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { router } from './routes';
 
 const app = express();
@@ -15,6 +16,15 @@ app.use((req, res, next) => {
 });
 
 app.use('/api', router);
+
+// Serve static client files
+const CLIENT_DIST = path.join(__dirname, '../../client/dist');
+app.use(express.static(CLIENT_DIST));
+
+// Fallback for SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(CLIENT_DIST, 'index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

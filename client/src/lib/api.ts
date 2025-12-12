@@ -37,19 +37,17 @@ export const api = {
         return data;
     },
 
-    listFiles() {
-        return this.request('GET', '/files');
+    async getLatestVault() {
+        const res = await this.request('GET', '/vault');
+        // If content is null, it means new user. Return null.
+        return res.content;
     },
 
-    saveFile(filename, content) {
-        return this.request('POST', '/files', { filename, content });
+    saveVault(content: string) {
+        return this.request('POST', '/vault', { content });
     },
 
-    getFile(filename) {
-        return this.request('GET', `/files/${filename}`);
-    },
-
-    deleteFile(filename) {
-        return this.request('DELETE', `/files/${filename}`);
+    getVaultHistory() {
+        return this.request('GET', '/vault/history');
     }
 };
