@@ -36,3 +36,5 @@ password may be clicked and copied in order to be pasted.
 Information may be individually managed that is, removed or edited and
 finally saved on the server.
 
+Of course, tests should also be created to test the server and the
+client. Use the preferred test framework of Svelte5.
