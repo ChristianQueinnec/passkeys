@@ -1,40 +1,53 @@
-# Passkeys
+# The Passkeys project
 
 The Passkeys project aims to produce a webapp mimicing keepass.
 Keepass (and its derivates keepassx, keepassxc, etc.) is great but
 does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 
-The webapp will consist of a server and a client both written in
-Typescript with help of Svelte5. 
+The webapp has two sides: the server side and the client side both
+written in Typescript with help of Svelte5.
 
-The server will offer an API 
+The server side will offer an API (prefixed by `/api/`)
 - to post login information (with username and password),
 - to get the crypted file of information associated to the authenticated user,
 - to list the crypted files of information associated to the authenticated user with their date of recording,
 - to put a revised version of information associated to the authenticated user,
 - to remove a crypted file of information based on its date of recording.
 
-The server has no clue about how to decipher the crypted files of
-information. The server stores these crypted files with their date.
+The default url of the server side (the `/` url) will deliver the
+code of the client side. 
+
+The server has no clue about how to decipher the vaults that is, the
+crypted files of information. The server stores these vaults
+with their date in a directory proper to every user.
+
+Users' names and their passwords are stored in a json file only
+available to the server side.
+
 All the accesses to the server are logged. The server
-will be ultimately deployed as a Docker container. 
+will be ultimately deployed as a Docker container mounting the `data`
+directory where are stored information files.
 
-The client will run in any modern browser. It will allow some user to
-authenticate and get the associated file of information. It will then
-ask for the key allowing to decipher that file. Information are made
-of a title, a username, a password, a site URL, some tags (simple
-words) as well as some textual notes. Only the title is mandatory.
+The client side will run in any modern browser. It will allow some
+user to authenticate and get the most recent associated vault. It will
+then ask for the pass phrase allowing to decipher that file. It must
+be possible to see temporarily the pass phrase.
 
-Once deciphered, the information titles are displayed and may be
-filtered. The filter is a text that may appear in all the textual
-fields of an information. When one information is clicked, it is fully
-displayed (the password is rendered with stars), the site url when
-clicked will display the site in another tab. the username and the
-password may be clicked and copied in order to be pasted.
+Information stored in a vault are made of a title, a username, a
+password, a site URL, some tags (simple words) as well as some textual
+notes. Only the title is mandatory.
+
+Once deciphered in the browser, the information titles are displayed
+and may be filtered. The filter is a string that may appear in all the
+textual fields of an information (case is not important). When one
+information is clicked, it is fully displayed in a popup (the password
+is rendered with stars), the site url when clicked will display the
+site in another tab. the username and the password may be clicked and
+copied in order to be pasted elsewhere.
 
 Information may be individually managed that is, removed or edited and
-finally saved on the server.
+finally ciphered and saved on the server.
 
 Of course, tests should also be created to test the server and the
-client. Use the preferred test framework of Svelte5.
+client sides. Use the preferred test framework of Svelte5.
