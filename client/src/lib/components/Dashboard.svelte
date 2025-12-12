@@ -15,25 +15,39 @@
     let editingItem = $state<any>(null); // For editor
     let isCreating = $state(false);
 
+    let isDirty = $state(false); // New dirty state
+    let lastSavedDate = $state<string | null>(null);
+
     // Load vault on mount
     onMount(loadVault);
 
     async function loadVault() {
         try {
             const start = Date.now();
-            const encryptedContent = await api.getLatestVault();
-            if (!encryptedContent) {
+            const vaultContent = await api.getLatestVault();
+            if (!vaultContent) {
                 // New vault
                 items = [];
             } else {
-                // Decrypt entire vault
-                const encryptedData = JSON.parse(encryptedContent);
+                // New format: { date: string, data: { iv, cipher } }
+                const parsed = JSON.parse(vaultContent);
+
+                let encryptedData;
+                if (parsed.date && parsed.data) {
+                    lastSavedDate = parsed.date;
+                    encryptedData = parsed.data;
+                } else {
+                    // Backward compatibility for dev (or if format wasn't respected before)
+                    encryptedData = parsed;
+                }
+
                 const jsonStr = await decrypt(
                     encryptedData.cipher,
                     encryptedData.iv,
                     encryptionKey,
                 );
                 items = JSON.parse(jsonStr);
+                isDirty = false;
             }
             console.log(`Vault loaded in ${Date.now() - start}ms`);
         } catch (e) {
@@ -47,7 +61,16 @@
         // Encrypt all items
         const jsonStr = JSON.stringify(items);
         const encrypted = await encrypt(jsonStr, encryptionKey);
-        await api.saveVault(JSON.stringify(encrypted));
+
+        // Wrap with date
+        const payload = {
+            date: new Date().toISOString(),
+            data: encrypted,
+        };
+
+        await api.saveVault(JSON.stringify(payload));
+        lastSavedDate = payload.date;
+        isDirty = false;
     }
 
     // Derived filtered items
@@ -107,14 +130,14 @@
         }
         isCreating = false;
         editingItem = null;
-        await saveVault();
+        isDirty = true; // Mark as dirty
     }
 
     async function handleDelete(item: any) {
         if (confirm("Delete " + item.title + "?")) {
             items = items.filter((i) => i.id !== item.id);
             selectedItem = null;
-            await saveVault();
+            isDirty = true; // Mark as dirty
         }
     }
 
@@ -131,8 +154,22 @@
 <div class="dashboard">
     <div class="sidebar">
         <div class="controls">
+            <div class="actions">
+                <button onclick={startCreate}>+ New Entry</button>
+                {#if isDirty}
+                    <button class="save-btn" onclick={saveVault}
+                        >Save Vault</button
+                    >
+                {/if}
+            </div>
+            {#if lastSavedDate}
+                <small
+                    >Last saved: {new Date(
+                        lastSavedDate,
+                    ).toLocaleString()}</small
+                >
+            {/if}
             <input type="text" placeholder="Filter..." bind:value={filter} />
-            <button onclick={startCreate}>+ New Entry</button>
         </div>
         <div class="list">
             {#each filteredFiles as item}
@@ -205,6 +242,7 @@
         <Editor item={editingItem} onSave={handleSave} onCancel={closeModals} />
     {/if}
 </Modal>
+```
 
 <style>
     .dashboard {
@@ -252,6 +290,22 @@
     }
     button {
         margin-left: 10px;
+    }
+    .save-btn {
+        background: #28a745;
+        color: white;
+        margin-left: 0;
+    }
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    small {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #666;
+        font-size: 0.8rem;
     }
     input {
         width: 100%;

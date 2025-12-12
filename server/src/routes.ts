@@ -31,6 +31,7 @@ router.post('/vault', (req, res) => {
     if (!content) {
         return res.status(400).json({ error: 'Missing content' });
     }
+    // Content is expected to be a JSON string containing { date, data }
     try {
         const filename = saveVault(user.username, content);
         res.json({ success: true, filename });

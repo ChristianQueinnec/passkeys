@@ -6,7 +6,7 @@ does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 
 The webapp has two sides: the server side and the client side both
-written in Typescript with help of Svelte5.
+written in Typescript with help of SvelteKit 5.
 
 The server side will offer an API (prefixed by `/api/`)
 - to post login information (with username and password),
