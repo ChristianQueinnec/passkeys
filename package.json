@@ -1,0 +1,25 @@
+{
+  "name": "passkeys",
+  "version": "1.0.0",
+  "description": "The Passkeys project aims to produce a webapp mimicing keepass.",
+  "main": "index.js",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "test": "(cd client/ && npm run check) && (cd server/ && npm run check)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChristianQueinnec/passkeys.git"
+  },
+  "keywords": [],
+  "author": "Chris",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ChristianQueinnec/passkeys/issues"
+  },
+  "homepage": "https://github.com/ChristianQueinnec/passkeys#readme"
+}

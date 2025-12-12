@@ -1,0 +1,8 @@
+# Notes about the Passkeys webapp
+
+Global configuration of Antigravity in `~/.config/Antigravity/`
+
+## Generation 1
+
+Just enriched package.json
+
