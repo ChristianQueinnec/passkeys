@@ -1,25 +1,28 @@
 {
-  "name": "passkeys",
-  "version": "1.0.0",
-  "description": "The Passkeys project aims to produce a webapp mimicing keepass.",
-  "main": "index.js",
-  "workspaces": [
-    "server",
-    "client"
-  ],
-  "scripts": {
-    "test": "(cd client/ && npm run check) && (cd server/ && npm run check)"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ChristianQueinnec/passkeys.git"
-  },
-  "keywords": [],
-  "author": "Chris",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/ChristianQueinnec/passkeys/issues"
-  },
-  "homepage": "https://github.com/ChristianQueinnec/passkeys#readme"
+	"name": "passkeys",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-node": "^5.4.0",
+		"@sveltejs/kit": "^2.49.1",
+		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@types/fs-extra": "^11.0.4",
+		"svelte": "^5.45.6",
+		"svelte-check": "^4.3.4",
+		"typescript": "^5.9.3",
+		"vite": "^7.2.6"
+	},
+	"dependencies": {
+		"fs-extra": "^11.3.2"
+	}
 }

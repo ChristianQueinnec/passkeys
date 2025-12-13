@@ -24,7 +24,9 @@ with their date in a directory proper to every user. The vault file
 is a JSON file that also contains a date property.
 
 Users' names and their hashed passwords are stored in a json file only
-available to the server side.
+available to the server side. However if the password does not contain
+a colon sign, that means that the password is not hashed. In that case,
+the `users.json` file should be rewritten with all passwords hashed.
 
 All the accesses to the server are logged. The server
 will be ultimately deployed as a Docker container mounting the `data`
@@ -53,5 +55,7 @@ Information may be individually managed that is, removed or edited.
 When the vault is modified, propose a button to save it on the
 server after ciphering it.
 
-Of course, tests should also be created to test the server and the
-client sides. Use the preferred test framework of Svelte5.
+Of course, test files should also be generated to test the server and
+the client sides. Use Vitest for unit testing and Playwright for
+component and E2E testing. Place these files under the `tests`
+directory and add scripts entries in `package.json`.
