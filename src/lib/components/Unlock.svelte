@@ -18,23 +18,30 @@
 <div class="card">
     <h2>Unlock Vault</h2>
     <p>Enter your vault password to unlock it.</p>
-    <div class="input-group">
-        <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Vault Password"
-            bind:value={password}
-        />
-        <label>
+    <form
+        onsubmit={(e) => {
+            e.preventDefault();
+            handleUnlock();
+        }}
+    >
+        <div class="input-group">
             <input
-                type="checkbox"
-                checked={showPassword}
-                onclick={() => (showPassword = !showPassword)}
-            /> Show
-        </label>
-    </div>
-    <button onclick={handleUnlock} disabled={loading}>
-        {loading ? "Deriving Key..." : "Unlock"}
-    </button>
+                type={showPassword ? "text" : "password"}
+                placeholder="Vault Password"
+                bind:value={password}
+            />
+            <label>
+                <input
+                    type="checkbox"
+                    checked={showPassword}
+                    onclick={() => (showPassword = !showPassword)}
+                /> Show
+            </label>
+        </div>
+        <button type="submit" disabled={loading}>
+            {loading ? "Deriving Key..." : "Unlock"}
+        </button>
+    </form>
 </div>
 
 <style>

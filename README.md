@@ -6,7 +6,7 @@ does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 
 The webapp has two sides: the server side and the client side both
-written in Typescript with help of SvelteKit 5.
+written in Typescript with help of SvelteKit.
 
 The server side will offer an API (prefixed by `/api/`)
 - to post login information (with username and password),
@@ -36,8 +36,10 @@ directory where are stored information files.
 The client side will run in any modern browser. It will allow some
 user to authenticate and get the most recent associated vault. When
 authenticated, the name of the user appears along a `logout` button.
+The `Enter` key submits the form if username and password are filled.
 The webapp will then ask for the pass phrase allowing to decipher that
-file. It must be possible to see temporarily the pass phrase.
+file. The `Enter` key submits the form if a pass phrase is present.
+It must be possible to see temporarily the pass phrase.
 Report explicitly if the vault cannot be deciphered.
 
 Information stored in a vault are made of a title, a username, a
@@ -62,4 +64,5 @@ component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
 
 When a new version of the webapp is ready and checked, increment
-the `version` property in `package.json`. 
+the `version` property in `package.json`. Also add new test files
+to check the newly implemented features.

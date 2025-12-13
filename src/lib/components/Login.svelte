@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { api } from '../api';
+  import { api } from "../api";
 
-  let username = $state('');
-  let password = $state('');
-  let error = $state('');
+  let username = $state("");
+  let password = $state("");
+  let error = $state("");
 
   let { onLogin } = $props();
 
@@ -22,9 +22,16 @@
   {#if error}
     <p class="error">{error}</p>
   {/if}
-  <input type="text" placeholder="Username" bind:value={username} />
-  <input type="password" placeholder="Password" bind:value={password} />
-  <button onclick={handleLogin}>Login</button>
+  <form
+    onsubmit={(e) => {
+      e.preventDefault();
+      handleLogin();
+    }}
+  >
+    <input type="text" placeholder="Username" bind:value={username} />
+    <input type="password" placeholder="Password" bind:value={password} />
+    <button type="submit">Login</button>
+  </form>
 </div>
 
 <style>
@@ -41,5 +48,7 @@
     margin-bottom: 1rem;
     padding: 0.5rem;
   }
-  .error { color: red; }
+  .error {
+    color: red;
+  }
 </style>

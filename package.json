@@ -1,7 +1,7 @@
 {
 	"name": "passkeys",
 	"private": true,
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -12,7 +12,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
 		"test:e2e": "playwright test tests/e2e/test.ts",
-        "build:container": "docker compose build"
+		"build:container": "docker compose build"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.57.0",
