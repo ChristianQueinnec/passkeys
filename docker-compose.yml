@@ -1,8 +1,10 @@
 services:
   passkeys:
     build: .
+    image: registry.queinnec.org:5000/passkeys
+    container_name: passkeys
     ports:
-      - "3000:3000"
+      - "5137:3000"
     volumes:
       - ./data:/app/data
     restart: unless-stopped

@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
-		"test:e2e": "playwright test tests/e2e/test.ts"
+		"test:e2e": "playwright test tests/e2e/test.ts",
+        "build:container": "docker compose build"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.57.0",

@@ -21,7 +21,8 @@ code of the client side.
 The server has no clue about how to decipher the vaults that is, the
 crypted files of information. The server stores these vaults
 with their date in a directory proper to every user. The vault file
-is a JSON file that also contains a date property.
+is a JSON file that also contains a date property. Dates should be
+displayed with ISO convention.
 
 Users' names and their hashed passwords are stored in a json file only
 available to the server side. However if the password does not contain
@@ -37,7 +38,7 @@ user to authenticate and get the most recent associated vault. When
 authenticated, the name of the user appears along a `logout` button.
 The webapp will then ask for the pass phrase allowing to decipher that
 file. It must be possible to see temporarily the pass phrase.
-Report if the vault cannot be deciphered.
+Report explicitly if the vault cannot be deciphered.
 
 Information stored in a vault are made of a title, a username, a
 password, a site URL, some tags (simple words) as well as some textual
@@ -59,3 +60,6 @@ Of course, test files should also be generated to test the server and
 the client sides. Use Vitest for unit testing and Playwright for
 component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
+
+When a new version of the webapp is ready and checked, increment
+the `version` property in `package.json`. 

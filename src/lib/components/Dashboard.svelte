@@ -30,7 +30,7 @@
                 items = [];
             } else {
                 // New format: { date: string, data: { iv, cipher } }
-                const parsed = JSON.parse(vaultContent);
+                const parsed = vaultContent;
 
                 let encryptedData;
                 if (parsed.date && parsed.data) {
@@ -164,9 +164,7 @@
             </div>
             {#if lastSavedDate}
                 <small
-                    >Last saved: {new Date(
-                        lastSavedDate,
-                    ).toLocaleString()}</small
+                    >Last saved: {new Date(lastSavedDate).toISOString()}</small
                 >
             {/if}
             <input type="text" placeholder="Filter..." bind:value={filter} />

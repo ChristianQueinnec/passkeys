@@ -1,5 +1,6 @@
 <script lang="ts">
     let password = $state("");
+    let showPassword = $state(false);
     let loading = $state(false);
 
     let { onUnlock } = $props();
@@ -16,12 +17,21 @@
 
 <div class="card">
     <h2>Unlock Vault</h2>
-    <p>Enter your master password to decrypt your vault.</p>
-    <input
-        type="password"
-        placeholder="Master Password"
-        bind:value={password}
-    />
+    <p>Enter your vault password to unlock it.</p>
+    <div class="input-group">
+        <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Vault Password"
+            bind:value={password}
+        />
+        <label>
+            <input
+                type="checkbox"
+                checked={showPassword}
+                onclick={() => (showPassword = !showPassword)}
+            /> Show
+        </label>
+    </div>
     <button onclick={handleUnlock} disabled={loading}>
         {loading ? "Deriving Key..." : "Unlock"}
     </button>
@@ -40,5 +50,19 @@
         width: 100%;
         margin-bottom: 1rem;
         padding: 0.5rem;
+    }
+    .input-group {
+        margin-bottom: 1rem;
+    }
+    .input-group input[type="text"],
+    .input-group input[type="password"] {
+        margin-bottom: 0.5rem;
+    }
+    .input-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        cursor: pointer;
     }
 </style>
