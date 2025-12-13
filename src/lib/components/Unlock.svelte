@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { deriveKeyFromPassword } from "../crypto";
-
     let password = $state("");
     let loading = $state(false);
 
@@ -9,8 +7,7 @@
     async function handleUnlock() {
         loading = true;
         try {
-            const key = await deriveKeyFromPassword(password);
-            onUnlock(key);
+            await onUnlock(password);
         } finally {
             loading = false;
         }

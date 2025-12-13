@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { listVaults, getVault } from '$lib/server/storage';
+import { listVaults, deleteVault } from '$lib/server/storage';
 import { getUser } from '$lib/server/users';
 
 function getAuthUser(request: Request) {
@@ -20,16 +20,29 @@ export async function GET({ request }) {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Handle single file fetch if query param exists (mirroring previous logic if needed, 
-    // or we can make a separate route /api/vault/history/[filename])
-    // The previous implementation had /api/vault/history and /api/vault/history/:filename
-    // SvelteKit: +server.ts handles /api/vault/history. 
-    // For /:filename we need another dir or handle query param.
-    // Let's stick to list here.
-
     try {
         const vaults = listVaults(user.username);
         return json(vaults);
+    } catch (e: any) {
+        return json({ error: e.message }, { status: 500 });
+    }
+}
+
+export async function DELETE({ request, url }) {
+    const user = getAuthUser(request);
+    if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
+
+    const filename = url.searchParams.get('filename');
+    if (!filename) return json({ error: 'Filename required' }, { status: 400 });
+
+    try {
+        // Security check: filename should be just a name, no path traversal
+        if (filename.includes('/') || filename.includes('\\')) {
+            return json({ error: 'Invalid filename' }, { status: 400 });
+        }
+
+        deleteVault(user.username, filename);
+        return json({ success: true });
     } catch (e: any) {
         return json({ error: e.message }, { status: 500 });
     }
