@@ -83,5 +83,18 @@ export const api = {
             throw new Error(err.error || 'Failed to update password');
         }
         return res.json();
+    },
+
+    async deleteVault(filename: string) {
+        if (!this.token) throw new Error('Not authenticated');
+        const res = await fetch(`/api/vault/history?filename=${encodeURIComponent(filename)}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to delete vault');
+        }
+        return res.json();
     }
 };

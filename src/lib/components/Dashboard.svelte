@@ -17,18 +17,46 @@
 
     let isDirty = $state(false); // New dirty state
     let lastSavedDate = $state<string | null>(null);
+    let offlineMode = $state(false); // Warning for offline/outdated
+
+    // History state
+    let showHistoryModal = $state(false);
+    let historyFiles = $state<any[]>([]);
 
     // Load vault on mount
     onMount(loadVault);
 
     async function loadVault() {
+        let vaultContent = null;
         try {
             const start = Date.now();
-            const vaultContent = await api.getLatestVault();
-            if (!vaultContent) {
-                // New vault
-                items = [];
+            vaultContent = await api.getLatestVault();
+            if (vaultContent) {
+                // Save to localStorage for offline use
+                localStorage.setItem(
+                    "offline_vault",
+                    JSON.stringify(vaultContent),
+                );
+                offlineMode = false;
+            }
+            console.log(`Vault loaded from server in ${Date.now() - start}ms`);
+        } catch (e) {
+            console.error("Failed to load vault from server", e);
+            // Try offline
+            const offline = localStorage.getItem("offline_vault");
+            if (offline) {
+                vaultContent = JSON.parse(offline);
+                offlineMode = true; // Flag as offline/potentially out of date
             } else {
+                alert("Failed to decrypt vault and no offline copy found.");
+                return;
+            }
+        }
+
+        if (!vaultContent) {
+            items = [];
+        } else {
+            try {
                 // New format: { date: string, data: { iv, cipher } }
                 const parsed = vaultContent;
 
@@ -37,7 +65,6 @@
                     lastSavedDate = parsed.date;
                     encryptedData = parsed.data;
                 } else {
-                    // Backward compatibility for dev (or if format wasn't respected before)
                     encryptedData = parsed;
                 }
 
@@ -48,12 +75,9 @@
                 );
                 items = JSON.parse(jsonStr);
                 isDirty = false;
+            } catch (e) {
+                alert("Failed to decrypt vault.");
             }
-            console.log(`Vault loaded in ${Date.now() - start}ms`);
-        } catch (e) {
-            console.error("Failed to load vault", e);
-            alert("Failed to decrypt vault. Wrong password?");
-            // In real app, redirect to unlock
         }
     }
 
@@ -68,9 +92,36 @@
             data: encrypted,
         };
 
-        await api.saveVault(JSON.stringify(payload));
-        lastSavedDate = payload.date;
-        isDirty = false;
+        try {
+            await api.saveVault(JSON.stringify(payload));
+            lastSavedDate = payload.date;
+            isDirty = false;
+            offlineMode = false;
+            // Update offline copy
+            localStorage.setItem("offline_vault", JSON.stringify(payload));
+        } catch (e) {
+            alert("Failed to save vault to server. Please check connection.");
+        }
+    }
+
+    // History Functions
+    async function openHistory() {
+        try {
+            historyFiles = await api.getVaultHistory();
+            showHistoryModal = true;
+        } catch (e) {
+            alert("Failed to load history.");
+        }
+    }
+
+    async function deleteHistoryItem(filename: string) {
+        if (!confirm(`Delete version ${filename}?`)) return;
+        try {
+            await api.deleteVault(filename);
+            historyFiles = historyFiles.filter((f) => f.name !== filename);
+        } catch (e) {
+            alert("Failed to delete item.");
+        }
     }
 
     // Derived filtered items
@@ -144,6 +195,7 @@
     function closeModals() {
         selectedItem = null;
         editingItem = null;
+        showHistoryModal = false;
     }
 
     function copyToClipboard(text: string) {
@@ -161,7 +213,13 @@
                         >Save Vault</button
                     >
                 {/if}
+                <button onclick={openHistory}>History</button>
             </div>
+            {#if offlineMode}
+                <div class="warning">
+                    ⚠️ Offline Mode: Vault may be out of date
+                </div>
+            {/if}
             {#if lastSavedDate}
                 <small
                     >Last saved: {new Date(lastSavedDate).toISOString()}</small
@@ -191,31 +249,31 @@
     {#if selectedItem}
         <div class="details">
             <div class="field">
-                <label>Site:</label>
+                <strong>Site:</strong>
                 <a href={selectedItem.site} target="_blank"
                     >{selectedItem.site}</a
                 >
             </div>
             <div class="field">
-                <label>Username:</label>
+                <strong>Username:</strong>
                 <span>{selectedItem.username}</span>
                 <button onclick={() => copyToClipboard(selectedItem.username)}
                     >Copy</button
                 >
             </div>
             <div class="field">
-                <label>Password:</label>
+                <strong>Password:</strong>
                 <span>********</span>
                 <button onclick={() => copyToClipboard(selectedItem.password)}
                     >Copy</button
                 >
             </div>
             <div class="field">
-                <label>Tags:</label>
+                <strong>Tags:</strong>
                 <span>{selectedItem.tags?.join(", ")}</span>
             </div>
             <div class="field">
-                <label>Notes:</label>
+                <strong>Notes:</strong>
                 <pre>{selectedItem.notes}</pre>
             </div>
 
@@ -239,6 +297,40 @@
     {#if editingItem}
         <Editor item={editingItem} onSave={handleSave} onCancel={closeModals} />
     {/if}
+</Modal>
+
+<!-- History Modal -->
+<Modal isOpen={showHistoryModal} onClose={closeModals} title="Vault History">
+    <div class="history-list">
+        {#if historyFiles.length === 0}
+            <p>No history found.</p>
+        {:else}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each historyFiles as file}
+                        <tr>
+                            <td>{new Date(file.mtime).toLocaleString()}</td>
+                            <td>{file.size} B</td>
+                            <td>
+                                <button
+                                    class="danger small"
+                                    onclick={() => deleteHistoryItem(file.name)}
+                                    >Delete</button
+                                >
+                            </td>
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+        {/if}
+    </div>
 </Modal>
 ```
 
@@ -274,7 +366,7 @@
     .field {
         margin-bottom: 1rem;
     }
-    label {
+    strong {
         font-weight: bold;
         display: block;
     }
@@ -308,5 +400,28 @@
     input {
         width: 100%;
         padding: 0.5rem;
+    }
+    .warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        border: 1px solid #ffeeba;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th,
+    td {
+        padding: 0.5rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    .small {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
     }
 </style>
