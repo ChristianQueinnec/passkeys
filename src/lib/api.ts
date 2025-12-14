@@ -66,5 +66,22 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to list history');
         return res.json();
+    },
+
+    async changePassword(oldPassword: string, newPassword: string) {
+        if (!this.token) throw new Error('Not authenticated');
+        const res = await fetch('/api/user/password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.token}`
+            },
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to update password');
+        }
+        return res.json();
     }
 };

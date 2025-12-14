@@ -32,3 +32,16 @@ export const getUser = (username: string) => {
     const users = getUsers();
     return users.find((u: any) => u.username === username);
 };
+
+export const updateUserPassword = (username: string, newPassword: string) => {
+    const users = getUsers();
+    const userIndex = users.findIndex((u: any) => u.username === username);
+
+    if (userIndex === -1) {
+        throw new Error('User not found');
+    }
+
+    users[userIndex].password = createHashedEntrySync(newPassword);
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    return true;
+};
