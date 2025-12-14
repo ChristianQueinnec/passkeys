@@ -37,10 +37,16 @@ The client side will run in any modern browser. It will allow some
 user to authenticate and get the most recent associated vault. When
 authenticated, the name of the user appears along a `logout` button.
 The `Enter` key submits the form if username and password are filled.
-The webapp will then ask for the pass phrase allowing to decipher that
-file. The `Enter` key submits the form if a pass phrase is present.
-It must be possible to see temporarily the pass phrase.
-Report explicitly if the vault cannot be deciphered.
+The webapp will then ask for the vault key allowing to decipher that
+file. The `Enter` key submits the form if a vault key is present. It
+must be possible to see temporarily the vault key. Report explicitly
+if the vault cannot be deciphered.
+
+When the client receives a vault, it stores it persistently but still
+ciphered in the browser so it may be used in case of missing Internet
+connectivity. Of course, reusing that stored vault requires vault key.
+Report to the user that the vault might be out of date.
+
 
 Information stored in a vault are made of a title, a username, a
 password, a site URL, some tags (simple words) as well as some textual
@@ -62,7 +68,3 @@ Of course, test files should also be generated to test the server and
 the client sides. Use Vitest for unit testing and Playwright for
 component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
-
-Systematically When a new version of the webapp is ready and checked,
-increment the `version` property in `package.json`. Also add new test
-files to check the newly implemented features.

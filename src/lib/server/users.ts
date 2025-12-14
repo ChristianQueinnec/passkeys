@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 
 const USERS_FILE = path.join(process.cwd(), 'data/users.json');
 
@@ -14,9 +15,7 @@ export const getUsers = () => {
     let modified = false;
     for (const user of users) {
         if (user.password && !user.password.includes(':')) {
-            const salt = crypto.randomBytes(16).toString('hex');
-            const hash = crypto.scryptSync(user.password, salt, 64).toString('hex');
-            user.password = `${salt}:${hash}`;
+            user.password = createHashedEntrySync(user.password)
             modified = true;
             console.log(`Migrated password for user ${user.username}`);
         }

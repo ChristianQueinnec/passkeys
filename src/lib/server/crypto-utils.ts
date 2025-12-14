@@ -14,9 +14,16 @@ export const hashPassword = async (password: string, salt: string) => {
     return derivedKey.toString('hex');
 };
 
+export const hashPasswordSync = (password: string, salt: string) => {
+    const derivedKey = crypto.scryptSync(password, salt, 64);
+    return derivedKey.toString('hex');
+};
+
 // Verify a password
 export const verifyPassword = async (password: string, hash: string, salt: string) => {
+    console.log({ password, hash, salt });
     const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
+    console.log({ derivedKey: derivedKey.toString('hex') });
     return hash === derivedKey.toString('hex');
 };
 
@@ -26,5 +33,11 @@ export const createHashedEntry = async (password: string) => {
     const hash = await hashPassword(password, salt);
     // Format: "salt:hash" or store separately. 
     // Let's store as "salt:hash" in the password field for simplicity in users.json
+    return `${salt}:${hash}`;
+};
+
+export const createHashedEntrySync = (password: string) => {
+    const salt = generateSalt();
+    const hash = hashPasswordSync(password, salt);
     return `${salt}:${hash}`;
 };
