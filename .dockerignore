@@ -1,3 +1,10 @@
+*~
+data/
+docker-compose.yml
 legacy/
-notes.txt
 node_modules/
+notes.txt
+questions.md
+README.md
+realdata/
+tests/

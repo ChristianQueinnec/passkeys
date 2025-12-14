@@ -6,5 +6,5 @@ services:
     ports:
       - "5137:3000"
     volumes:
-      - ./data:/app/data
+      - ./realdata:/app/data
     restart: unless-stopped

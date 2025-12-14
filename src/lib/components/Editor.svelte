@@ -28,7 +28,7 @@
 <div class="editor">
     <div class="field">
         <label for="title">Title *</label>
-        <input id="title" type="text" bind:value={title} />
+        <input id="title" type="text" required bind:value={title} />
     </div>
     <div class="field">
         <label for="site">Site URL</label>

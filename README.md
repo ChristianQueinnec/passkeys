@@ -63,6 +63,6 @@ the client sides. Use Vitest for unit testing and Playwright for
 component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
 
-When a new version of the webapp is ready and checked, increment
-the `version` property in `package.json`. Also add new test files
-to check the newly implemented features.
+Systematically When a new version of the webapp is ready and checked,
+increment the `version` property in `package.json`. Also add new test
+files to check the newly implemented features.
