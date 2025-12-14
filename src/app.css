@@ -1,0 +1,33 @@
+/* Global Styles */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
+}
+
+/* Common Components */
+.card {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: white; /* Ensure card has background */
+}
+
+input {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    box-sizing: border-box; /* Good practice for inputs */
+}
+
+.error {
+    color: red;
+}
+
+.success {
+    color: green;
+}

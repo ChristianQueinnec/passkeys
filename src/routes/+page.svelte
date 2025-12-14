@@ -1,4 +1,10 @@
 <script lang="ts">
+    import Login from "$lib/components/Login.svelte";
+    import Unlock from "$lib/components/Unlock.svelte";
+    import Dashboard from "$lib/components/Dashboard.svelte";
+    import { pbkdf2 } from "$lib/crypto";
+    import { api } from "$lib/api";
+    import { onMount } from "svelte";
     import Modal from "$lib/components/Modal.svelte";
 
     // Application State
@@ -92,7 +98,9 @@
                     </button>
                     {#if showUserMenu}
                         <div class="dropdown-menu">
-                            <button onclick={openChangePassword}>Change Password</button>
+                            <button onclick={openChangePassword}
+                                >Change Password</button
+                            >
                             <button onclick={handleLogout}>Logout</button>
                         </div>
                     {/if}
@@ -139,12 +147,6 @@
 </Modal>
 
 <style>
-    :global(body) {
-        font-family: sans-serif;
-        margin: 0;
-        padding: 0;
-        background: #f4f4f4;
-    }
     .app-container {
         display: flex;
         flex-direction: column;
@@ -166,7 +168,7 @@
         flex: 1;
         overflow: hidden;
     }
-    
+
     /* User Menu */
     .user-menu-container {
         position: relative;
@@ -187,7 +189,7 @@
         top: 100%;
         background: white;
         color: black;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         border-radius: 4px;
         overflow: hidden;
         min-width: 150px;
@@ -236,6 +238,10 @@
         border-radius: 4px;
         cursor: pointer;
     }
-    .error { color: red; }
-    .success { color: green; }
+    .error {
+        color: red;
+    }
+    .success {
+        color: green;
+    }
 </style>

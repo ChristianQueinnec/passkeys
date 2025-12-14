@@ -17,8 +17,13 @@ OK -- but specify that the favicon.ico should be derived from favicon.svg
 
 Transform the logout button into a menu item under the username.
 Provide also another menu item to change the user's password
+A TESTER
+
+Is it possible to share common CSS sections in svelte files into `app.css`
+OK
+
+
 
 There are many missing test files not covering use cases. Please
 add them as needed.
 
-Is it possible to share common CSS sections in svelte files into `app.css`

@@ -28,4 +28,5 @@ vite.config.ts.timestamp-*
 legacy/
 data/
 realdata/
+pass.csv
 

@@ -48,15 +48,6 @@
     .card {
         max-width: 400px;
         margin: 2rem auto;
-        padding: 2rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-    }
-    input {
-        display: block;
-        width: 100%;
-        margin-bottom: 1rem;
-        padding: 0.5rem;
     }
     .input-group {
         margin-bottom: 1rem;
