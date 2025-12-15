@@ -22,10 +22,15 @@ OK
 Is it possible to share common CSS sections in svelte files into `app.css`
 OK
 
+There are many missing test files not covering use cases. Please
+add them as needed.
+OK: 
+
 offline mode (described in README)
+
+Add, in the user menu, a `synchronize` menu item to fetch again the most
+recent vault to replace the current local vault.
 
 unify button styles: adopt round corners and appropriate color.
 
-There are many missing test files not covering use cases. Please
-add them as needed.
 

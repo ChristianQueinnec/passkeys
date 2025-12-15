@@ -1,0 +1,84 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as storage from '$lib/server/storage';
+import fs from 'fs';
+import path from 'path';
+
+vi.mock('fs');
+vi.mock('path', async () => {
+    const actual = await vi.importActual('path');
+    return {
+        ...actual,
+        join: (...args: string[]) => args.join('/'),
+    };
+});
+
+describe('Storage', () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+        // Mock default behaviors
+        vi.mocked(fs.existsSync).mockReturnValue(true);
+        vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
+    });
+
+    it('should create user directory if it does not exist', () => {
+        vi.mocked(fs.existsSync).mockReturnValue(false);
+        storage.getUserDir('testuser');
+        expect(fs.mkdirSync).toHaveBeenCalled();
+    });
+
+    it('should list vaults sorted by date (newest first)', () => {
+        const mockFiles = ['old.vault', 'new.vault'];
+        vi.mocked(fs.readdirSync).mockReturnValue(mockFiles as any);
+
+        vi.mocked(fs.statSync).mockImplementation((path: any) => {
+            if (path.includes('old.vault')) return { size: 100, mtime: new Date('2023-01-01') } as any;
+            if (path.includes('new.vault')) return { size: 200, mtime: new Date('2023-01-02') } as any;
+            return {} as any;
+        });
+
+        const vaults = storage.listVaults('testuser');
+        expect(vaults).toHaveLength(2);
+        expect(vaults[0].name).toBe('new.vault');
+        expect(vaults[1].name).toBe('old.vault');
+    });
+
+    it('should save a vault', () => {
+        const filename = storage.saveVault('testuser', 'content');
+        expect(fs.writeFileSync).toHaveBeenCalled();
+        expect(filename).toMatch(/\.vault$/);
+    });
+
+    it('should get a specific vault', () => {
+        vi.mocked(fs.readFileSync).mockReturnValue('vault-content');
+        const content = storage.getVault('testuser', 'test.vault');
+        expect(content).toBe('vault-content');
+    });
+
+    it('should return null if vault does not exist', () => {
+        vi.mocked(fs.existsSync).mockReturnValue(false);
+        const content = storage.getVault('testuser', 'missing.vault');
+        expect(content).toBeNull();
+    });
+
+    it('should get latest vault', () => {
+        // Mock listVaults behavior by mocking fs calls
+        const mockFiles = ['v1.vault'];
+        vi.mocked(fs.readdirSync).mockReturnValue(mockFiles as any);
+        vi.mocked(fs.statSync).mockReturnValue({ size: 100, mtime: new Date() } as any);
+        vi.mocked(fs.readFileSync).mockReturnValue('latest-content');
+
+        const content = storage.getLatestVault('testuser');
+        expect(content).toBe('latest-content');
+    });
+
+    it('should delete a vault', () => {
+        storage.deleteVault('testuser', 'test.vault');
+        expect(fs.unlinkSync).toHaveBeenCalled();
+    });
+
+    it('should not delete if vault does not exist', () => {
+        vi.mocked(fs.existsSync).mockReturnValue(false);
+        storage.deleteVault('testuser', 'missing.vault');
+        expect(fs.unlinkSync).not.toHaveBeenCalled();
+    });
+});

@@ -6,6 +6,10 @@ import type { RequestEvent } from './$types';
 export async function POST({ request }: RequestEvent) {
     const { username, password } = await request.json();
 
+    if (!username || !password) {
+        return json({ error: 'Username and password required' }, { status: 400 });
+    }
+
     try {
         const user = getUser(username);
         if (!user) {

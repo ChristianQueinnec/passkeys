@@ -32,7 +32,8 @@ export async function GET({ request }) {
 
     try {
         const vault = getLatestVault(user.username);
-        return json(vault ? JSON.parse(vault) : null);
+        if (!vault) return json({ error: 'Not found' }, { status: 404 });
+        return json(JSON.parse(vault));
     } catch (e: any) {
         return json({ error: e.message }, { status: 500 });
     }
