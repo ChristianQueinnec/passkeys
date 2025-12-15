@@ -27,13 +27,19 @@ add them as needed.
 OK
 
 Please add e2e test files using playwright.
-OK
+UNFINISHED
 
 offline mode (described in README)
 
 Add, in the user menu, a `synchronize` menu item to fetch again the most
 recent vault to replace the current local vault.
 
+Develop an independent script (in TypeScript) to process a csv file of
+group, title, username, password, url, notes to fill the vault. The
+`group` value will fill the `tags` field as follows
+- suppress the `keepass` prefix
+- use slashes to split the value
+- use the remaining words as individual tags
 
 
 
