@@ -1,0 +1,28 @@
+{
+  "name": "csv-to-json-converter",
+  "version": "1.0.0",
+  "description": "Convert KeePass CSV export to JSON format",
+  "main": "csv-to-json.ts",
+  "scripts": {
+    "test": "jasmine-ts",
+    "build": "tsc",
+    "convert": "ts-node csv-to-json.ts"
+  },
+  "keywords": [
+    "csv",
+    "json",
+    "keepass",
+    "converter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^5.1.4",
+    "@types/node": "^20.10.6",
+    "jasmine": "^5.1.0",
+    "jasmine-ts": "^0.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {}
+}
