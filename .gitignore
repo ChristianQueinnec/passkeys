@@ -29,4 +29,5 @@ legacy/
 data/
 realdata/
 pass.csv
+pass.json
 test-results/

@@ -2,7 +2,7 @@
 
 Global configuration of Antigravity in `~/.config/Antigravity/`
 
-## Generation 1
+## Using Claude
 
-Just enriched package.json
+/add-dir /home/queinnec/Passkeys/KeePass2Passkeys/
 

@@ -1,6 +1,7 @@
 *~
 data/
 docker-compose.yml
+KeePass2Passkeys/
 legacy/
 node_modules/
 notes.txt

@@ -1,6 +1,10 @@
 services:
   passkeys:
-    build: .
+    build:
+      context: .
+      args:
+        - UID=1299
+        - GID=1299
     image: registry.queinnec.org:5000/passkeys
     container_name: passkeys
     ports:
