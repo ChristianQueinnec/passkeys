@@ -22,6 +22,115 @@ input {
     margin-bottom: 1rem;
     padding: 0.5rem;
     box-sizing: border-box; /* Good practice for inputs */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* Unified Button Styles */
+button {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+/* Primary Button (default) */
+button {
+    background: #007bff;
+    color: white;
+}
+
+button:hover:not(:disabled) {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Success Button */
+button.success,
+button.save-btn {
+    background: #28a745;
+    color: white;
+}
+
+button.success:hover:not(:disabled),
+button.save-btn:hover:not(:disabled) {
+    background: #218838;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* Danger Button */
+button.danger {
+    background: #dc3545;
+    color: white;
+}
+
+button.danger:hover:not(:disabled) {
+    background: #c82333;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Secondary Button */
+button.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+button.secondary:hover:not(:disabled) {
+    background: #5a6268;
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+/* Small Button */
+button.small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* Close Button (Modal) */
+button.close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    padding: 0;
+    line-height: 1;
+}
+
+button.close:hover {
+    color: #000;
+    background: none;
+    transform: none;
+    box-shadow: none;
+}
+
+/* User Menu Button */
+button.user-btn {
+    background: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    font-size: 1rem;
+}
+
+button.user-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
+    box-shadow: none;
 }
 
 .error {

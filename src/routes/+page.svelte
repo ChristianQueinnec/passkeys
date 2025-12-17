@@ -211,15 +211,20 @@
         flex-direction: column;
     }
     .dropdown-menu button {
-        background: none;
+        background: white;
+        color: #333;
         border: none;
         padding: 0.75rem 1rem;
         text-align: left;
         cursor: pointer;
         width: 100%;
+        border-radius: 0;
+        font-weight: normal;
     }
     .dropdown-menu button:hover {
         background: #f0f0f0;
+        transform: none;
+        box-shadow: none;
     }
 
     /* Change Password Form */
@@ -242,14 +247,6 @@
         display: flex;
         justify-content: flex-end;
         margin-top: 1rem;
-    }
-    .change-password-form button {
-        padding: 0.5rem 1rem;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
     }
     .error {
         color: red;

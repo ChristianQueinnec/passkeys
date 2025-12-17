@@ -53,7 +53,7 @@
 
     <div class="actions">
         <button onclick={handleSubmit} disabled={!title}>Save</button>
-        <button onclick={onCancel}>Cancel</button>
+        <button class="secondary" onclick={onCancel}>Cancel</button>
     </div>
 </div>
 
@@ -79,10 +79,7 @@
     }
     .actions {
         margin-top: 1rem;
-    }
-    button {
-        padding: 0.5rem 1rem;
-        margin-right: 0.5rem;
-        cursor: pointer;
+        display: flex;
+        gap: 0.5rem;
     }
 </style>

@@ -143,11 +143,15 @@
 
     async function synchronizeVault() {
         if (isDirty) {
-            if (!confirm("You have unsaved changes. Synchronizing will discard them. Continue?")) {
+            if (
+                !confirm(
+                    "You have unsaved changes. Synchronizing will discard them. Continue?",
+                )
+            ) {
                 return;
             }
         }
-        
+
         isSyncing = true;
         try {
             await loadVault();
@@ -272,7 +276,7 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div class="list-item">
                     <a href={item.url || "#"}>{item.title}</a>
-                    <span onclick={() => selectItem(item)}>SEE</span>
+                    <button class="small secondary" onclick={() => selectItem(item)}>View</button>
                 </div>
             {/each}
         </div>
@@ -295,17 +299,21 @@
             </div>
             <div class="field">
                 <strong>Username:</strong>
-                <span>{selectedItem.username}</span>
-                <button onclick={() => copyToClipboard(selectedItem.username)}
-                    >Copy</button
-                >
+                <div class="field-content">
+                    <span>{selectedItem.username}</span>
+                    <button class="small" onclick={() => copyToClipboard(selectedItem.username)}
+                        >Copy</button
+                    >
+                </div>
             </div>
             <div class="field">
                 <strong>Password:</strong>
-                <span>********</span>
-                <button onclick={() => copyToClipboard(selectedItem.password)}
-                    >Copy</button
-                >
+                <div class="field-content">
+                    <span>********</span>
+                    <button class="small" onclick={() => copyToClipboard(selectedItem.password)}
+                        >Copy</button
+                    >
+                </div>
             </div>
             <div class="field">
                 <strong>Tags:</strong>
@@ -399,31 +407,27 @@
         border-bottom: 1px solid #eee;
         cursor: pointer;
     }
+    .list-item button {
+        float: right;
+    }
     .list-item:hover {
         background: #f9f9f9;
     }
     .field {
         margin-bottom: 1rem;
     }
+    .field-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    .field-content span {
+        flex: 1;
+    }
     strong {
         font-weight: bold;
         display: block;
-    }
-    .danger {
-        background: red;
-        color: white;
-    }
-    button {
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-    }
-    button {
-        margin-left: 10px;
-    }
-    .save-btn {
-        background: #28a745;
-        color: white;
-        margin-left: 0;
     }
     .actions {
         display: flex;

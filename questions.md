@@ -31,18 +31,20 @@ UNFINISHED
 
 offline mode (described in README)
 
-Bug in saveVault: fixed by CLAUDE1.md
-
-
-Add, in the user menu, a `synchronize` menu item to fetch the most
-recent vault in order to replace the current local vault.
-
 If the vault received from the server is an array of JSON objects
 instead of the usual `date` and `data` properties, then the vault is
 not encrypted and the array is an array of entries. The client then
 encrypts this array into the usual format and save the now ciphered
 vault. Keep the extra properties that may appear in the items of the
 array.
+OK
+
+Bug in saveVault: fixed by CLAUDE1.md
+
+
+Add, in the user menu, a `synchronize` menu item to fetch the most
+recent vault in order to replace the current local vault.
+OK
 
 unify button styles: adopt round corners and appropriate color.
 
