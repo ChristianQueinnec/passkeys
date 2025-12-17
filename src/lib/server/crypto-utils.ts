@@ -21,9 +21,7 @@ export const hashPasswordSync = (password: string, salt: string) => {
 
 // Verify a password
 export const verifyPassword = async (password: string, hash: string, salt: string) => {
-    console.log({ password, hash, salt });
     const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-    console.log({ derivedKey: derivedKey.toString('hex') });
     return hash === derivedKey.toString('hex');
 };
 

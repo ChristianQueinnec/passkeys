@@ -31,18 +31,19 @@ UNFINISHED
 
 offline mode (described in README)
 
-Add, in the user menu, a `synchronize` menu item to fetch again the most
-recent vault to replace the current local vault.
-
-Develop an independent script (in TypeScript) to process a csv file of
-group, title, username, password, url, notes to fill the vault. The
-`group` value will fill the `tags` field as follows
-- suppress the `keepass` prefix
-- use slashes to split the value
-- use the remaining words as individual tags
+Bug in saveVault: fixed by CLAUDE1.md
 
 
+Add, in the user menu, a `synchronize` menu item to fetch the most
+recent vault in order to replace the current local vault.
+
+If the vault received from the server is an array of JSON objects
+instead of the usual `date` and `data` properties, then the vault is
+not encrypted and the array is an array of entries. The client then
+encrypts this array into the usual format and save the now ciphered
+vault. Keep the extra properties that may appear in the items of the
+array.
 
 unify button styles: adopt round corners and appropriate color.
 
-
+Add CSRF to forms

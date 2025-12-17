@@ -17,7 +17,7 @@ RUN groupadd -g 1299 queinnec && \
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
-COPY --from=builder /app/package*.json .
+COPY --from=builder /app/package.json .
 
 # Create data directory for volume mount
 RUN mkdir -p data && \

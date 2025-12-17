@@ -19,6 +19,9 @@
     let lastSavedDate = $state<string | null>(null);
     let offlineMode = $state(false); // Warning for offline/outdated
 
+    let isLoading = false; // Prevent saves during load
+    let isSyncing = $state(false); // Syncing state
+
     // History state
     let showHistoryModal = $state(false);
     let historyFiles = $state<any[]>([]);
@@ -27,19 +30,24 @@
     onMount(loadVault);
 
     async function loadVault() {
+        isLoading = true; // Disable saves during load
         let vaultContent = null;
         try {
             const start = Date.now();
             vaultContent = await api.getLatestVault();
             if (vaultContent) {
-                // Save to localStorage for offline use
-                localStorage.setItem(
-                    "offline_vault",
-                    JSON.stringify(vaultContent),
-                );
                 offlineMode = false;
+                if (!Array.isArray(vaultContent)) {
+                    // Save to localStorage for offline use
+                    localStorage.setItem(
+                        "offline_vault",
+                        JSON.stringify(vaultContent),
+                    );
+                }
+                console.log(
+                    `Vault loaded from server in ${Date.now() - start}ms`,
+                );
             }
-            console.log(`Vault loaded from server in ${Date.now() - start}ms`);
         } catch (e) {
             console.error("Failed to load vault from server", e);
             // Try offline
@@ -49,39 +57,48 @@
                 offlineMode = true; // Flag as offline/potentially out of date
             } else {
                 alert("Failed to decrypt vault and no offline copy found.");
+                isLoading = false;
                 return;
             }
         }
 
-        if (!vaultContent) {
-            items = [];
-        } else {
-            try {
-                // New format: { date: string, data: { iv, cipher } }
-                const parsed = vaultContent;
+        try {
+            if (!vaultContent) {
+                items = [];
+            } else if (Array.isArray(vaultContent)) {
+                items = vaultContent;
+                isDirty = true;
+            } else {
+                try {
+                    // New format: { date: string, data: { iv, cipher } }
+                    const parsed = vaultContent;
 
-                let encryptedData;
-                if (parsed.date && parsed.data) {
-                    lastSavedDate = parsed.date;
-                    encryptedData = parsed.data;
-                } else {
-                    encryptedData = parsed;
+                    let encryptedData;
+                    if (parsed.date && parsed.data) {
+                        lastSavedDate = parsed.date;
+                        encryptedData = parsed.data;
+                    } else {
+                        encryptedData = parsed;
+                    }
+
+                    const jsonStr = await decrypt(
+                        encryptedData.cipher,
+                        encryptedData.iv,
+                        encryptionKey,
+                    );
+                    items = JSON.parse(jsonStr);
+                    isDirty = false;
+                } catch (e) {
+                    alert("Failed to decrypt vault.");
                 }
-
-                const jsonStr = await decrypt(
-                    encryptedData.cipher,
-                    encryptedData.iv,
-                    encryptionKey,
-                );
-                items = JSON.parse(jsonStr);
-                isDirty = false;
-            } catch (e) {
-                alert("Failed to decrypt vault.");
             }
+        } finally {
+            isLoading = false;
         }
     }
 
     async function saveVault() {
+        if (isLoading) return; // Don't save during load
         // Encrypt all items
         const jsonStr = JSON.stringify(items);
         const encrypted = await encrypt(jsonStr, encryptionKey);
@@ -123,6 +140,28 @@
             alert("Failed to delete item.");
         }
     }
+
+    async function synchronizeVault() {
+        if (isDirty) {
+            if (!confirm("You have unsaved changes. Synchronizing will discard them. Continue?")) {
+                return;
+            }
+        }
+        
+        isSyncing = true;
+        try {
+            await loadVault();
+            alert("Vault synchronized successfully!");
+        } catch (e) {
+            alert("Failed to synchronize vault. Please try again.");
+            console.error("Sync error:", e);
+        } finally {
+            isSyncing = false;
+        }
+    }
+
+    // Export synchronizeVault for parent component
+    export { synchronizeVault };
 
     // Derived filtered items
     $effect(() => {
@@ -231,9 +270,9 @@
             {#each filteredFiles as item}
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <div class="list-item" onclick={() => selectItem(item)}>
-                    <strong>{item.title}</strong>
-                    {#if item.username}<small>{item.username}</small>{/if}
+                <div class="list-item">
+                    <a href={item.url || "#"}>{item.title}</a>
+                    <span onclick={() => selectItem(item)}>SEE</span>
                 </div>
             {/each}
         </div>

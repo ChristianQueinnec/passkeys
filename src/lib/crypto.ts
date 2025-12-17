@@ -31,7 +31,12 @@ export const importKey = async (rawKey: string): Promise<CryptoKey> => {
 
 export const exportKey = async (key: CryptoKey): Promise<string> => {
     const exported = await cryptoInstance!.subtle.exportKey("raw", key);
-    return btoa(String.fromCharCode(...new Uint8Array(exported)));
+    const uint8Array = new Uint8Array(exported);
+    let binary = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+    }
+    return btoa(binary);
 };
 
 export const encrypt = async (data: string, key: CryptoKey): Promise<{ iv: string, cipher: string }> => {
@@ -47,9 +52,22 @@ export const encrypt = async (data: string, key: CryptoKey): Promise<{ iv: strin
         encodedData
     );
 
+    // Convert IV to base64 without spread operator
+    let ivBinary = '';
+    for (let i = 0; i < iv.length; i++) {
+        ivBinary += String.fromCharCode(iv[i]);
+    }
+
+    // Convert ciphertext to base64 without spread operator
+    const cipherArray = new Uint8Array(ciphertext);
+    let cipherBinary = '';
+    for (let i = 0; i < cipherArray.length; i++) {
+        cipherBinary += String.fromCharCode(cipherArray[i]);
+    }
+
     return {
-        iv: btoa(String.fromCharCode(...iv)),
-        cipher: btoa(String.fromCharCode(...new Uint8Array(ciphertext)))
+        iv: btoa(ivBinary),
+        cipher: btoa(cipherBinary)
     };
 };
 

@@ -17,6 +17,7 @@
     let phase = $state(0);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
+    let dashboardRef = $state<any>(null);
 
     // Change Password State
     let cpOldPassword = $state("");
@@ -73,6 +74,13 @@
         cpSuccess = "";
     }
 
+    function handleSynchronize() {
+        showUserMenu = false;
+        if (dashboardRef && dashboardRef.synchronizeVault) {
+            dashboardRef.synchronizeVault();
+        }
+    }
+
     async function handleChangePassword() {
         try {
             cpError = "";
@@ -98,6 +106,11 @@
                     </button>
                     {#if showUserMenu}
                         <div class="dropdown-menu">
+                            {#if phase === 2}
+                                <button onclick={handleSynchronize}
+                                    >Synchronize</button
+                                >
+                            {/if}
                             <button onclick={openChangePassword}
                                 >Change Password</button
                             >
@@ -115,7 +128,7 @@
         {:else if phase === 1}
             <Unlock onUnlock={handleUnlock} />
         {:else if phase === 2 && encryptionKey}
-            <Dashboard {encryptionKey} {username} />
+            <Dashboard bind:this={dashboardRef} {encryptionKey} {username} />
         {/if}
     </main>
 </div>
