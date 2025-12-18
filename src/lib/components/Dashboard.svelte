@@ -272,7 +272,7 @@
         </div>
         <div class="list">
             {#each filteredFiles as item}
-                <div class="list-item">
+                <div class="list-item" data-testid="vault-item">
                     <a href={item.site} target="_blank" class="item-title"
                         >{item.title}</a
                     >
@@ -281,6 +281,7 @@
                             class="icon-btn"
                             onclick={() => copyToClipboard(item.username)}
                             title="Copy Username"
+                            aria-label="Copy Username"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -301,6 +302,7 @@
                             class="icon-btn"
                             onclick={() => copyToClipboard(item.password)}
                             title="Copy Password"
+                            aria-label="Copy Password"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -321,6 +323,7 @@
                             class="icon-btn"
                             onclick={() => selectItem(item)}
                             title="View Details"
+                            aria-label="View Details"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

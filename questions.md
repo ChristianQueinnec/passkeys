@@ -68,3 +68,6 @@ OK Antigravity
 
 Fix the `npm run test:e2e` 
 OK Antigravity
+
+For all input[type=password] provide a show password option as an 
+eye (open or not) in the right part of the input field. 

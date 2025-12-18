@@ -6,7 +6,9 @@ The first line of the CSV file contains
 "Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"
 ```
 
-Each line will be converted into a JSON object such as 
+Take care that some `Notes` values are multi-line.
+
+Each CSV record will be converted into a JSON object such as 
 ```
 { "group", "",
   "title": "", 
@@ -22,12 +24,13 @@ Each line will be converted into a JSON object such as
 The `URL` field will be stored in the `site` property.
 The `tags` property is to be filled with the value of the `Group` 
 field as follows:
-- ignore lines containing `keepass/Archive/` 
+- ignore lines containing `keepass/Archive` 
 - suppress the `keepass` prefix
-- use slashes to split the value
+- use slashes to split the resulting value
 - use the remaining words as individual tags.
 
 Test files should be written using the Jasmine framework.
+Check that tests run well.
 
 
  

@@ -49,8 +49,8 @@ test.describe('Authentication', () => {
         await page.getByRole('button', { name: 'Change Password' }).click();
 
         // Fill form
-        await page.locator('input[type="password"]').nth(0).fill('q'); // Old
-        await page.locator('input[type="password"]').nth(1).fill('newpass'); // New
+        await page.getByLabel('Current Password:').fill('q'); // Old
+        await page.getByLabel('New Password:').fill('newpass'); // New
         await page.getByRole('button', { name: 'Update Password' }).click();
 
         await expect(page.getByText('Password updated successfully')).toBeVisible();

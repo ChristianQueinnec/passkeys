@@ -1,13 +1,23 @@
 <script lang="ts">
     let { item, onSave, onCancel } = $props();
 
-    // Initialize state from props (item is expected to be stable per mount)
-    let title = $state(item?.title || "");
-    let username = $state(item?.username || "");
-    let password = $state(item?.password || "");
-    let site = $state(item?.site || "");
-    let tags = $state(item?.tags?.join(", ") || "");
-    let notes = $state(item?.notes || "");
+    // Local state for the editor
+    let title = $state("");
+    let username = $state("");
+    let password = $state("");
+    let site = $state("");
+    let tags = $state("");
+    let notes = $state("");
+
+    // Initialize/Sync state from props
+    $effect(() => {
+        title = item?.title || "";
+        username = item?.username || "";
+        password = item?.password || "";
+        site = item?.site || "";
+        tags = item?.tags?.join(", ") || "";
+        notes = item?.notes || "";
+    });
 
     function handleSubmit() {
         onSave({

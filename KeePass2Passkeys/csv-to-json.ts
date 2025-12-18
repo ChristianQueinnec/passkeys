@@ -113,24 +113,85 @@ export function convertRow(fields: string[]): PasswordEntry | null {
 }
 
 /**
- * Convert CSV file to JSON array
+ * Parse CSV content into rows, handling multi-line fields
  */
-export function convertCSVToJSON(csvContent: string): PasswordEntry[] {
-  const lines = csvContent.split('\n');
-  const entries: PasswordEntry[] = [];
+export function parseCSVContent(csvContent: string): string[][] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentField = '';
+  let inQuotes = false;
+  let i = 0;
 
-  // Skip header (first line)
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
+  while (i < csvContent.length) {
+    const char = csvContent[i];
 
-    // Skip empty lines
-    if (line === '') {
+    if (char === '"') {
+      if (inQuotes && csvContent[i + 1] === '"') {
+        // Escaped quote
+        currentField += '"';
+        i += 2;
+        continue;
+      } else {
+        // Toggle quote state
+        inQuotes = !inQuotes;
+        i++;
+        continue;
+      }
+    }
+
+    if (char === ',' && !inQuotes) {
+      // End of field
+      currentRow.push(currentField);
+      currentField = '';
+      i++;
       continue;
     }
 
-    const fields = parseCSVLine(line);
-    const entry = convertRow(fields);
+    if ((char === '\n' || char === '\r') && !inQuotes) {
+      // End of row
+      if (currentField !== '' || currentRow.length > 0) {
+        currentRow.push(currentField);
+        if (currentRow.some(field => field.trim() !== '')) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+      }
+      // Skip \r\n sequence
+      if (char === '\r' && csvContent[i + 1] === '\n') {
+        i += 2;
+      } else {
+        i++;
+      }
+      continue;
+    }
 
+    // Regular character (including newlines inside quotes)
+    currentField += char;
+    i++;
+  }
+
+  // Add last field and row if not empty
+  if (currentField !== '' || currentRow.length > 0) {
+    currentRow.push(currentField);
+    if (currentRow.some(field => field.trim() !== '')) {
+      rows.push(currentRow);
+    }
+  }
+
+  return rows;
+}
+
+/**
+ * Convert CSV file to JSON array
+ */
+export function convertCSVToJSON(csvContent: string): PasswordEntry[] {
+  const rows = parseCSVContent(csvContent);
+  const entries: PasswordEntry[] = [];
+
+  // Skip header (first row)
+  for (let i = 1; i < rows.length; i++) {
+    const entry = convertRow(rows[i]);
     if (entry !== null) {
       entries.push(entry);
     }

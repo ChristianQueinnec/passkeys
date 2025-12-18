@@ -90,7 +90,7 @@
             cpSuccess = "Password updated successfully";
             setTimeout(() => {
                 showChangePasswordModal = false;
-            }, 1500);
+            }, 3000);
         } catch (e: any) {
             cpError = e.message;
         }

@@ -15,7 +15,7 @@ test.describe('History Operations', () => {
     test('should manage history', async ({ page }) => {
         // Create an item to ensure we have something to save
         await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title').fill('History Test Item');
+        await page.getByLabel('Title *').fill('History Test Item');
         // Scope to editor
         await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
 
@@ -25,9 +25,9 @@ test.describe('History Operations', () => {
         await expect(page.getByRole('button', { name: 'Save Vault' })).not.toBeVisible();
 
         // Make another change and save
-        await page.getByText('History Test Item').click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'History Test Item' }).getByRole('button', { name: 'View Details' }).first().click();
         await page.getByRole('button', { name: 'Edit' }).click();
-        await page.getByLabel('Title').fill('History Test Item 2');
+        await page.getByLabel('Title *').fill('History Test Item 2');
         // Scope to editor
         await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
 
@@ -47,7 +47,9 @@ test.describe('History Operations', () => {
 
         await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
         await page.getByPlaceholder('Vault Password').fill('q');
-        await page.getByRole('button', { name: 'Unlock' }).click();
+        const unlockBtn = page.getByRole('button', { name: 'Unlock' });
+        await expect(unlockBtn).toBeEnabled();
+        await unlockBtn.click();
 
         // now check history
         await page.getByRole('button', { name: 'History' }).click();
@@ -62,7 +64,7 @@ test.describe('History Operations', () => {
         const initialCount = await rows.count();
         if (initialCount > 0) {
             page.on('dialog', dialog => dialog.accept());
-            await rows.first().locator('button', { name: 'Delete' }).click();
+            await rows.first().getByRole('button', { name: 'Delete' }).click();
             // Wait for list to update - might need reload or just wait for DOM change
             // The modal stays open, list updates
             // await expect(rows).toHaveCount(initialCount - 1); // Flaky if network slow?
@@ -71,7 +73,7 @@ test.describe('History Operations', () => {
         // Cleanup
         await page.getByRole('button', { name: '×' }).click();
         // Delete the item created
-        await page.getByText('History Test Item 2').click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'History Test Item 2' }).getByRole('button', { name: 'View Details' }).first().click();
         page.on('dialog', dialog => dialog.accept());
         await page.getByRole('button', { name: 'Delete' }).click();
         await page.getByRole('button', { name: 'Save Vault' }).click();

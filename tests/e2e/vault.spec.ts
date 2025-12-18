@@ -23,10 +23,10 @@ test.describe('Vault Operations', () => {
         await page.getByRole('button', { name: '+ New Entry' }).click();
         await expect(page.getByRole('heading', { name: 'New Item' })).toBeVisible();
 
-        await page.getByLabel('Title').fill('Test Site');
-        await page.getByLabel('Username').fill('testuser');
-        await page.getByLabel('Password').fill('secret123');
-        await page.getByLabel('Site URL').fill('https://example.com');
+        await page.getByLabel('Title *').fill('Test Site');
+        await page.getByLabel('Username', { exact: true }).fill('testuser');
+        await page.getByLabel('Password', { exact: true }).fill('secret123');
+        await page.getByLabel('Site URL', { exact: true }).fill('https://example.com');
 
         // Scope to editor to avoid ambiguity with "Save Vault"
         await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
@@ -35,9 +35,9 @@ test.describe('Vault Operations', () => {
         await expect(page.getByText('Test Site')).toBeVisible();
 
         // Edit
-        await page.getByText('Test Site').click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Test Site' }).getByRole('button', { name: 'View Details' }).click();
         await page.getByRole('button', { name: 'Edit' }).click();
-        await page.getByLabel('Title').fill('Updated Site');
+        await page.getByLabel('Title *').fill('Updated Site');
         await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
 
         // Verify update
@@ -45,7 +45,7 @@ test.describe('Vault Operations', () => {
         await expect(page.getByText('Test Site')).not.toBeVisible();
 
         // Delete
-        await page.getByText('Updated Site').click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Updated Site' }).getByRole('button', { name: 'View Details' }).click();
         page.on('dialog', dialog => dialog.accept());
         await page.getByRole('button', { name: 'Delete' }).click();
 
