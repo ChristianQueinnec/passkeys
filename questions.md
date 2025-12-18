@@ -59,7 +59,8 @@ CLAUDE...
 Fix the `npm run test:unit` 
 OK Antigravity
 
-For every entry in the dashboard, add a `copy username` and a 
-`copy password` buttons using small icons rather than text. 
-Also use a small icon for the View button.
-
+For every entry in the dashboard, 
+- use a more compact disposition, 
+- add a `copy username` and a `copy password` buttons using small icons rather than text. 
+- Also use a small icon for the View button.
+Antigravity
