@@ -69,10 +69,15 @@ OK Antigravity
 Fix the `npm run test:e2e` 
 OK Antigravity
 
+Add a test to check that, in Dashboard, entries are liste in
+alphabetical order of titles.
+
 For all input[type=password] provide a show password option as an 
 eye (open or not) in the right part of the input field to control
 whether the passord is visible.
-OK Antigravity
+
+In the `Filter` input, add a button (at the right of the input field)
+to reset the filter.
 
 
 

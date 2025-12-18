@@ -8,7 +8,7 @@ export default defineConfig({
         },
     */
     use: {
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:3000',
     },
     testDir: 'tests/e2e'
 });

@@ -95,9 +95,7 @@
                 }
             }
         } finally {
-            items = unsortedItems.sort((a: PasswordEntry, b: PasswordEntry) =>
-                (a.site || "").localeCompare(b.site || ""),
-            );
+            items = sortPasswordEntries(unsortedItems);
             isLoading = false;
         }
     }
@@ -172,23 +170,34 @@
     // Export synchronizeVault for parent component
     export { synchronizeVault };
 
+    function sortPasswordEntries(entries: PasswordEntry[]) {
+        return entries.sort((a, b) =>
+            new Intl.Collator("fr", { sensitivity: "base" }).compare(
+                a.title || "",
+                b.title || "",
+            ),
+        );
+    }
+
     // Derived filtered items
     $effect(() => {
         if (!filter) {
-            filteredFiles = items;
+            filteredFiles = sortPasswordEntries([...items]);
         } else {
             const lowerFilter = filter.toLowerCase();
-            filteredFiles = items.filter((item) => {
-                return (
-                    item.title?.toLowerCase().includes(lowerFilter) ||
-                    item.username?.toLowerCase().includes(lowerFilter) ||
-                    item.site?.toLowerCase().includes(lowerFilter) ||
-                    item.notes?.toLowerCase().includes(lowerFilter) ||
-                    item.tags?.some((t: string) =>
-                        t.toLowerCase().includes(lowerFilter),
-                    )
-                );
-            });
+            filteredFiles = sortPasswordEntries(
+                items.filter((item) => {
+                    return (
+                        item.title?.toLowerCase().includes(lowerFilter) ||
+                        item.username?.toLowerCase().includes(lowerFilter) ||
+                        item.site?.toLowerCase().includes(lowerFilter) ||
+                        item.notes?.toLowerCase().includes(lowerFilter) ||
+                        item.tags?.some((t: string) =>
+                            t.toLowerCase().includes(lowerFilter),
+                        )
+                    );
+                }),
+            );
         }
     });
 
