@@ -273,7 +273,9 @@
         <div class="list">
             {#each filteredFiles as item}
                 <div class="list-item">
-                    <span class="item-title">{item.title}</span>
+                    <a href={item.site} target="_blank" class="item-title"
+                        >{item.title}</a
+                    >
                     <div class="item-actions">
                         <button
                             class="icon-btn"
@@ -479,12 +481,16 @@
     .item-title {
         font-weight: 500;
         font-size: 0.95rem;
-        color: #333;
+        color: #007bff;
+        text-decoration: none;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         flex: 1;
         margin-right: 0.5rem;
+    }
+    .item-title:hover {
+        text-decoration: underline;
     }
     .item-actions {
         display: flex;

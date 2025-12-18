@@ -61,6 +61,10 @@ OK Antigravity
 
 For every entry in the dashboard, 
 - use a more compact disposition, 
+- the title is a link to the site URL 
 - add a `copy username` and a `copy password` buttons using small icons rather than text. 
 - Also use a small icon for the View button.
-Antigravity
+OK Antigravity
+
+Fix the `npm run test:e2e` 
+OK Antigravity
