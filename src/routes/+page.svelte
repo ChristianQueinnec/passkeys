@@ -4,7 +4,7 @@
     import Dashboard from "$lib/components/Dashboard.svelte";
     import { pbkdf2 } from "$lib/crypto";
     import { api } from "$lib/api";
-    import { onMount } from "svelte";
+    import { onMount, tick } from "svelte";
     import Modal from "$lib/components/Modal.svelte";
 
     // Application State
@@ -15,9 +15,9 @@
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
+    let dashboardRef = $state<any>(null);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
-    let dashboardRef = $state<any>(null);
 
     // Change Password State
     let cpOldPassword = $state("");
@@ -35,10 +35,11 @@
         }
     });
 
-    function handleLogin(u: string, p: string) {
-        username = u;
-        password = p;
+    async function handleLogin(newUsername: string, newPassword?: string) {
+        username = newUsername;
+        if (newPassword) password = newPassword;
         phase = 1; // Move to Unlock
+        await tick();
     }
 
     async function handleUnlock(masterPassword: string) {
@@ -48,6 +49,7 @@
             const fixedSalt = new TextEncoder().encode("mvp_salt_fixed");
             encryptionKey = await pbkdf2(masterPassword, fixedSalt);
             phase = 2; // Move to Dashboard
+            await tick();
         } catch (e) {
             alert("Failed to derive key");
             console.error(e);
@@ -97,14 +99,15 @@
     }
 </script>
 
-<div class="app-container">
+<div class="app-container" data-phase={phase}>
     <div class="header">
         <h1>Passkeys</h1>
         {#if phase > 0}
             <div class="user-info">
                 <div class="user-menu-container">
                     <button class="user-btn" onclick={toggleMenu}>
-                        {username} <span class="arrow">▼</span>
+                        <span class="user-name">{username}</span>
+                        <span class="arrow">▼</span>
                     </button>
                     {#if showUserMenu}
                         <div class="dropdown-menu">

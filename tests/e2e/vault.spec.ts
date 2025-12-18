@@ -4,17 +4,23 @@ test.describe('Vault Operations', () => {
     test.beforeEach(async ({ page }) => {
         // Login and unlock
         await page.goto('/');
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '0');
+        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
+        await page.waitForTimeout(500);
         await page.getByRole('button', { name: 'Login' }).click();
 
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
         await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
         await page.getByPlaceholder('Vault Password').fill('q'); // Assuming master password matches for MVP demo
-        // Wait for unlock button to be enabled (loading state)
-        // Note: Unlock might be fast, but robustness is good
-        await page.getByRole('button', { name: 'Unlock' }).click();
+        await page.getByTestId('unlock-button').click();
 
         // Wait for Dashboard
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
         await expect(page.locator('.dashboard')).toBeVisible();
     });
 

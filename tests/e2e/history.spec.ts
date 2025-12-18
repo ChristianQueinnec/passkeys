@@ -4,11 +4,20 @@ test.describe('History Operations', () => {
     test.beforeEach(async ({ page }) => {
         // Login and unlock
         await page.goto('/');
+        await page.evaluate(() => localStorage.clear());
+        await page.reload();
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '0');
+        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+
         await page.getByPlaceholder('Username').fill('history_test');
         await page.getByPlaceholder('Password').fill('q');
+        await page.waitForTimeout(500);
         await page.getByRole('button', { name: 'Login' }).click();
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
+        await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
         await page.getByPlaceholder('Vault Password').fill('q');
-        await page.getByRole('button', { name: 'Unlock' }).click();
+        await page.getByTestId('unlock-button').click();
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
         await expect(page.locator('.dashboard')).toBeVisible();
     });
 
@@ -36,7 +45,7 @@ test.describe('History Operations', () => {
 
         // Reload to verify persistence and ensure fresh state
         await page.reload();
-        await page.getByRole('button', { name: 'Unlock' }).click(); // Need to unlock after reload if session persists but memory wiped?
+        // Need to unlock after reload if session persists but memory wiped?
         // Actually, if we reload, token persists but key is in memory. We need to unlock.
         // Wait, does reload keep session? Yes (cookie/token).
         // But dashboard needs unlocking?
@@ -47,12 +56,14 @@ test.describe('History Operations', () => {
 
         await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
         await page.getByPlaceholder('Vault Password').fill('q');
-        const unlockBtn = page.getByRole('button', { name: 'Unlock' });
+        const unlockBtn = page.getByTestId('unlock-button');
+        await expect(unlockBtn).toBeVisible({ timeout: 10000 });
         await expect(unlockBtn).toBeEnabled();
         await unlockBtn.click();
+        await expect(page.locator('.dashboard')).toBeVisible();
 
         // now check history
-        await page.getByRole('button', { name: 'History' }).click();
+        await page.getByRole('button', { name: 'History', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Vault History' })).toBeVisible();
 
         // Should have at least 2 entries (or more if other tests ran)
@@ -63,7 +74,7 @@ test.describe('History Operations', () => {
         // Delete one
         const initialCount = await rows.count();
         if (initialCount > 0) {
-            page.on('dialog', dialog => dialog.accept());
+            page.once('dialog', dialog => dialog.accept());
             await rows.first().getByRole('button', { name: 'Delete' }).click();
             // Wait for list to update - might need reload or just wait for DOM change
             // The modal stays open, list updates
@@ -74,7 +85,7 @@ test.describe('History Operations', () => {
         await page.getByRole('button', { name: '×' }).click();
         // Delete the item created
         await page.locator('[data-testid="vault-item"]').filter({ hasText: 'History Test Item 2' }).getByRole('button', { name: 'View Details' }).first().click();
-        page.on('dialog', dialog => dialog.accept());
+        page.once('dialog', dialog => dialog.accept());
         await page.getByRole('button', { name: 'Delete' }).click();
         await page.getByRole('button', { name: 'Save Vault' }).click();
     });

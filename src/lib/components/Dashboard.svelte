@@ -140,7 +140,7 @@
         if (!confirm(`Delete version ${filename}?`)) return;
         try {
             await api.deleteVault(filename);
-            historyFiles = historyFiles.filter((f) => f.name !== filename);
+            historyFiles = await api.getVaultHistory(); // Refresh from server
         } catch (e) {
             alert("Failed to delete item.");
         }
@@ -480,7 +480,7 @@
         overflow-y: auto;
     }
     .list-item {
-        padding: 0.6rem 1rem;
+        padding: 0rem 0rem;
         border-bottom: 1px solid #eee;
         display: flex;
         justify-content: space-between;

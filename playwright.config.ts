@@ -4,11 +4,11 @@ export default defineConfig({
     /*
         webServer: {
             command: 'npm run build && npm run preview',
-            port: 4173
+            port: 3000
         },
     */
     use: {
-        baseURL: 'http://localhost:3000',
+        baseURL: 'http://localhost:3001',
     },
     testDir: 'tests/e2e'
 });

@@ -38,7 +38,7 @@
                 /> Show
             </label>
         </div>
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} data-testid="unlock-button">
             {loading ? "Deriving Key..." : "Unlock"}
         </button>
     </form>
