@@ -172,17 +172,17 @@
 
     function sortPasswordEntries(entries: PasswordEntry[]) {
         return entries.sort((a, b) =>
-            new Intl.Collator("fr", { sensitivity: "base" }).compare(
-                a.title || "",
-                b.title || "",
-            ),
+            new Intl.Collator("fr", {
+                sensitivity: "base",
+                ignorePunctuation: true,
+            }).compare(a.title || "", b.title || ""),
         );
     }
 
     // Derived filtered items
     $effect(() => {
         if (!filter) {
-            filteredFiles = sortPasswordEntries([...items]);
+            filteredFiles = items;
         } else {
             const lowerFilter = filter.toLowerCase();
             filteredFiles = sortPasswordEntries(
@@ -226,16 +226,19 @@
     }
 
     async function handleSave(updatedItem: PasswordEntry) {
+        let newItems;
         if (isCreating) {
-            items = [...items, updatedItem];
+            newItems = [...items, updatedItem];
         } else {
             const index = items.findIndex((i) => i.id === updatedItem.id);
             if (index !== -1) {
-                items[index] = updatedItem;
+                newItems = [...items];
+                newItems[index] = updatedItem;
             } else {
-                items = [...items, updatedItem];
+                newItems = [...items, updatedItem];
             }
         }
+        items = sortPasswordEntries(newItems);
         isCreating = false;
         editingItem = null;
         isDirty = true; // Mark as dirty
