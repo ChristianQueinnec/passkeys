@@ -4,15 +4,16 @@
     import { decrypt, encrypt } from "$lib/crypto";
     import Editor from "$lib/components/Editor.svelte";
     import Modal from "$lib/components/Modal.svelte";
+    import type { PasswordEntry, HistoryItem } from "$lib/types";
 
     let { encryptionKey, username } = $props();
 
-    let items = $state<any[]>([]);
-    let filteredFiles = $state<any[]>([]);
+    let items = $state<PasswordEntry[]>([]);
+    let filteredFiles = $state<PasswordEntry[]>([]);
     let filter = $state("");
 
-    let selectedItem = $state<any>(null); // For details view
-    let editingItem = $state<any>(null); // For editor
+    let selectedItem = $state<PasswordEntry | null>(null); // For details view
+    let editingItem = $state<PasswordEntry | null>(null); // For editor
     let isCreating = $state(false);
 
     let isDirty = $state(false); // New dirty state
@@ -24,13 +25,14 @@
 
     // History state
     let showHistoryModal = $state(false);
-    let historyFiles = $state<any[]>([]);
+    let historyFiles = $state<HistoryItem[]>([]);
 
     // Load vault on mount
     onMount(loadVault);
 
     async function loadVault() {
         isLoading = true; // Disable saves during load
+        let unsortedItems: PasswordEntry[] = [];
         let vaultContent = null;
         try {
             const start = Date.now();
@@ -64,9 +66,9 @@
 
         try {
             if (!vaultContent) {
-                items = [];
+                unsortedItems = [];
             } else if (Array.isArray(vaultContent)) {
-                items = vaultContent;
+                unsortedItems = vaultContent;
                 isDirty = true;
             } else {
                 try {
@@ -86,13 +88,16 @@
                         encryptedData.iv,
                         encryptionKey,
                     );
-                    items = JSON.parse(jsonStr);
+                    unsortedItems = JSON.parse(jsonStr);
                     isDirty = false;
                 } catch (e) {
                     alert("Failed to decrypt vault.");
                 }
             }
         } finally {
+            items = unsortedItems.sort((a: PasswordEntry, b: PasswordEntry) =>
+                (a.site || "").localeCompare(b.site || ""),
+            );
             isLoading = false;
         }
     }
@@ -187,7 +192,7 @@
         }
     });
 
-    function selectItem(item: any) {
+    function selectItem(item: PasswordEntry) {
         selectedItem = item;
     }
 
@@ -205,13 +210,13 @@
         isCreating = true;
     }
 
-    function startEdit(item: any) {
+    function startEdit(item: PasswordEntry) {
         editingItem = JSON.parse(JSON.stringify(item)); // Deep copy
         isCreating = false;
         selectedItem = null; // Close detail modal
     }
 
-    async function handleSave(updatedItem: any) {
+    async function handleSave(updatedItem: PasswordEntry) {
         if (isCreating) {
             items = [...items, updatedItem];
         } else {
@@ -227,7 +232,7 @@
         isDirty = true; // Mark as dirty
     }
 
-    async function handleDelete(item: any) {
+    async function handleDelete(item: PasswordEntry) {
         if (confirm("Delete " + item.title + "?")) {
             items = items.filter((i) => i.id !== item.id);
             selectedItem = null;
@@ -367,8 +372,9 @@
                     <span>{selectedItem.username}</span>
                     <button
                         class="small"
-                        onclick={() => copyToClipboard(selectedItem.username)}
-                        >Copy</button
+                        onclick={() =>
+                            selectedItem &&
+                            copyToClipboard(selectedItem.username)}>Copy</button
                     >
                 </div>
             </div>
@@ -378,8 +384,9 @@
                     <span>********</span>
                     <button
                         class="small"
-                        onclick={() => copyToClipboard(selectedItem.password)}
-                        >Copy</button
+                        onclick={() =>
+                            selectedItem &&
+                            copyToClipboard(selectedItem.password)}>Copy</button
                     >
                 </div>
             </div>
@@ -393,9 +400,11 @@
             </div>
 
             <div class="actions">
-                <button onclick={() => startEdit(selectedItem)}>Edit</button>
+                <button onclick={() => selectedItem && startEdit(selectedItem)}
+                    >Edit</button
+                >
                 <button
-                    onclick={() => handleDelete(selectedItem)}
+                    onclick={() => selectedItem && handleDelete(selectedItem)}
                     class="danger">Delete</button
                 >
             </div>

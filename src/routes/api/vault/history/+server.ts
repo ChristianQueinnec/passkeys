@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { getUser } from '$lib/server/users';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
@@ -17,7 +17,7 @@ function getAuthUser(request: Request) {
     return null;
 }
 
-export async function GET({ request }) {
+export const GET: RequestHandler = async ({ request }) => {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -29,14 +29,14 @@ export async function GET({ request }) {
     }
 }
 
-export async function DELETE({ request, url }) {
+export const DELETE: RequestHandler = async ({ request, url }) => {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 
     // Validate CSRF token
     const csrfToken = request.headers.get('X-CSRF-Token');
     const sessionId = getSessionIdFromRequest(request);
-    
+
     if (!sessionId || !csrfToken || !validateCSRFToken(sessionId, csrfToken)) {
         return json({ error: 'Invalid CSRF token' }, { status: 403 });
     }

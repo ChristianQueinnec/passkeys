@@ -19,7 +19,7 @@ export const getUserDir = (username: string) => {
 export const listVaults = (username: string) => {
     const userDir = getUserDir(username);
     return fs.readdirSync(userDir)
-        .filter(f => f.endsWith('.vault')) // Filter for vault files
+        .filter((f: string) => f.endsWith('.vault')) // Filter for vault files
         .map(file => {
             const stats = fs.statSync(path.join(userDir, file));
             return {

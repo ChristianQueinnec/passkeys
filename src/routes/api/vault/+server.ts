@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { getLatestVault, saveVault } from '$lib/server/storage';
 import { getUser } from '$lib/server/users';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
@@ -27,7 +27,7 @@ function getAuthUser(request: Request) {
     return null;
 }
 
-export async function GET({ request }) {
+export const GET: RequestHandler = async ({ request }) => {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -40,7 +40,7 @@ export async function GET({ request }) {
     }
 }
 
-export async function POST({ request }) {
+export const POST: RequestHandler = async ({ request }) => {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
 
