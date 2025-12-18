@@ -68,7 +68,12 @@
             if (!vaultContent) {
                 unsortedItems = [];
             } else if (Array.isArray(vaultContent)) {
-                unsortedItems = vaultContent;
+                unsortedItems = (vaultContent as PasswordEntry[]).map(
+                    (item) => ({
+                        ...item,
+                        id: item.id || crypto.randomUUID(),
+                    }),
+                );
                 isDirty = true;
             } else {
                 try {
@@ -285,14 +290,35 @@
                     >Last saved: {new Date(lastSavedDate).toISOString()}</small
                 >
             {/if}
-            <input type="text" placeholder="Filter..." bind:value={filter} />
+            <div class="filter-container">
+                <input
+                    type="text"
+                    placeholder="Filter..."
+                    bind:value={filter}
+                    data-testid="filter-input"
+                />
+                {#if filter}
+                    <button
+                        class="reset-filter"
+                        onclick={() => (filter = "")}
+                        title="Reset filter"
+                        aria-label="Reset filter"
+                    >
+                        ×
+                    </button>
+                {/if}
+            </div>
         </div>
         <div class="list">
             {#each filteredFiles as item}
                 <div class="list-item" data-testid="vault-item">
-                    <a href={item.site} target="_blank" class="item-title"
-                        >{item.title}</a
-                    >
+                    <span class="item-title">
+                        {#if item.site}
+                            <a href={item.site} target="_blank">{item.title}</a>
+                        {:else}
+                            {item.title}
+                        {/if}
+                    </span>
                     <div class="item-actions">
                         <button
                             class="icon-btn"
@@ -468,7 +494,7 @@
         {/if}
     </div>
 </Modal>
-```
+``` ```
 
 <style>
     .dashboard {
@@ -505,7 +531,6 @@
     .item-title {
         font-weight: 500;
         font-size: 0.95rem;
-        color: #007bff;
         text-decoration: none;
         white-space: nowrap;
         overflow: hidden;
@@ -513,8 +538,12 @@
         flex: 1;
         margin-right: 0.5rem;
     }
-    .item-title:hover {
+    .item-title a {
         text-decoration: underline;
+        color: #007bff;
+    }
+    .item-title:hover {
+        background-color: #f0f7ff;
     }
     .item-actions {
         display: flex;
@@ -569,6 +598,33 @@
     input {
         width: 100%;
         padding: 0.5rem;
+    }
+    .filter-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .filter-container input {
+        padding-right: 2rem;
+    }
+    .reset-filter {
+        position: absolute;
+        right: 0.25rem;
+        top: 0.25rem;
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        line-height: 1;
+        box-shadow: none;
+        transition: color 0.2s;
+    }
+    .reset-filter:hover {
+        color: #007bff;
+        background: none;
+        box-shadow: none;
     }
     .warning {
         background: #fff3cd;
