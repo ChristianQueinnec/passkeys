@@ -44,8 +44,19 @@ Bug in saveVault: fixed by CLAUDE1.md
 
 Add, in the user menu, a `synchronize` menu item to fetch the most
 recent vault in order to replace the current local vault.
-OK
+OK CLAUDE
 
 unify button styles: adopt round corners and appropriate color.
+OK CLAUDE
 
 Add CSRF to forms
+
+Add new tests to check the CSRF feature, add also missing tests 
+related to the vault synchronization.
+
+Fix the `npm run test:unit` 
+
+For every entry in the dashboard, add a `copy username` and a 
+`copy password` buttons using small icons rather than text. 
+Also use a small icon for the View button.
+

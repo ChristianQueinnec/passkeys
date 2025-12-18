@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { getUser } from '$lib/server/users';
+import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 
 function getAuthUser(request: Request) {
     const authHeader = request.headers.get('Authorization');
@@ -31,6 +32,14 @@ export async function GET({ request }) {
 export async function DELETE({ request, url }) {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Validate CSRF token
+    const csrfToken = request.headers.get('X-CSRF-Token');
+    const sessionId = getSessionIdFromRequest(request);
+    
+    if (!sessionId || !csrfToken || !validateCSRFToken(sessionId, csrfToken)) {
+        return json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
 
     const filename = url.searchParams.get('filename');
     if (!filename) return json({ error: 'Filename required' }, { status: 400 });

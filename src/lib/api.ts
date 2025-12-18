@@ -5,6 +5,24 @@ import { browser } from '$app/environment';
 export const api = {
     token: browser ? localStorage.getItem('token') : null,
     username: browser ? localStorage.getItem('username') : null,
+    csrfToken: null as string | null,
+
+    async getCSRFToken() {
+        if (!this.token) return null;
+        try {
+            const res = await fetch('/api/csrf', {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                this.csrfToken = data.csrfToken;
+                return this.csrfToken;
+            }
+        } catch (e) {
+            console.error('Failed to get CSRF token:', e);
+        }
+        return null;
+    },
 
     async login(username: string, password: string) {
         const res = await fetch('/api/login', {
@@ -20,12 +38,15 @@ export const api = {
             if (this.token) localStorage.setItem('token', this.token);
             if (this.username) localStorage.setItem('username', this.username);
         }
+        // Get CSRF token after login
+        await this.getCSRFToken();
         return data;
     },
 
     logout() {
         this.token = null;
         this.username = null;
+        this.csrfToken = null;
         if (browser) {
             localStorage.removeItem('token');
             localStorage.removeItem('username');
@@ -47,11 +68,18 @@ export const api = {
 
     async saveVault(content: string) {
         if (!this.token) throw new Error('Not authenticated');
+        
+        // Ensure we have a CSRF token
+        if (!this.csrfToken) {
+            await this.getCSRFToken();
+        }
+        
         const res = await fetch('/api/vault', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${this.token}`,
+                'X-CSRF-Token': this.csrfToken || ''
             },
             body: JSON.stringify({ content })
         });
@@ -70,11 +98,18 @@ export const api = {
 
     async changePassword(oldPassword: string, newPassword: string) {
         if (!this.token) throw new Error('Not authenticated');
+        
+        // Ensure we have a CSRF token
+        if (!this.csrfToken) {
+            await this.getCSRFToken();
+        }
+        
         const res = await fetch('/api/user/password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${this.token}`,
+                'X-CSRF-Token': this.csrfToken || ''
             },
             body: JSON.stringify({ oldPassword, newPassword })
         });
@@ -87,9 +122,18 @@ export const api = {
 
     async deleteVault(filename: string) {
         if (!this.token) throw new Error('Not authenticated');
+        
+        // Ensure we have a CSRF token
+        if (!this.csrfToken) {
+            await this.getCSRFToken();
+        }
+        
         const res = await fetch(`/api/vault/history?filename=${encodeURIComponent(filename)}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${this.token}` }
+            headers: { 
+                'Authorization': `Bearer ${this.token}`,
+                'X-CSRF-Token': this.csrfToken || ''
+            }
         });
         if (!res.ok) {
             const err = await res.json();

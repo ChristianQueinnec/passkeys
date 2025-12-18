@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getLatestVault, saveVault } from '$lib/server/storage';
 import { getUser } from '$lib/server/users';
+import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 
 // Middleware-like auth check helper
 function getAuthUser(request: Request) {
@@ -42,6 +43,14 @@ export async function GET({ request }) {
 export async function POST({ request }) {
     const user = getAuthUser(request);
     if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Validate CSRF token
+    const csrfToken = request.headers.get('X-CSRF-Token');
+    const sessionId = getSessionIdFromRequest(request);
+    
+    if (!sessionId || !csrfToken || !validateCSRFToken(sessionId, csrfToken)) {
+        return json({ error: 'Invalid CSRF token' }, { status: 403 });
+    }
 
     const { content } = await request.json();
     if (!content) return json({ error: 'Missing content' }, { status: 400 });

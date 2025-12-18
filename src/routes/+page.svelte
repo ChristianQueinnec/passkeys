@@ -26,9 +26,11 @@
     let cpSuccess = $state("");
 
     // Check for existing token
-    onMount(() => {
+    onMount(async () => {
         if (api.token) {
             username = api.username || "";
+            // Get CSRF token for existing session
+            await api.getCSRFToken();
             phase = 1; // Go to unlock
         }
     });

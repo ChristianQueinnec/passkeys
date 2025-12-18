@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getUser, updateUserPassword } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
+import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 import type { RequestEvent } from './$types';
 
 // Helper to validate auth token similar to vault endpoint
@@ -30,6 +31,14 @@ export async function POST({ request }: RequestEvent) {
     const user = getAuthUser(request);
     if (!user) {
         return json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Validate CSRF token
+    const csrfToken = request.headers.get('X-CSRF-Token');
+    const sessionId = getSessionIdFromRequest(request);
+    
+    if (!sessionId || !csrfToken || !validateCSRFToken(sessionId, csrfToken)) {
+        return json({ error: 'Invalid CSRF token' }, { status: 403 });
     }
 
     const { oldPassword, newPassword } = await request.json();
