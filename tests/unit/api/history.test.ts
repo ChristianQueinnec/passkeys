@@ -10,13 +10,18 @@ vi.mock('$lib/server/storage', () => ({
 vi.mock('$lib/server/users', () => ({
     getUser: vi.fn(),
 }));
+vi.mock('$lib/server/csrf', () => ({
+    validateCSRFToken: () => true,
+    getSessionIdFromRequest: () => 'mock-session',
+}));
 
 const mockAuth = (username: string | null) => {
     if (username) {
         vi.mocked(users.getUser).mockReturnValue({ username, password: 'hash' } as any);
         return {
             headers: new Headers({
-                'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64')
+                'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64'),
+                'X-CSRF-Token': 'mock-token'
             })
         };
     }

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as vaultHandler from '../../../src/routes/api/vault/+server';
 import * as storage from '$lib/server/storage';
 import * as users from '$lib/server/users';
+import * as csrf from '$lib/server/csrf';
 
 vi.mock('$lib/server/storage', () => ({
     getLatestVault: vi.fn(),
@@ -10,6 +11,10 @@ vi.mock('$lib/server/storage', () => ({
 vi.mock('$lib/server/users', () => ({
     getUser: vi.fn(),
 }));
+vi.mock('$lib/server/csrf', () => ({
+    validateCSRFToken: () => true,
+    getSessionIdFromRequest: () => 'mock-session',
+}));
 
 // Helper to mock auth
 const mockAuth = (username: string | null) => {
@@ -17,7 +22,8 @@ const mockAuth = (username: string | null) => {
         vi.mocked(users.getUser).mockReturnValue({ username, password: 'hash' } as any);
         return {
             headers: new Headers({
-                'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64')
+                'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64'),
+                'X-CSRF-Token': 'mock-token'
             })
         };
     }

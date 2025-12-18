@@ -47,14 +47,17 @@ recent vault in order to replace the current local vault.
 OK CLAUDE
 
 unify button styles: adopt round corners and appropriate color.
-OK CLAUDE
+OK CLAUDE BUTTON_STYLES.md
 
 Add CSRF to forms
+OK CLAUDE CSRF_PROTECTION.md
 
 Add new tests to check the CSRF feature, add also missing tests 
 related to the vault synchronization.
+CLAUDE...
 
 Fix the `npm run test:unit` 
+OK Antigravity
 
 For every entry in the dashboard, add a `copy username` and a 
 `copy password` buttons using small icons rather than text. 

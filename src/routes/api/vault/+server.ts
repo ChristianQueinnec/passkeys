@@ -47,7 +47,7 @@ export async function POST({ request }) {
     // Validate CSRF token
     const csrfToken = request.headers.get('X-CSRF-Token');
     const sessionId = getSessionIdFromRequest(request);
-    
+
     if (!sessionId || !csrfToken || !validateCSRFToken(sessionId, csrfToken)) {
         return json({ error: 'Invalid CSRF token' }, { status: 403 });
     }
