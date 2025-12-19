@@ -15,10 +15,22 @@ describe('API Login', () => {
         vi.resetAllMocks();
     });
 
-    it('should return 400 if username or password missing', async () => {
+    it('should return 400 if password missing', async () => {
         const request = new Request('http://localhost', {
             method: 'POST',
             body: JSON.stringify({ username: 'test' }), // Missing password
+        });
+        const response = await loginHandler.POST({ request } as any);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.error).toBe('Username and password required');
+    });
+
+    it('should return 400 if username  missing', async () => {
+        const request = new Request('http://localhost', {
+            method: 'POST',
+            body: JSON.stringify({ password: 'test' }), // Missing username
         });
         const response = await loginHandler.POST({ request } as any);
         const data = await response.json();

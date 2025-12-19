@@ -4,6 +4,11 @@
     import { decrypt, encrypt } from "$lib/crypto";
     import Editor from "$lib/components/Editor.svelte";
     import Modal from "$lib/components/Modal.svelte";
+    import {
+        sortPasswordEntries,
+        filterPasswordEntries,
+        normalizeVaultItems,
+    } from "$lib/vault";
     import type { PasswordEntry, HistoryItem } from "$lib/types";
 
     let { encryptionKey, username } = $props();
@@ -73,38 +78,35 @@
         }
 
         try {
-            if (!vaultContent) {
-                unsortedItems = [];
-            } else if (Array.isArray(vaultContent)) {
-                unsortedItems = (vaultContent as PasswordEntry[]).map(
-                    (item) => ({
-                        ...item,
-                        id: item.id || crypto.randomUUID(),
-                    }),
-                );
-                isDirty = true;
-            } else {
-                try {
-                    // New format: { date: string, data: { iv, cipher } }
-                    const parsed = vaultContent;
+            unsortedItems = [];
+            if (vaultContent) {
+                if (Array.isArray(vaultContent)) {
+                    unsortedItems = normalizeVaultItems(vaultContent);
+                    // Be sure to remind the user to save the vault
+                    isDirty = true;
+                } else {
+                    try {
+                        // New format: { date: string, data: { iv, cipher } }
+                        const parsed = vaultContent;
 
-                    let encryptedData;
-                    if (parsed.date && parsed.data) {
-                        lastSavedDate = parsed.date;
-                        encryptedData = parsed.data;
-                    } else {
-                        encryptedData = parsed;
+                        let encryptedData;
+                        if (parsed.date && parsed.data) {
+                            lastSavedDate = parsed.date;
+                            encryptedData = parsed.data;
+                        } else {
+                            encryptedData = parsed;
+                        }
+
+                        const jsonStr = await decrypt(
+                            encryptedData.cipher,
+                            encryptedData.iv,
+                            encryptionKey,
+                        );
+                        unsortedItems = JSON.parse(jsonStr);
+                        isDirty = false;
+                    } catch (e) {
+                        alert("Failed to decrypt vault.");
                     }
-
-                    const jsonStr = await decrypt(
-                        encryptedData.cipher,
-                        encryptedData.iv,
-                        encryptionKey,
-                    );
-                    unsortedItems = JSON.parse(jsonStr);
-                    isDirty = false;
-                } catch (e) {
-                    alert("Failed to decrypt vault.");
                 }
             }
         } finally {
@@ -183,35 +185,15 @@
     // Export synchronizeVault for parent component
     export { synchronizeVault };
 
-    function sortPasswordEntries(entries: PasswordEntry[]) {
-        return entries.sort((a, b) =>
-            new Intl.Collator("fr", {
-                sensitivity: "base",
-                ignorePunctuation: true,
-            }).compare(a.title || "", b.title || ""),
-        );
+    function sortPasswordEntriesLocal(entries: PasswordEntry[]) {
+        return sortPasswordEntries(entries);
     }
 
     // Derived filtered items
     $effect(() => {
-        if (!filter) {
-            filteredFiles = items;
-        } else {
-            const lowerFilter = filter.toLowerCase();
-            filteredFiles = sortPasswordEntries(
-                items.filter((item) => {
-                    return (
-                        item.title?.toLowerCase().includes(lowerFilter) ||
-                        item.username?.toLowerCase().includes(lowerFilter) ||
-                        item.site?.toLowerCase().includes(lowerFilter) ||
-                        item.notes?.toLowerCase().includes(lowerFilter) ||
-                        item.tags?.some((t: string) =>
-                            t.toLowerCase().includes(lowerFilter),
-                        )
-                    );
-                }),
-            );
-        }
+        filteredFiles = sortPasswordEntries(
+            filterPasswordEntries(items, filter),
+        );
     });
 
     function selectItem(item: PasswordEntry) {

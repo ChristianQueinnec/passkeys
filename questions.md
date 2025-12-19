@@ -91,3 +91,8 @@ When a username or a password is copied to the clipboard, ensure that the clipbo
 is reset after 10 seconds. 
 OK Antigravity
 
+Please check unit tests and provide additional ones if some features are not covered.
+
+In order to ensure more secutiry, ensure that, if the webapp UI is not
+used for a minute, then all usernames and passwords are erased from
+memory. The next user interaction will decipher again the vault.
