@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { api } from "../api";
+  import { api } from "$lib/api";
+  import PasswordInput from "./PasswordInput.svelte";
 
   let username = $state("");
   let password = $state("");
@@ -29,7 +30,7 @@
     }}
   >
     <input type="text" placeholder="Username" bind:value={username} />
-    <input type="password" placeholder="Password" bind:value={password} />
+    <PasswordInput placeholder="Password" bind:value={password} />
     <button type="submit">Login</button>
   </form>
 </div>

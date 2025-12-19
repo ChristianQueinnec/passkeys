@@ -1,4 +1,7 @@
 <script lang="ts">
+    import PasswordInput from "./PasswordInput.svelte";
+    import { api } from "$lib/api";
+
     let password = $state("");
     let showPassword = $state(false);
     let loading = $state(false);
@@ -25,18 +28,7 @@
         }}
     >
         <div class="input-group">
-            <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Vault Password"
-                bind:value={password}
-            />
-            <label>
-                <input
-                    type="checkbox"
-                    checked={showPassword}
-                    onclick={() => (showPassword = !showPassword)}
-                /> Show
-            </label>
+            <PasswordInput placeholder="Vault Password" bind:value={password} />
         </div>
         <button type="submit" disabled={loading} data-testid="unlock-button">
             {loading ? "Deriving Key..." : "Unlock"}
@@ -51,16 +43,5 @@
     }
     .input-group {
         margin-bottom: 1rem;
-    }
-    .input-group input[type="text"],
-    .input-group input[type="password"] {
-        margin-bottom: 0.5rem;
-    }
-    .input-group label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        cursor: pointer;
     }
 </style>

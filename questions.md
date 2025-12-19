@@ -80,10 +80,11 @@ OK Antigravity
 In Dashboard function loadVault, when ciphering an array of
 PasswordEntry, provide an id property when missing. This will help
 when deleting a PasswordEntry.
+OK Antigravity
 
-For all input[type=password] provide a show password option as an 
+For all input[type=password], provide a show password option as an 
 eye (open or not) in the right part of the input field to control
-whether the passord is visible.
-
+whether the password is visible.
+CLAUDE
 
 
