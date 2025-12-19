@@ -40,4 +40,17 @@
     max-width: 400px;
     margin: 2rem auto;
   }
+  .card input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  .card input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
 </style>

@@ -98,4 +98,6 @@ In order to ensure more security, ensure that, if the webapp UI is not
 used for a minute, then all usernames and passwords are erased from
 browser active memory. The next user interaction will have then to
 decipher again the vault without asking the user to input the vault key.
-Antigravity
+Antigravity + a la main
+
+

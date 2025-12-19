@@ -1,11 +1,11 @@
 export interface PasswordEntry {
     id: string;
     title: string;
-    username: string;
-    password: string;
-    site: string;
-    tags: string[];
-    notes: string;
+    username?: string;
+    password?: string;
+    site?: string;
+    tags?: string[];
+    notes?: string;
     group?: string; // Optional group from KeePass
     created?: number; // Unix timestamp in seconds
     modified?: number; // Unix timestamp in seconds

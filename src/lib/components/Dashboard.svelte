@@ -89,7 +89,7 @@
     }
 
     function clearSensitiveData() {
-        items = [];
+        items = items.map((item) => ({ id: item.id, title: item.title }));
         filteredFiles = [];
         selectedItem = null;
         editingItem = null;
@@ -98,7 +98,11 @@
     }
 
     async function restoreSensitiveData() {
-        if (!encryptedVaultData || !encryptionKey) return;
+        if (isMemoryCleared) return;
+        if (!encryptedVaultData || !encryptionKey) {
+            alert("No encrypted vault data or encryption key");
+            return;
+        }
         try {
             const jsonStr = await decrypt(
                 encryptedVaultData.cipher,
@@ -109,7 +113,8 @@
             items = sortPasswordEntries(unsorted);
             isMemoryCleared = false;
         } catch (e) {
-            console.error("Failed to restore vault from memory", e);
+            console.log("Failed to restore vault from memory", e);
+            alert("Failed to restore vault from memory");
             // Should probably force logout or full reload if this fails
         }
     }
@@ -135,7 +140,7 @@
                 );
             }
         } catch (e) {
-            console.error("Failed to load vault from server", e);
+            console.log("Failed to load vault from server", e);
             // Try offline
             const offline = localStorage.getItem("offline_vault");
             if (offline) {
@@ -187,6 +192,7 @@
             items = sortPasswordEntries(unsortedItems);
             isLoading = false;
         }
+        return true;
     }
 
     async function saveVault() {
@@ -250,8 +256,9 @@
 
         isSyncing = true;
         try {
-            await loadVault();
-            alert("Vault synchronized successfully!");
+            if (await loadVault()) {
+                alert("Vault synchronized successfully!");
+            }
         } catch (e) {
             alert("Failed to synchronize vault. Please try again.");
             console.error("Sync error:", e);
@@ -274,7 +281,8 @@
         );
     });
 
-    function selectItem(item: PasswordEntry) {
+    async function selectItem(item: PasswordEntry) {
+        await restoreSensitiveData();
         selectedItem = item;
     }
 
@@ -392,7 +400,11 @@
                 </div>
             {:else}
                 {#each filteredFiles as item}
-                    <div class="list-item" data-testid="vault-item">
+                    <div
+                        class="list-item"
+                        data-testid="vault-item"
+                        data-id={item.id}
+                    >
                         <span class="item-title">
                             {#if item.site}
                                 <a href={item.site} target="_blank"
@@ -403,48 +415,58 @@
                             {/if}
                         </span>
                         <div class="item-actions">
-                            <button
-                                class="icon-btn"
-                                onclick={() => copyToClipboard(item.username)}
-                                title="Copy Username"
-                                aria-label="Copy Username"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    ><path
-                                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
-                                    /><circle cx="12" cy="7" r="4" /></svg
+                            {#if item.username}
+                                <button
+                                    class="icon-btn"
+                                    onclick={() =>
+                                        copyToClipboard(item.username || "")}
+                                    title="Copy Username"
+                                    aria-label="Copy Username"
                                 >
-                            </button>
-                            <button
-                                class="icon-btn"
-                                onclick={() => copyToClipboard(item.password)}
-                                title="Copy Password"
-                                aria-label="Copy Password"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    ><path
-                                        d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.9.1 1.8-.2 2.6-.8l4.3-4.3c.6-.6.8-1.5.7-2.4l-.2-2.1c-.1-.9-.9-1.6-1.8-1.7l-2.1-.2c-.9-.1-1.8.1-2.4.7l-4.3 4.3c-.6.8-.9 1.7-.8 2.6L11 15.2V17H8v3H5v-2H2Zm12-11a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"
-                                    /></svg
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        ><path
+                                            d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                                        /><circle cx="12" cy="7" r="4" /></svg
+                                    >
+                                </button>
+                            {:else}
+                                <span class="icon-filler"></span>
+                            {/if}
+                            {#if item.password}
+                                <button
+                                    class="icon-btn"
+                                    onclick={() =>
+                                        copyToClipboard(item.password || "")}
+                                    title="Copy Password"
+                                    aria-label="Copy Password"
                                 >
-                            </button>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        ><path
+                                            d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.9.1 1.8-.2 2.6-.8l4.3-4.3c.6-.6.8-1.5.7-2.4l-.2-2.1c-.1-.9-.9-1.6-1.8-1.7l-2.1-.2c-.9-.1-1.8.1-2.4.7l-4.3 4.3c-.6.8-.9 1.7-.8 2.6L11 15.2V17H8v3H5v-2H2Zm12-11a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"
+                                        /></svg
+                                    >
+                                </button>
+                            {:else}
+                                <span class="icon-filler"></span>
+                            {/if}
                             <button
                                 class="icon-btn"
                                 onclick={() => selectItem(item)}
@@ -496,7 +518,8 @@
                         class="small"
                         onclick={() =>
                             selectedItem &&
-                            copyToClipboard(selectedItem.username)}>Copy</button
+                            copyToClipboard(selectedItem.username || "")}
+                        >Copy</button
                     >
                 </div>
             </div>
@@ -508,7 +531,8 @@
                         class="small"
                         onclick={() =>
                             selectedItem &&
-                            copyToClipboard(selectedItem.password)}>Copy</button
+                            copyToClipboard(selectedItem.password || "")}
+                        >Copy</button
                     >
                 </div>
             </div>
@@ -651,6 +675,11 @@
         color: #007bff;
         transform: scale(1.1);
         box-shadow: none;
+    }
+    .icon-filler {
+        width: 16px;
+        height: 16px;
+        padding: 0.4rem;
     }
     .field {
         margin-bottom: 1rem;

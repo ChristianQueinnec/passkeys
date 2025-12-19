@@ -34,6 +34,11 @@ const addUsers = () => {
         console.log('User history_test added.');
     }
 
+    if (!users.find((u: any) => u.username === 'admin')) {
+        users.push({ username: 'admin', password: createHashedEntrySync('password') });
+        console.log('User admin added.');
+    }
+
     if (users.length > startUserCount || true) { // Always save to ensure reset
         fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     }
