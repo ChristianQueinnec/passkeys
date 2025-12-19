@@ -85,6 +85,9 @@ OK Antigravity
 For all input[type=password], provide a show password option as an 
 eye (open or not) in the right part of the input field to control
 whether the password is visible.
-CLAUDE
+OK CLAUDE
 
+When a username or a password is copied to the clipboard, ensure that the clipboard
+is reset after 10 seconds. 
+OK Antigravity
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, tick } from "svelte";
+    import { onMount, tick, onDestroy } from "svelte";
     import { api } from "$lib/api";
     import { decrypt, encrypt } from "$lib/crypto";
     import Editor from "$lib/components/Editor.svelte";
@@ -29,6 +29,14 @@
 
     // Load vault on mount
     onMount(loadVault);
+
+    let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    onDestroy(() => {
+        if (clipboardTimeout) {
+            clearTimeout(clipboardTimeout);
+        }
+    });
 
     async function loadVault() {
         isLoading = true; // Disable saves during load
@@ -264,7 +272,14 @@
     }
 
     function copyToClipboard(text: string) {
+        if (clipboardTimeout) {
+            clearTimeout(clipboardTimeout);
+        }
         navigator.clipboard.writeText(text);
+        clipboardTimeout = setTimeout(() => {
+            navigator.clipboard.writeText("");
+            clipboardTimeout = null;
+        }, 10000);
     }
 </script>
 
