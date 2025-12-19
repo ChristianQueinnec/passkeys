@@ -28,6 +28,13 @@
     let isLoading = false; // Prevent saves during load
     let isSyncing = $state(false); // Syncing state
 
+    let encryptedVaultData = $state<{ iv: string; cipher: string } | null>(
+        null,
+    );
+    let isMemoryCleared = $state(false);
+    let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+    let restorePromise: Promise<void> | null = null;
+
     // History state
     let showHistoryModal = $state(false);
     let historyFiles = $state<HistoryItem[]>([]);
@@ -37,11 +44,75 @@
 
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
 
+    onMount(() => {
+        resetTimer();
+        window.addEventListener("mousemove", resetTimer);
+        window.addEventListener("keydown", resetTimer);
+        window.addEventListener("click", resetTimer);
+        window.addEventListener("scroll", resetTimer);
+        window.addEventListener("touchstart", resetTimer);
+    });
+
     onDestroy(() => {
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
+        if (browser) {
+            window.removeEventListener("mousemove", resetTimer);
+            window.removeEventListener("keydown", resetTimer);
+            window.removeEventListener("click", resetTimer);
+            window.removeEventListener("scroll", resetTimer);
+            window.removeEventListener("touchstart", resetTimer);
+        }
     });
+
+    import { browser } from "$app/environment";
+
+    function resetTimer() {
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+
+        if (isMemoryCleared) {
+            // Avoid multiple restores firing at once
+            if (!restorePromise) {
+                restorePromise = restoreSensitiveData().finally(() => {
+                    restorePromise = null;
+                });
+            }
+        }
+
+        inactivityTimer = setTimeout(() => {
+            clearSensitiveData();
+        }, 60000); // 1 minute
+    }
+
+    function clearSensitiveData() {
+        items = [];
+        filteredFiles = [];
+        selectedItem = null;
+        editingItem = null;
+        historyFiles = [];
+        isMemoryCleared = true;
+    }
+
+    async function restoreSensitiveData() {
+        if (!encryptedVaultData || !encryptionKey) return;
+        try {
+            const jsonStr = await decrypt(
+                encryptedVaultData.cipher,
+                encryptedVaultData.iv,
+                encryptionKey,
+            );
+            const unsorted = JSON.parse(jsonStr);
+            items = sortPasswordEntries(unsorted);
+            isMemoryCleared = false;
+        } catch (e) {
+            console.error("Failed to restore vault from memory", e);
+            // Should probably force logout or full reload if this fails
+        }
+    }
 
     async function loadVault() {
         isLoading = true; // Disable saves during load
@@ -97,6 +168,9 @@
                             encryptedData = parsed;
                         }
 
+                        // Store encrypted data for restoration
+                        encryptedVaultData = encryptedData;
+
                         const jsonStr = await decrypt(
                             encryptedData.cipher,
                             encryptedData.iv,
@@ -130,6 +204,10 @@
         try {
             await api.saveVault(JSON.stringify(payload));
             lastSavedDate = payload.date;
+
+            // Update encryptedVaultData in memory
+            encryptedVaultData = payload.data;
+
             isDirty = false;
             offlineMode = false;
             // Update offline copy
@@ -307,82 +385,91 @@
             </div>
         </div>
         <div class="list">
-            {#each filteredFiles as item}
-                <div class="list-item" data-testid="vault-item">
-                    <span class="item-title">
-                        {#if item.site}
-                            <a href={item.site} target="_blank">{item.title}</a>
-                        {:else}
-                            {item.title}
-                        {/if}
-                    </span>
-                    <div class="item-actions">
-                        <button
-                            class="icon-btn"
-                            onclick={() => copyToClipboard(item.username)}
-                            title="Copy Username"
-                            aria-label="Copy Username"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                ><path
-                                    d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
-                                /><circle cx="12" cy="7" r="4" /></svg
-                            >
-                        </button>
-                        <button
-                            class="icon-btn"
-                            onclick={() => copyToClipboard(item.password)}
-                            title="Copy Password"
-                            aria-label="Copy Password"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                ><path
-                                    d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.9.1 1.8-.2 2.6-.8l4.3-4.3c.6-.6.8-1.5.7-2.4l-.2-2.1c-.1-.9-.9-1.6-1.8-1.7l-2.1-.2c-.9-.1-1.8.1-2.4.7l-4.3 4.3c-.6.8-.9 1.7-.8 2.6L11 15.2V17H8v3H5v-2H2Zm12-11a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"
-                                /></svg
-                            >
-                        </button>
-                        <button
-                            class="icon-btn"
-                            onclick={() => selectItem(item)}
-                            title="View Details"
-                            aria-label="View Details"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                ><path
-                                    d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"
-                                /><circle cx="12" cy="12" r="3" /></svg
-                            >
-                        </button>
-                    </div>
+            {#if isMemoryCleared}
+                <div class="empty-state">
+                    Security timeout: Vault cleared from memory. Interact to
+                    restore.
                 </div>
-            {/each}
+            {:else}
+                {#each filteredFiles as item}
+                    <div class="list-item" data-testid="vault-item">
+                        <span class="item-title">
+                            {#if item.site}
+                                <a href={item.site} target="_blank"
+                                    >{item.title}</a
+                                >
+                            {:else}
+                                {item.title}
+                            {/if}
+                        </span>
+                        <div class="item-actions">
+                            <button
+                                class="icon-btn"
+                                onclick={() => copyToClipboard(item.username)}
+                                title="Copy Username"
+                                aria-label="Copy Username"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    ><path
+                                        d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                                    /><circle cx="12" cy="7" r="4" /></svg
+                                >
+                            </button>
+                            <button
+                                class="icon-btn"
+                                onclick={() => copyToClipboard(item.password)}
+                                title="Copy Password"
+                                aria-label="Copy Password"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    ><path
+                                        d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.9.1 1.8-.2 2.6-.8l4.3-4.3c.6-.6.8-1.5.7-2.4l-.2-2.1c-.1-.9-.9-1.6-1.8-1.7l-2.1-.2c-.9-.1-1.8.1-2.4.7l-4.3 4.3c-.6.8-.9 1.7-.8 2.6L11 15.2V17H8v3H5v-2H2Zm12-11a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"
+                                    /></svg
+                                >
+                            </button>
+                            <button
+                                class="icon-btn"
+                                onclick={() => selectItem(item)}
+                                title="View Details"
+                                aria-label="View Details"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    ><path
+                                        d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"
+                                    /><circle cx="12" cy="12" r="3" /></svg
+                                >
+                            </button>
+                        </div>
+                    </div>
+                {/each}
+            {/if}
         </div>
     </div>
 </div>
@@ -645,5 +732,11 @@
     .small {
         font-size: 0.8rem;
         padding: 0.25rem 0.5rem;
+    }
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: #666;
+        font-style: italic;
     }
 </style>

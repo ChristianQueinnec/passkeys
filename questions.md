@@ -92,7 +92,10 @@ is reset after 10 seconds.
 OK Antigravity
 
 Please check unit tests and provide additional ones if some features are not covered.
+OK Antigravity
 
-In order to ensure more secutiry, ensure that, if the webapp UI is not
+In order to ensure more security, ensure that, if the webapp UI is not
 used for a minute, then all usernames and passwords are erased from
-memory. The next user interaction will decipher again the vault.
+browser active memory. The next user interaction will have then to
+decipher again the vault without asking the user to input the vault key.
+Antigravity
