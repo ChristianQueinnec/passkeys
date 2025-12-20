@@ -279,7 +279,7 @@
         }
     }
 
-    async function synchronizeVault() {
+    export async function synchronizeVault() {
         if (isDirty) {
             if (
                 !confirm(
@@ -302,9 +302,6 @@
             isSyncing = false;
         }
     }
-
-    // Export synchronizeVault for parent component
-    export { synchronizeVault };
 
     // Derived filtered items
     $effect(() => {
