@@ -107,7 +107,10 @@ OK Antigravity
 Fix the `tests/e2e/history.spec.ts` test. 
 OK Antigravity
  
-
 Periodically check if the webapp may quit the Offline Mode that is, if
 saving or synchronizing the vault can be done safely. Report if a more
 recent version the vault is available.
+OK Antigravity
+
+Please enhance the README of the Passkeys project.
+OK Antigravity
