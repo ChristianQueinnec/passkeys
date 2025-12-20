@@ -66,14 +66,26 @@ export const api = {
         return res.json();
     },
 
+    async getLatestVaultMetadata() {
+        if (!this.token) throw new Error('Not authenticated');
+        const res = await fetch('/api/vault/metadata', {
+            headers: { 'Authorization': `Bearer ${this.token}` }
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to get metadata');
+        }
+        return res.json();
+    },
+
     async saveVault(content: string) {
         if (!this.token) throw new Error('Not authenticated');
-        
+
         // Ensure we have a CSRF token
         if (!this.csrfToken) {
             await this.getCSRFToken();
         }
-        
+
         const res = await fetch('/api/vault', {
             method: 'POST',
             headers: {
@@ -98,12 +110,12 @@ export const api = {
 
     async changePassword(oldPassword: string, newPassword: string) {
         if (!this.token) throw new Error('Not authenticated');
-        
+
         // Ensure we have a CSRF token
         if (!this.csrfToken) {
             await this.getCSRFToken();
         }
-        
+
         const res = await fetch('/api/user/password', {
             method: 'POST',
             headers: {
@@ -122,15 +134,15 @@ export const api = {
 
     async deleteVault(filename: string) {
         if (!this.token) throw new Error('Not authenticated');
-        
+
         // Ensure we have a CSRF token
         if (!this.csrfToken) {
             await this.getCSRFToken();
         }
-        
+
         const res = await fetch(`/api/vault/history?filename=${encodeURIComponent(filename)}`, {
             method: 'DELETE',
-            headers: { 
+            headers: {
                 'Authorization': `Bearer ${this.token}`,
                 'X-CSRF-Token': this.csrfToken || ''
             }

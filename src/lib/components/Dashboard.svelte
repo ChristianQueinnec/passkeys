@@ -34,6 +34,9 @@
     let encryptedVaultData = $state<{ iv: string; cipher: string } | null>(
         null,
     );
+    let newerVersionAvailable = $state(false);
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
     let isMemoryCleared = $state(false);
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
     let restorePromise: Promise<void> | null = null;
@@ -62,6 +65,9 @@
         }
         if (inactivityTimer) {
             clearTimeout(inactivityTimer);
+        }
+        if (pollTimer) {
+            clearInterval(pollTimer);
         }
         if (browser) {
             window.removeEventListener("mousemove", resetTimer);
@@ -141,6 +147,7 @@
                 console.log(
                     `Vault loaded from server in ${Date.now() - start}ms`,
                 );
+                newerVersionAvailable = false;
             }
         } catch (e) {
             console.log("Failed to load vault from server", e);
@@ -194,8 +201,34 @@
         } finally {
             items = sortPasswordEntries(unsortedItems);
             isLoading = false;
+            startPolling();
         }
         return true;
+    }
+
+    function startPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        const interval = browser && (window as any).__TESTING__ ? 1000 : 60000;
+        pollTimer = setInterval(pollForUpdates, interval);
+    }
+
+    async function pollForUpdates() {
+        if (!api.token) return;
+        try {
+            const metadata = await api.getLatestVaultMetadata();
+            offlineMode = false;
+            if (metadata.mtime && lastSavedDate) {
+                const serverTime = new Date(metadata.mtime).getTime();
+                const localTime = new Date(lastSavedDate).getTime();
+                // Add a small buffer (1s) to avoid race conditions with save
+                if (serverTime > localTime + 1000) {
+                    newerVersionAvailable = true;
+                }
+            }
+        } catch (e) {
+            console.log("Polling failed (server unreachable?)");
+            offlineMode = true;
+        }
     }
 
     async function saveVault() {
@@ -367,11 +400,21 @@
                     ⚠️ Offline Mode: Vault may be out of date
                 </div>
             {/if}
+
+            {#if newerVersionAvailable}
+                <div class="warning sync-warning">
+                    📦 A newer version is available on the server.
+                    <button class="small" onclick={synchronizeVault}
+                        >Sync Now</button
+                    >
+                </div>
+            {/if}
             {#if lastSavedDate}
                 <small
                     >Last saved: {new Date(lastSavedDate).toISOString()}</small
                 >
             {/if}
+
             <div class="filter-container">
                 <input
                     type="text"
