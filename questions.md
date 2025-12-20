@@ -100,4 +100,14 @@ browser active memory. The next user interaction will have then to
 decipher again the vault without asking the user to input the vault key.
 Antigravity + a la main
 
+The Dashboard file is too big. Create new components for the History Modal, the
+Editor Modal and the Dails Modal.
+OK Antigravity
 
+Fix the `tests/e2e/history.spec.ts` test. 
+OK Antigravity
+ 
+
+Periodically check if the webapp may quit the Offline Mode that is, if
+saving or synchronizing the vault can be done safely. Report if a more
+recent version the vault is available.

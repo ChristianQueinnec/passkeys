@@ -4,6 +4,9 @@
     import { decrypt, encrypt } from "$lib/crypto";
     import Editor from "$lib/components/Editor.svelte";
     import Modal from "$lib/components/Modal.svelte";
+    import HistoryModal from "$lib/components/HistoryModal.svelte";
+    import DetailsModal from "$lib/components/DetailsModal.svelte";
+    import EditorModal from "$lib/components/EditorModal.svelte";
     import {
         sortPasswordEntries,
         filterPasswordEntries,
@@ -98,7 +101,7 @@
     }
 
     async function restoreSensitiveData() {
-        if (isMemoryCleared) return;
+        if (!isMemoryCleared) return;
         if (!encryptedVaultData || !encryptionKey) {
             alert("No encrypted vault data or encryption key");
             return;
@@ -270,10 +273,6 @@
     // Export synchronizeVault for parent component
     export { synchronizeVault };
 
-    function sortPasswordEntriesLocal(entries: PasswordEntry[]) {
-        return sortPasswordEntries(entries);
-    }
-
     // Derived filtered items
     $effect(() => {
         filteredFiles = sortPasswordEntries(
@@ -339,13 +338,13 @@
         showHistoryModal = false;
     }
 
-    function copyToClipboard(text: string) {
+    async function copyToClipboard(text: string) {
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
-        navigator.clipboard.writeText(text);
-        clipboardTimeout = setTimeout(() => {
-            navigator.clipboard.writeText("");
+        await navigator.clipboard.writeText(text);
+        clipboardTimeout = setTimeout(async () => {
+            await navigator.clipboard.writeText("");
             clipboardTimeout = null;
         }, 10000);
     }
@@ -497,112 +496,31 @@
 </div>
 
 <!-- Details Modal -->
-<Modal
+<DetailsModal
     isOpen={!!selectedItem}
+    item={selectedItem}
     onClose={closeModals}
-    title={selectedItem?.title}
->
-    {#if selectedItem}
-        <div class="details">
-            <div class="field">
-                <strong>Site:</strong>
-                <a href={selectedItem.site} target="_blank"
-                    >{selectedItem.site}</a
-                >
-            </div>
-            <div class="field">
-                <strong>Username:</strong>
-                <div class="field-content">
-                    <span>{selectedItem.username}</span>
-                    <button
-                        class="small"
-                        onclick={() =>
-                            selectedItem &&
-                            copyToClipboard(selectedItem.username || "")}
-                        >Copy</button
-                    >
-                </div>
-            </div>
-            <div class="field">
-                <strong>Password:</strong>
-                <div class="field-content">
-                    <span>********</span>
-                    <button
-                        class="small"
-                        onclick={() =>
-                            selectedItem &&
-                            copyToClipboard(selectedItem.password || "")}
-                        >Copy</button
-                    >
-                </div>
-            </div>
-            <div class="field">
-                <strong>Tags:</strong>
-                <span>{selectedItem.tags?.join(", ")}</span>
-            </div>
-            <div class="field">
-                <strong>Notes:</strong>
-                <pre>{selectedItem.notes}</pre>
-            </div>
-
-            <div class="actions">
-                <button onclick={() => selectedItem && startEdit(selectedItem)}
-                    >Edit</button
-                >
-                <button
-                    onclick={() => selectedItem && handleDelete(selectedItem)}
-                    class="danger">Delete</button
-                >
-            </div>
-        </div>
-    {/if}
-</Modal>
+    onEdit={startEdit}
+    onDelete={handleDelete}
+    onCopy={copyToClipboard}
+/>
 
 <!-- Editor Modal -->
-<Modal
+<EditorModal
     isOpen={!!editingItem}
+    item={editingItem}
+    {isCreating}
     onClose={closeModals}
-    title={isCreating ? "New Item" : "Edit Item"}
->
-    {#if editingItem}
-        <Editor item={editingItem} onSave={handleSave} onCancel={closeModals} />
-    {/if}
-</Modal>
+    onSave={handleSave}
+/>
 
 <!-- History Modal -->
-<Modal isOpen={showHistoryModal} onClose={closeModals} title="Vault History">
-    <div class="history-list">
-        {#if historyFiles.length === 0}
-            <p>No history found.</p>
-        {:else}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Size</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each historyFiles as file}
-                        <tr>
-                            <td>{new Date(file.mtime).toLocaleString()}</td>
-                            <td>{file.size} B</td>
-                            <td>
-                                <button
-                                    class="danger small"
-                                    onclick={() => deleteHistoryItem(file.name)}
-                                    >Delete</button
-                                >
-                            </td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
-        {/if}
-    </div>
-</Modal>
-``` ```
+<HistoryModal
+    isOpen={showHistoryModal}
+    {historyFiles}
+    onClose={closeModals}
+    onDelete={deleteHistoryItem}
+/>
 
 <style>
     .dashboard {
@@ -681,22 +599,6 @@
         height: 16px;
         padding: 0.4rem;
     }
-    .field {
-        margin-bottom: 1rem;
-    }
-    .field-content {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
-    }
-    .field-content span {
-        flex: 1;
-    }
-    strong {
-        font-weight: bold;
-        display: block;
-    }
     .actions {
         display: flex;
         gap: 0.5rem;
@@ -747,20 +649,6 @@
         margin-bottom: 0.5rem;
         font-size: 0.9rem;
         border: 1px solid #ffeeba;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th,
-    td {
-        padding: 0.5rem;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-    }
-    .small {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
     }
     .empty-state {
         padding: 2rem;

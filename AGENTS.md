@@ -1,7 +1,7 @@
 # The Passkeys project
 
-The Passkeys project aims to produce a webapp mimicing keepass.
-Keepass (and its derivates keepassx, keepassxc, etc.) is great but
+The Passkeys project aims to produce a webapp mimicing Keepass.
+Keepass (and its derivates Keepassx, Keepassxc, etc.) is great but
 does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 

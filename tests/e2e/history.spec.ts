@@ -78,7 +78,7 @@ test.describe('History Operations', () => {
             await rows.first().getByRole('button', { name: 'Delete' }).click();
             // Wait for list to update - might need reload or just wait for DOM change
             // The modal stays open, list updates
-            // await expect(rows).toHaveCount(initialCount - 1); // Flaky if network slow?
+            await expect(rows).toHaveCount(initialCount - 1);
         }
 
         // Cleanup

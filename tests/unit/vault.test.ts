@@ -88,7 +88,7 @@ describe('Vault Utilities', () => {
             ];
             const normalized = normalizeVaultItems(rawItems);
             expect(Array.isArray(normalized[0].tags)).toBe(true);
-            expect(normalized[0].tags.length).toBe(0);
+            expect(normalized[0].tags?.length).toBe(0);
         });
     });
 });
