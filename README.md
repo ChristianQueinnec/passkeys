@@ -1,6 +1,7 @@
 # Passkeys
 
-A secure, modern web application for managing your sensitive information, mimicking the capabilities of KeePass but with the convenience of a web platform.
+A secure, modern web application for managing your sensitive information, 
+mimicking the capabilities of KeePass but with the convenience of a web platform.
 
 ## Features
 
@@ -62,8 +63,17 @@ Build and run with Docker Compose:
 docker compose up --build
 ```
 
+The `docker-compose.yml` file ............
+
 ## Project History
 
-This project was developed with the assistance of AI agents (Antigravity and Claude). For more details, see:
+This project was developed with the assistance of AI agents (Antigravity and Claude). 
+For more details, see:
 - `AGENTS.md`: Initial project description and evolution.
 - `questions.md`: Chronological log of additional feature requests and AI interactions.
+
+A small number of interventions were done manually. For instance
+- some CSS parts were simplified or adjusted
+- some Javascript modifications too simple to be processed by AI
+
+

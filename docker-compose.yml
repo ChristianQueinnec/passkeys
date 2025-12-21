@@ -5,10 +5,11 @@ services:
       args:
         - UID=1299
         - GID=1299
+        - USER=queinnec
     image: registry.queinnec.org:5000/passkeys
     container_name: passkeys
-    ports:
-      - "5137:3000"
+    expose:
+      - "3000"
     volumes:
       - ./realdata:/app/data
     restart: unless-stopped

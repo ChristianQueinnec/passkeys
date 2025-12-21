@@ -2,10 +2,13 @@ work :
 
 # Use docker to create the container:
 create.container :
-	docker compose build
+	docker compose build \
+		--build-arg UID=$$(id -u) \
+		--build-arg GID=$$(id -g) \
+		--build-arg USER=$${USER}
 # @cajou: 4 minutes
 
-# But try to run it with docker:
+run.container :
 	docker compose up -d
-	@echo "Browse http://localhost:5137"
+	@echo "Browse http://localhost:3000"
 	docker logs -f --tail 100 passkeys
