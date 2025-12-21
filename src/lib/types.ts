@@ -24,3 +24,8 @@ export interface HistoryItem {
     size: number;
     mtime: Date;
 }
+
+export interface CipheredVaultData {
+    iv: string;
+    cipher: string;
+}

@@ -12,7 +12,12 @@
         filterPasswordEntries,
         normalizeVaultItems,
     } from "$lib/vault";
-    import type { PasswordEntry, HistoryItem } from "$lib/types";
+    import {
+        type PasswordEntry,
+        type HistoryItem,
+        CipheredVaultData,
+    } from "$lib/types";
+    import { browser } from "$app/environment";
 
     let { encryptionKey, username } = $props();
 
@@ -31,9 +36,7 @@
     let isLoading = false; // Prevent saves during load
     let isSyncing = $state(false); // Syncing state
 
-    let encryptedVaultData = $state<{ iv: string; cipher: string } | null>(
-        null,
-    );
+    let encryptedVaultData = $state<CipheredVaultData | null>(null);
     let newerVersionAvailable = $state(false);
     let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -77,8 +80,6 @@
             window.removeEventListener("touchstart", resetTimer);
         }
     });
-
-    import { browser } from "$app/environment";
 
     function resetTimer() {
         if (inactivityTimer) clearTimeout(inactivityTimer);
