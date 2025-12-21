@@ -116,9 +116,18 @@ Please enhance the README of the Passkeys project.
 OK Antigravity
 
 
+Create another dashboard with a hierarchical presentation with
+folders, subfolders, etc. A toggle button in all dashboards will
+trigger the presentation of the alternate dashboard. The new dashboard
+will be presented by default. Password entries are sorted in folders
+as indicated in their `group` property. A group property such as
+`keepass/a/b` is considered to be in folder `a` and, within `a`, in
+subfolder `b`. The presentation will use the classic folder icons.
+Clicking on such an icon displays the associated password entries with
+the same presentation as the filtered items of the original Dashboard.
+Create a new component to display filtered items or folder-chosen items.
+CLAUDE
 
-
-update modified property
 
 create group/folders presentation
 

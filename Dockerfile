@@ -6,7 +6,9 @@ RUN npm ci
 
 COPY . .
 RUN npm run build
-RUN npm prune --omit=dev
+#RUN npm prune --omit=dev
+RUN rm -rf node_modules && \
+    npm ci --omit=dev
 
 FROM node:24-bullseye AS runner
 

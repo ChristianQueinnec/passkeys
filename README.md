@@ -58,12 +58,52 @@ npm run test:e2e
 
 ### Docker Deployment
 
-Build and run with Docker Compose:
+
+Build and run the Docker container with:
+```bash
+make create.container
+make run.container
+```
+
+or build and run with Docker Compose:
 ```bash
 docker compose up --build
 ```
 
-The `docker-compose.yml` file ............
+The `docker-compose.yml` file shows a possible deployment.
+
+The `./data/` directory should contain a `users.json` file with your credentials such as:
+
+``` json
+[
+  {
+    "username": "admin",
+    "password": "password"
+  }
+]
+```
+
+The user's password will be hashed and ciphered as soon as that file is read by the backend.
+
+Vaults are stored in `./data/admin/`. A first vault may be created as follows:
+
+``` json
+[ {
+    "group": "",
+    "title": "me at example",
+    "username": "me@example.org",
+    "password": "password",
+    "site": "https://ex.ample.org/",
+    "tags": ["test"],
+    "notes": "A test password entry",
+    "created": 1563434379,
+    "modified": 1563434380
+  },
+  ...
+]
+```
+
+This vault will be immediately ciphered when received by the frontend. 
 
 ## Project History
 
