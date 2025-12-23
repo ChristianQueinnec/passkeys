@@ -90,4 +90,25 @@ queinnec@cajou:~/Passkeys$ git switch -c reStart
 Switched to a new branch 'reStart'
 ```
 
-Et là les fichiers ont bien ete remis dans le bon etat. 
+Et là les fichiers ont bien ete remis dans le bon etat.
+Mais on ne peut faire commit car on n'est pas dans la branche main.
+Actuellement
+```bash
+queinnec@cajou:~/Passkeys$ git reflog
+e9fbf71 (HEAD -> reStart) HEAD@{0}: commit: fixed import
+f560021 HEAD@{1}: commit: added notes
+59abb9e HEAD@{2}: checkout: moving from 59abb9eeb8453df8f35ac3a633ef9a2a0cb309a3 to reStart
+59abb9e HEAD@{3}: checkout: moving from main to 59abb9eeb8453
+bc76b2d (main) HEAD@{4}: commit: added notes
+afdd4de (origin/main) HEAD@{5}: commit: another attempt to folder view
+90d5907 HEAD@{6}: commit: Revert "evolve create.container"
+07a9188 HEAD@{7}: commit: tried to fix folder tree display; BAD
+443cc69 HEAD@{8}: commit: fixed removal of keepass prefix in group
+2968506 HEAD@{9}: commit: clickable subfolders
+b2d2ea4 HEAD@{10}: commit: added folder view
+59abb9e HEAD@{11}: commit: evolve create.container
+
+git checkout -b main
+git branch --move main oldmain
+git checkout -b reStart
+git branch --move reStart main
