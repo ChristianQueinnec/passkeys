@@ -15,7 +15,7 @@
     import {
         type PasswordEntry,
         type HistoryItem,
-        CipheredVaultData,
+        type CipheredVaultData,
     } from "$lib/types";
     import { browser } from "$app/environment";
 
