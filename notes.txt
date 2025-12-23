@@ -6,3 +6,88 @@ Global configuration of Antigravity in `~/.config/Antigravity/`
 
 /add-dir /home/queinnec/Passkeys/KeePass2Passkeys/
 
+## Git revert
+
+First attempt to generate a folder view not satisfying.
+Undo two commits last one: 07a9188619a0469d
+```bash
+queinnec@cajou:~/Passkeys$ git revert  59abb9eeb8453
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Auto-merging questions.md
+CONFLICT (content): Merge conflict in questions.md
+error: could not revert 59abb9e... evolve create.container
+hint: After resolving the conflicts, mark them with
+hint: "git add/rm <pathspec>", then run
+hint: "git revert --continue".
+hint: You can instead skip this commit with "git revert --skip".
+hint: To abort and get back to the state before "git revert",
+hint: run "git revert --abort".
+queinnec@cajou:~/Passkeys$ emacs README.md questions.md
+queinnec@cajou:~/Passkeys$ git add questions.md README.md
+queinnec@cajou:~/Passkeys$ git revert --continue
+[main 90d5907] Revert "evolve create.container"
+ 5 files changed, 12 insertions(+), 16 deletions(-)
+queinnec@cajou:~/Passkeys$ git status .
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   notes.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+queinnec@cajou:~/Passkeys$ git push
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 20 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 734 bytes | 734.00 KiB/s, done.
+Total 7 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To github.com:ChristianQueinnec/passkeys.git
+   07a9188..90d5907  main -> main
+```
+
+Ce revert laisse en fait les composants folder*!
+
+```bash
+queinnec@cajou:~/Passkeys$ git checkout 59abb9eeb8453
+README.md: needs merge
+questions.md: needs merge
+error: you need to resolve your current index first
+    emacs README.md questions.md 
+queinnec@cajou:~/Passkeys$ git checkout 59abb9eeb8453
+error: Your local changes to the following files would be overwritten by checkout:
+        notes.txt
+Please commit your changes or stash them before you switch branches.
+Aborting
+queinnec@cajou:~/Passkeys$ git commit -m 'added notes' .
+[main bc76b2d] added notes
+ 1 file changed, 13 insertions(+)
+queinnec@cajou:~/Passkeys$ git checkout 59abb9eeb8453
+Note: switching to '59abb9eeb8453'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 59abb9e evolve create.container
+queinnec@cajou:~/Passkeys$ git switch -c reStart
+Switched to a new branch 'reStart'
+```
+
+Et là les fichiers ont bien ete remis dans le bon etat. 
