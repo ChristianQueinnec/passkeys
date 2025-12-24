@@ -103,7 +103,7 @@ export function convertRow(fields: string[]): PasswordEntry | null {
   }
 
   return {
-    group: group,
+    group: group.replace(/^keepass\/?/i, ''),
     title: title,
     username: username,
     password: password,
