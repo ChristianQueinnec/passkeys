@@ -59,6 +59,9 @@ export function processGroupToTags(group: string): string[] | null {
   if (group.match(/keepass\/Archive\/?/)) {
     return null;
   }
+  if (group.match(/Recycle Bin/i)) {
+    return null;
+  }
 
   // Remove "keepass" prefix (case-insensitive)
   let processed = group.replace(/^keepass\/?/i, '');
