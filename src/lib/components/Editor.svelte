@@ -8,6 +8,7 @@
     let site = $state("");
     let tags = $state("");
     let notes = $state("");
+    let group = $state("");
 
     // Initialize/Sync state from props
     $effect(() => {
@@ -17,6 +18,7 @@
         site = item?.site || "";
         tags = item?.tags?.join(", ") || "";
         notes = item?.notes || "";
+        group = item?.group || "";
     });
 
     function handleSubmit() {
@@ -31,6 +33,7 @@
                 .map((t: string) => t.trim())
                 .filter((t: string) => t),
             notes,
+            group: group.trim() || undefined,
         });
     }
 </script>
@@ -51,6 +54,10 @@
     <div class="field">
         <label for="password">Password</label>
         <input id="password" type="text" bind:value={password} />
+    </div>
+    <div class="field">
+        <label for="group">Group/Folder (e.g., "Work/Email")</label>
+        <input id="group" type="text" bind:value={group} placeholder="Optional: folder/subfolder" />
     </div>
     <div class="field">
         <label for="tags">Tags (comma separated)</label>

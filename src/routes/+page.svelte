@@ -2,6 +2,7 @@
     import Login from "$lib/components/Login.svelte";
     import Unlock from "$lib/components/Unlock.svelte";
     import Dashboard from "$lib/components/Dashboard.svelte";
+    import FolderDashboard from "$lib/components/FolderDashboard.svelte";
     import { pbkdf2 } from "$lib/crypto";
     import { api } from "$lib/api";
     import { onMount, tick } from "svelte";
@@ -12,6 +13,7 @@
     let username = $state("");
     let password = $state("");
     let encryptionKey = $state<CryptoKey | null>(null);
+    let useFolderView = $state(true); // Default to folder view
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
@@ -63,6 +65,10 @@
         encryptionKey = null;
         phase = 0;
         showUserMenu = false;
+    }
+
+    function toggleDashboardView() {
+        useFolderView = !useFolderView;
     }
 
     function toggleMenu() {
@@ -133,7 +139,21 @@
         {:else if phase === 1}
             <Unlock onUnlock={handleUnlock} />
         {:else if phase === 2 && encryptionKey}
-            <Dashboard bind:this={dashboardRef} {encryptionKey} {username} />
+            {#if useFolderView}
+                <FolderDashboard
+                    bind:this={dashboardRef}
+                    {encryptionKey}
+                    {username}
+                    onToggleView={toggleDashboardView}
+                />
+            {:else}
+                <Dashboard
+                    bind:this={dashboardRef}
+                    {encryptionKey}
+                    {username}
+                    onToggleView={toggleDashboardView}
+                />
+            {/if}
         {/if}
     </main>
 </div>

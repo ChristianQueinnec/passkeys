@@ -108,7 +108,25 @@ afdd4de (origin/main) HEAD@{5}: commit: another attempt to folder view
 b2d2ea4 HEAD@{10}: commit: added folder view
 59abb9e HEAD@{11}: commit: evolve create.container
 
-git checkout -b main
-git branch --move main oldmain
-git checkout -b reStart
-git branch --move reStart main
+queinnec@cajou:~/Passkeys$ git branch --move main oldmain
+queinnec@cajou:~/Passkeys$ git branch --move reStart main
+queinnec@cajou:~/Passkeys$ git push --set-upstream origin main
+To github.com:ChristianQueinnec/passkeys.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:ChristianQueinnec/passkeys.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+queinnec@cajou:~/Passkeys$ git push --force --set-upstream origin main
+Enumerating objects: 18, done.
+Counting objects: 100% (18/18), done.
+Delta compression using up to 20 threads
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (12/12), 2.74 KiB | 935.00 KiB/s, done.
+Total 12 (delta 8), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (8/8), completed with 5 local objects.
+To github.com:ChristianQueinnec/passkeys.git
+ + afdd4de...9cc5d39 main -> main (forced update)
+branch 'main' set up to track 'origin/main'.
+```
