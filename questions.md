@@ -115,21 +115,60 @@ OK Antigravity
 Please enhance the README of the Passkeys project.
 OK Antigravity
 
+update modified property
+HAND made
 
 Create another dashboard with a hierarchical presentation with
 folders, subfolders, etc. A toggle button in all dashboards will
 trigger the presentation of the alternate dashboard. The new dashboard
 will be presented by default. Password entries are sorted in folders
 as indicated in their `group` property. A group property such as
-`keepass/a/b` is considered to be in folder `a` and, within `a`, in
+`a/b` is considered to be in folder `a` and, within `a`, in
 subfolder `b`. The presentation will use the classic folder icons.
 Clicking on such an icon displays the associated password entries with
 the same presentation as the filtered items of the original Dashboard.
 Create a new component to display filtered items or folder-chosen items.
-CLAUDE
+CLAUDE HIERARCHICAL_DASHBOARD.md HIERARCHICAL_QUICKREF.md
+OK but not satisfying
+
+Clicking on a folder that have subfolders does not display its subfolders.
+CLAUDE SUBFOLDER_FIX.md
+OK but not very satisfying
+
+It would be better, when clicking on the '>' character preceding the
+name of a folder, to display the subfolder right below it (with a small
+indentation). It is still good to list the entries on the right pane.
+CLAUDE FOLDER_NAVIGATION_IMPROVEMENT.md NAVIGATION_QUICKREF.md
+OK but not at all satisfying
+so we revert and prepare a new prompt.
+
+## New prompt
+
+Create another dashboard (a new component) with a hierarchical
+presentation with folders, subfolders, etc. A toggle button in all
+dashboards will trigger the presentation of the alternate dashboard.
+The new dashboard will be presented by default. It contains a folder
+pane on the left and a password entries pane on the right. Password
+entries are sorted in folders as indicated in their `group` property.
+A password entry with a `group` property such as `a/b` is considered
+to be in folder `a` and, within `a`, in subfolder `b`. The
+presentation of folders will use the classic folder icons. Clicking on
+such an icon or folder name
+- toggle the state of the folder (open or closed),
+- opening the folder, displays the subfolders right under the name of the clicked folder
+- and displays the associated password entries with the same
+presentation as the filtered items of the original Dashboard. Also
+create a new component to display filtered items of the original
+`Dashboard` or the folder-chosen items of the new dashboard.
+OK CLAUDE HIERARCHICAL_DASHBOARD.md VISUAL_GUIDE.md
+with a little hand-made fix
+
+There are too much common code between Dashboard and FolderDashboard,
+propose a plan to refactor.
+CLAUDE 
 
 
-create group/folders presentation
+## Future
 
 bypass Login page if coming from authenticated nginx proxy ?
 
