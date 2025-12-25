@@ -165,7 +165,9 @@ with a little hand-made fix
 
 There are too much common code between Dashboard and FolderDashboard,
 propose a plan to refactor.
-CLAUDE 
+CLAUDE REFACTORING_*.md
+
+proceed!
 
 
 ## Future
