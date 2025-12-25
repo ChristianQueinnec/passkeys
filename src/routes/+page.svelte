@@ -13,7 +13,7 @@
     let username = $state("");
     let password = $state("");
     let encryptionKey = $state<CryptoKey | null>(null);
-    let useFolderView = $state(true); // Default to folder view
+    let useFolderView = $state(false); // Default to folder view
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);

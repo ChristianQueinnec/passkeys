@@ -1,0 +1,49 @@
+import { api } from "$lib/api";
+import { browser } from "$app/environment";
+
+export function useVaultSync(
+    vault: {
+        lastSavedDate: string | null;
+        setOfflineMode: (offline: boolean) => void;
+        setNewerVersionAvailable: (available: boolean) => void;
+    },
+) {
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+    function startPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        const interval = browser && (window as any).__TESTING__ ? 1000 : 60000;
+        pollTimer = setInterval(pollForUpdates, interval);
+    }
+
+    async function pollForUpdates() {
+        if (!api.token) return;
+        try {
+            const metadata = await api.getLatestVaultMetadata();
+            vault.setOfflineMode(false);
+            if (metadata.mtime && vault.lastSavedDate) {
+                const serverTime = new Date(metadata.mtime).getTime();
+                const localTime = new Date(vault.lastSavedDate).getTime();
+                if (serverTime > localTime + 1000) {
+                    vault.setNewerVersionAvailable(true);
+                }
+            }
+        } catch (e) {
+            console.log("Polling failed (server unreachable?)");
+            vault.setOfflineMode(true);
+        }
+    }
+
+    // Auto-start polling
+    $effect(() => {
+        startPolling();
+        return () => {
+            if (pollTimer) clearInterval(pollTimer);
+        };
+    });
+
+    return {
+        startPolling,
+        pollForUpdates,
+    };
+}
