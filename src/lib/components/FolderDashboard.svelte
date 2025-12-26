@@ -1,12 +1,13 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
     import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
-
+    import type { PasswordEntry } from '../types';
+ 
     let { encryptionKey, username, onToggleView } = $props();
 
     // Initialize composables
@@ -14,10 +15,23 @@
     const security = useVaultSecurity(vault, encryptionKey, () => {
         displayedEntries = [];
     });
-    const sync = useVaultSync(vault);
+    useVaultSync(vault);
 
-    // View-specific state (folder logic)
-    interface FolderNode {
+    // Load vault on mount
+    onMount(async () => {
+        await vault.loadVault();
+        if (vault.items.length >= 0) {
+            buildFolderTree();
+        }
+    });
+
+    // Cleanup on destroy
+    onDestroy(() => {
+        vault.cleanup();
+    });
+
+ // View-specific state (folder logic)
+ interface FolderNode {
         name: string;
         fullPath: string;
         isOpen: boolean;
@@ -34,7 +48,7 @@
     });
 
     let selectedFolder = $state<FolderNode | null>(null);
-    let displayedEntries = $state<any[]>([]);
+    let displayedEntries = $state<PasswordEntry[]>([]);
 
     // Build folder tree from items
     function buildFolderTree() {
@@ -134,23 +148,6 @@
         });
     }
 
-    // Rebuild tree when items change
-    $effect(() => {
-        if (vault.items.length >= 0) {
-            //buildFolderTree();
-        }
-    });
-
-    // Load vault on mount
-    $effect(() => {
-        vault.loadVault();
-    });
-
-    // Cleanup on destroy
-    onDestroy(() => {
-        vault.cleanup();
-    });
-
     // Expose synchronizeVault for parent component
     export async function synchronizeVault() {
         await vault.synchronizeVault();
@@ -158,6 +155,7 @@
 </script>
 
 <div class="folder-dashboard">
+    <div class="sidebar">
     <VaultControls
         {onToggleView}
         viewIcon={`<svg
@@ -261,22 +259,31 @@
     onDeleteHistory={vault.deleteHistoryItem}
     onCopy={vault.copyToClipboard}
 />
+    </div>
 
 <style>
     .folder-dashboard {
         display: flex;
-        flex-direction: column;
         height: 100vh;
+    }
+    .sidebar {
+        width: 100%;
+        max-width: 700px;
+        border-right: 1px solid #ccc;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
     }
 
     .main-content {
         display: flex;
         flex: 1;
         overflow: hidden;
+        flex-direction: row;
     }
 
     .folder-pane {
-        width: 300px;
+        width: 200px;
         border-right: 1px solid #ccc;
         overflow-y: auto;
         padding: 1rem;
@@ -293,6 +300,7 @@
         flex: 1;
         overflow-y: auto;
         padding: 1rem;
+        max-width: 400px;
     }
 
     .entries-pane h3 {

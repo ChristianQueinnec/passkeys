@@ -36,6 +36,7 @@ export function useVaultSecurity(
         const titlesOnly = vault.items.map((item) => ({
             id: item.id,
             title: item.title,
+            group: item.group,
         }));
         vault.setItems(titlesOnly as PasswordEntry[]);
         

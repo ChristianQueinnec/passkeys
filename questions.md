@@ -175,4 +175,9 @@ CLAUDE
 
 bypass Login page if coming from authenticated nginx proxy ?
 
+client-settings.json
+  pollForUpdates
+  inactivityTimer
+  seed for hash
+  s/useVaultSync/startVaultSync/g
 

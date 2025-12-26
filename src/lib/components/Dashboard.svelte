@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
     import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
@@ -15,7 +15,7 @@
     const security = useVaultSecurity(vault, encryptionKey, () => {
         filteredFiles = [];
     });
-    const sync = useVaultSync(vault);
+    useVaultSync(vault);
 
     // View-specific state
     let filter = $state("");
@@ -24,8 +24,8 @@
     );
 
     // Load vault on mount
-    $effect(() => {
-        vault.loadVault();
+    onMount(async () => {
+        await vault.loadVault();
     });
 
     // Cleanup on destroy

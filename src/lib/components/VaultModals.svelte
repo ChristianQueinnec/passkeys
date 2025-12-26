@@ -50,7 +50,7 @@
 
 <HistoryModal
     isOpen={showHistoryModal}
-    files={historyFiles}
+    historyFiles={historyFiles}
     onClose={onCloseModals}
     onDelete={onDeleteHistory}
 />

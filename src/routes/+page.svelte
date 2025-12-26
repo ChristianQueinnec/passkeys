@@ -50,6 +50,7 @@
             // For MVP using fixed salt as per previous implementation
             const fixedSalt = new TextEncoder().encode("mvp_salt_fixed");
             encryptionKey = await pbkdf2(masterPassword, fixedSalt);
+            // decrypt here the vault.....................
             phase = 2; // Move to Dashboard
             await tick();
         } catch (e) {
