@@ -19,14 +19,6 @@ export function useVaultSecurity(
     function resetTimer() {
         if (inactivityTimer) clearTimeout(inactivityTimer);
 
-        if (isMemoryCleared) {
-            if (!restorePromise) {
-                restorePromise = restoreSensitiveData().finally(() => {
-                    restorePromise = null;
-                });
-            }
-        }
-
         inactivityTimer = setTimeout(() => {
             clearSensitiveData();
         }, 60000); // 1 minute

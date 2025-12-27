@@ -276,10 +276,9 @@
     }
 
     .main-content {
-        display: flex;
-        flex: 1;
+        display: grid;
         overflow: hidden;
-        flex-direction: row;
+        grid-template-columns: 1fr 2fr;
     }
 
     .folder-pane {
@@ -297,10 +296,8 @@
     }
 
     .entries-pane {
-        flex: 1;
         overflow-y: auto;
         padding: 1rem;
-        max-width: 400px;
     }
 
     .entries-pane h3 {

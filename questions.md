@@ -181,3 +181,8 @@ client-settings.json
   seed for hash
   s/useVaultSync/startVaultSync/g
 
+drag and drop entry to folder
+
+decipher only when copy to clipboard
+
+rebuild folder tree after vault change.

@@ -88,13 +88,15 @@
             {/if}
         </div>
 
-        <PasswordList
-            items={filteredFiles}
-            isMemoryCleared={security.isMemoryCleared}
-            onSelect={vault.selectItem}
-            onCopyUsername={vault.copyToClipboard}
-            onCopyPassword={vault.copyToClipboard}
-        />
+        <div class="entries-pane">
+            <PasswordList
+                items={filteredFiles}
+                isMemoryCleared={security.isMemoryCleared}
+                onSelect={vault.selectItem}
+                onCopyUsername={vault.copyToClipboard}
+                onCopyPassword={vault.copyToClipboard}
+            />
+        </div>
     </div>
 </div>
 
@@ -158,4 +160,7 @@
         background: none;
         box-shadow: none;
     }
+ .entries-pane {
+     padding: 1rem;
+ }
 </style>
