@@ -14,12 +14,19 @@
         onCopyUsername: (text: string) => void;
         onCopyPassword: (text: string) => void;
     } = $props();
+
+ function reload () {
+     location.reload();
+ }
 </script>
 
 <div class="list">
     {#if isMemoryCleared}
         <div class="empty-state">
-            Security timeout: Vault cleared from memory. Interact to restore.
+            Security timeout: Vault cleared from memory.
+            <div>
+                <button onclick={reload}>Unlock vault</button>
+            </div>
         </div>
     {:else if items.length === 0}
         <div class="empty-state">No entries to display</div>
