@@ -8,6 +8,7 @@
         onSelect,
         onCopyUsername,
         onCopyPassword,
+        onDragStart,
     }: {
         items: PasswordEntry[];
         isMemoryCleared: boolean;
@@ -15,11 +16,12 @@
         onSelect: (item: PasswordEntry) => void;
         onCopyUsername: (text: string) => void;
         onCopyPassword: (text: string) => void;
+        onDragStart?: (item: PasswordEntry, e: DragEvent) => void;
     } = $props();
 
- async function reload () {
-     await restoreSensitiveData();
- }
+    async function reload() {
+        await restoreSensitiveData();
+    }
 </script>
 
 <div class="list">
@@ -38,6 +40,9 @@
                 class="list-item"
                 data-testid="vault-item"
                 data-id={item.id}
+                draggable={!!onDragStart}
+                ondragstart={(e) => onDragStart?.(item, e)}
+                role="listitem"
             >
                 <span class="item-title">
                     {#if item.site}

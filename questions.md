@@ -170,8 +170,10 @@ CLAUDE REFACTORING_*.md
 proceed with that plan
 CLAUDE + hand made changes
 
-In the FolderDashboard, allow to drag and drop PasswordEntry to a
-folder. Allow also 
+In the `FolderDashboard`, allow to drag and drop a PasswordEntry to a
+folder. Remember that one can also directly change the `group`
+property in the `Editor` component.
+Antigravity
 
 
 ## Future
@@ -189,3 +191,5 @@ drag and drop entry to folder
 decipher only when copy to clipboard
 
 rebuild folder tree after vault change.
+
+loadVault avant unlock

@@ -100,8 +100,8 @@ do
             build_backend
             ;;
         t|test)
-            create_users
-            create_vault
+            create_test_users
+            create_test_vault
             ;;
         h|help|*)
             usage

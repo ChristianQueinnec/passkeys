@@ -6,8 +6,8 @@
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
-    import type { PasswordEntry } from '../types';
- 
+    import type { PasswordEntry } from "../types";
+
     let { encryptionKey, username, onToggleView } = $props();
 
     // Initialize composables
@@ -21,7 +21,7 @@
     onMount(async () => {
         await vault.loadVault();
         if (vault.items.length >= 0) {
-            buildFolderTree();
+            // Initial build handled by effect
         }
     });
 
@@ -30,8 +30,8 @@
         vault.cleanup();
     });
 
- // View-specific state (folder logic)
- interface FolderNode {
+    // View-specific state (folder logic)
+    interface FolderNode {
         name: string;
         fullPath: string;
         isOpen: boolean;
@@ -51,6 +51,13 @@
     let displayedEntries = $state<PasswordEntry[]>([]);
 
     // Build folder tree from items
+    // Reactive update when items change
+    $effect(() => {
+        // Access current items to track dependency
+        const currentItems = vault.items;
+        buildFolderTree();
+    });
+
     function buildFolderTree() {
         const root: FolderNode = {
             name: "Root",
@@ -108,6 +115,11 @@
 
         folderTree = root;
 
+        // Restore selection or default to root
+        // Using untrack to avoid re-running this effect when selectedFolder changes, but we are inside buildFolderTree...
+        // Svelte 5: Be careful with circular dependencies.
+        // selectedFolder IS state. Reading it is fine if we don't start a cycle.
+        // We are writing to it.
         if (!selectedFolder || selectedFolder === null) {
             selectedFolder = root;
             displayedEntries = root.entries;
@@ -152,13 +164,46 @@
     export async function synchronizeVault() {
         await vault.synchronizeVault();
     }
+
+    // Drag and Drop Logic
+    function handleDragStart(item: PasswordEntry, e: DragEvent) {
+        if (e.dataTransfer) {
+            e.dataTransfer.setData("text/plain", item.id);
+            e.dataTransfer.effectAllowed = "move";
+        }
+    }
+
+    function handleDragOver(e: DragEvent) {
+        e.preventDefault();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = "move";
+        }
+    }
+
+    async function handleDrop(e: DragEvent, targetNode: FolderNode) {
+        e.preventDefault();
+        const id = e.dataTransfer?.getData("text/plain");
+        if (!id) return;
+
+        const item = vault.items.find((i) => i.id === id);
+        if (item) {
+            const newGroup = targetNode.fullPath || undefined;
+            // Only update if group is different
+            if (item.group !== newGroup) {
+                await vault.handleSave({
+                    ...item,
+                    group: newGroup,
+                });
+            }
+        }
+    }
 </script>
 
 <div class="folder-dashboard">
     <div class="sidebar">
-    <VaultControls
-        {onToggleView}
-        viewIcon={`<svg
+        <VaultControls
+            {onToggleView}
+            viewIcon={`<svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
@@ -176,91 +221,94 @@
             <line x1="3" y1="12" x2="3.01" y2="12" />
             <line x1="3" y1="18" x2="3.01" y2="18" />
         </svg>`}
-        viewLabel="List View"
-        onNewEntry={startCreateInFolder}
-        onSave={vault.saveVault}
-        onHistory={vault.openHistory}
-        isDirty={vault.isDirty}
-        offlineMode={vault.offlineMode}
-        newerVersionAvailable={vault.newerVersionAvailable}
-        lastSavedDate={vault.lastSavedDate}
-        onSynchronize={vault.synchronizeVault}
-    />
+            viewLabel="List View"
+            onNewEntry={startCreateInFolder}
+            onSave={vault.saveVault}
+            onHistory={vault.openHistory}
+            isDirty={vault.isDirty}
+            offlineMode={vault.offlineMode}
+            newerVersionAvailable={vault.newerVersionAvailable}
+            lastSavedDate={vault.lastSavedDate}
+            onSynchronize={vault.synchronizeVault}
+        />
 
-    <div class="main-content">
-        <div class="folder-pane">
-            <h3>Folders</h3>
-            <div class="folder-tree">
-                {#snippet renderFolder(node: FolderNode, level: number)}
-                    <div
-                        class="folder-item"
-                        class:selected={selectedFolder === node}
-                        style="padding-left: {level * 1.5}rem"
-                    >
-                        <button
-                            class="folder-button"
-                            onclick={() => toggleFolder(node)}
+        <div class="main-content">
+            <div class="folder-pane">
+                <h3>Folders</h3>
+                <div class="folder-tree">
+                    {#snippet renderFolder(node: FolderNode, level: number)}
+                        <div
+                            class="folder-item"
+                            class:selected={selectedFolder === node}
+                            style="padding-left: {level * 1.5}rem"
                         >
-                            <span class="folder-icon">
-                                {#if node.children.length > 0}
-                                    {#if node.isOpen}
-                                        📂
-                                    {:else}
-                                        📁
-                                    {/if}
-                                {:else}
-                                    📄
-                                {/if}
-                            </span>
-                            <span class="folder-name">{node.name}</span>
-                            <span class="entry-count"
-                                >({node.entries.length})</span
+                            <button
+                                class="folder-button"
+                                onclick={() => toggleFolder(node)}
+                                ondragover={handleDragOver}
+                                ondrop={(e) => handleDrop(e, node)}
                             >
-                        </button>
-                    </div>
-                    {#if node.isOpen}
-                        {#each node.children as child}
-                            {@render renderFolder(child, level + 1)}
-                        {/each}
-                    {/if}
-                {/snippet}
+                                <span class="folder-icon">
+                                    {#if node.children.length > 0}
+                                        {#if node.isOpen}
+                                            📂
+                                        {:else}
+                                            📁
+                                        {/if}
+                                    {:else}
+                                        📄
+                                    {/if}
+                                </span>
+                                <span class="folder-name">{node.name}</span>
+                                <span class="entry-count"
+                                    >({node.entries.length})</span
+                                >
+                            </button>
+                        </div>
+                        {#if node.isOpen}
+                            {#each node.children as child}
+                                {@render renderFolder(child, level + 1)}
+                            {/each}
+                        {/if}
+                    {/snippet}
 
-                {@render renderFolder(folderTree, 0)}
+                    {@render renderFolder(folderTree, 0)}
+                </div>
+            </div>
+
+            <div class="entries-pane">
+                <h3>
+                    {selectedFolder
+                        ? selectedFolder.fullPath || "Root"
+                        : "Entries"}
+                </h3>
+                <PasswordList
+                    items={displayedEntries}
+                    isMemoryCleared={security.isMemoryCleared}
+                    restoreSensitiveData={security.restoreSensitiveData}
+                    onSelect={vault.selectItem}
+                    onCopyUsername={vault.copyToClipboard}
+                    onCopyPassword={vault.copyToClipboard}
+                    onDragStart={handleDragStart}
+                />
             </div>
         </div>
-
-        <div class="entries-pane">
-            <h3>
-                {selectedFolder
-                    ? selectedFolder.fullPath || "Root"
-                    : "Entries"}
-            </h3>
-            <PasswordList
-                items={displayedEntries}
-                isMemoryCleared={security.isMemoryCleared}
-                restoreSensitiveData={security.restoreSensitiveData}
-                onSelect={vault.selectItem}
-                onCopyUsername={vault.copyToClipboard}
-                onCopyPassword={vault.copyToClipboard}
-            />
-        </div>
     </div>
+
+    <VaultModals
+        selectedItem={vault.selectedItem}
+        editingItem={vault.editingItem}
+        isCreating={vault.isCreating}
+        showHistoryModal={vault.showHistoryModal}
+        historyFiles={vault.historyFiles}
+        onCloseModals={vault.closeModals}
+        onEdit={vault.startEdit}
+        onDelete={vault.handleDelete}
+        onSave={vault.handleSave}
+        onDeleteHistory={vault.deleteHistoryItem}
+        onCopy={vault.copyToClipboard}
+    />
 </div>
-
-<VaultModals
-    selectedItem={vault.selectedItem}
-    editingItem={vault.editingItem}
-    isCreating={vault.isCreating}
-    showHistoryModal={vault.showHistoryModal}
-    historyFiles={vault.historyFiles}
-    onCloseModals={vault.closeModals}
-    onEdit={vault.startEdit}
-    onDelete={vault.handleDelete}
-    onSave={vault.handleSave}
-    onDeleteHistory={vault.deleteHistoryItem}
-    onCopy={vault.copyToClipboard}
-/>
-    </div>
 
 <style>
     .folder-dashboard {

@@ -21,6 +21,10 @@ run.container :
 	@echo "Browse http://localhost:3000"
 	docker logs -f --tail 100 passkeys
 
+run.tests :
+	scripts/init.sh -t
+	npm run tests
+
 REMOTE=pk.queinnec.org
 archive.container :
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
@@ -34,6 +38,8 @@ run.remote.container :
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	ssh ${REMOTE} make -C Passkeys do.run.remote.container
 do.run.remote.container :
+	if docker network ls | grep -q snipnet ; then true ; else \
+	  docker network create --subnet 172.55.0.0/16 snipnet ; fi
 	docker compose up -d
 
 clean :
