@@ -100,7 +100,7 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
         return true;
     }
 
-    async function saveVault(both=true) {
+    async function saveVault(both = true) {
         if (isLoading) return;
         const jsonStr = JSON.stringify(items);
         const encrypted = await encrypt(jsonStr, encryptionKey);
@@ -111,7 +111,7 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
         };
 
         try {
-            if ( both ) {
+            if (both) {
                 await api.saveVault(JSON.stringify(payload));
                 lastSavedDate = payload.date;
                 isDirty = false;
@@ -320,3 +320,5 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
         cleanup,
     };
 }
+
+export type Vault = ReturnType<typeof useVault>;

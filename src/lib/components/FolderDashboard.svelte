@@ -7,28 +7,9 @@
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
     import type { PasswordEntry } from "../types";
+    import type { Vault } from "../stores/useVault.svelte";
 
     let { encryptionKey, username, onToggleView } = $props();
-
-    // Initialize composables
-    const vault = useVault(encryptionKey, username);
-    const security = useVaultSecurity(vault, encryptionKey, () => {
-        displayedEntries = [];
-    });
-    useVaultSync(vault);
-
-    // Load vault on mount
-    onMount(async () => {
-        await vault.loadVault();
-        if (vault.items.length >= 0) {
-            // Initial build handled by effect
-        }
-    });
-
-    // Cleanup on destroy
-    onDestroy(() => {
-        vault.cleanup();
-    });
 
     // View-specific state (folder logic)
     interface FolderNode {
@@ -49,6 +30,26 @@
 
     let selectedFolder = $state<FolderNode | null>(null);
     let displayedEntries = $state<PasswordEntry[]>([]);
+
+    // Initialize composables
+    const vault = useVault(encryptionKey, username);
+
+    // Security handles auto-lock and clearing data from memory
+    const security = useVaultSecurity(vault, encryptionKey, () => {
+        displayedEntries = [];
+    });
+
+    useVaultSync(vault);
+
+    // Load vault on mount
+    onMount(async () => {
+        await vault.loadVault();
+    });
+
+    // Cleanup on destroy
+    onDestroy(() => {
+        vault.cleanup();
+    });
 
     // Build folder tree from items
     // Reactive update when items change
