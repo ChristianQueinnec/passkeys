@@ -23,34 +23,31 @@
     {#if item}
         <div class="details">
             <div class="field">
-                <strong>Site:</strong>
+                <strong>Site URL:</strong>
                 <a href={item.site} target="_blank">{item.site}</a>
             </div>
             <div class="field">
                 <strong>Username:</strong>
-                <div class="field-content">
-                    <span>{item.username}</span>
-                    <button
-                        class="small"
-                        onclick={() => item && onCopy(item.username || "")}
-                        >Copy</button
-                    >
-                </div>
+                <span>{item.username}</span>
+                <button
+                    class="small"
+                    onclick={() => item && onCopy(item.username || "")}
+                    >Copy</button
+                         >
             </div>
             <div class="field">
                 <strong>Password:</strong>
-                <div class="field-content">
-                    <span>********</span>
-                    <button
-                        class="small"
-                        onclick={() => item && onCopy(item.password || "")}
-                        >Copy</button
-                    >
-                </div>
+                <span>********</span>
+                <button
+                    class="small"
+                    onclick={() => item && onCopy(item.password || "")}
+                    >Copy</button
+                         >
             </div>
             <div class="field">
                 <strong>Tags:</strong>
                 <span>{item.tags?.join(", ")}</span>
+                <span></span>
             </div>
             <div class="field">
                 <strong>Notes:</strong>
@@ -70,15 +67,11 @@
 <style>
     .field {
         margin-bottom: 1rem;
-    }
-    .field-content {
         display: flex;
+        justify-content: space-between;
         align-items: center;
         gap: 0.5rem;
         margin-top: 0.25rem;
-    }
-    .field-content span {
-        flex: 1;
     }
     strong {
         font-weight: bold;
@@ -88,6 +81,7 @@
         display: flex;
         gap: 0.5rem;
         margin-bottom: 0.5rem;
+        justify-content: center;
     }
     .small {
         font-size: 0.8rem;

@@ -100,7 +100,7 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
         return true;
     }
 
-    async function saveVault() {
+    async function saveVault(both=true) {
         if (isLoading) return;
         const jsonStr = JSON.stringify(items);
         const encrypted = await encrypt(jsonStr, encryptionKey);
@@ -111,13 +111,14 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
         };
 
         try {
-            await api.saveVault(JSON.stringify(payload));
-            lastSavedDate = payload.date;
+            if ( both ) {
+                await api.saveVault(JSON.stringify(payload));
+                lastSavedDate = payload.date;
+                isDirty = false;
+                offlineMode = false;
+            }
 
             encryptedVaultData = payload.data;
-
-            isDirty = false;
-            offlineMode = false;
             localStorage.setItem("offline_vault", JSON.stringify(payload));
         } catch (e) {
             alert("Failed to save vault to server. Please check connection.");
@@ -227,12 +228,17 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
     }
 
     async function copyToClipboard(text: string) {
+        await navigator.clipboard.writeText(text);
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
-        await navigator.clipboard.writeText(text);
         clipboardTimeout = setTimeout(async () => {
-            await navigator.clipboard.writeText("");
+            try {
+                await navigator.clipboard.writeText("");
+            } catch {
+                // Mask that exception:
+                // Uncaught (in promise) DOMException: Clipboard write was blocked due to lack of user activation.
+            }
             clipboardTimeout = null;
         }, 10000);
     }

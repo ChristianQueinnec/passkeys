@@ -168,7 +168,10 @@ propose a plan to refactor.
 CLAUDE REFACTORING_*.md
 
 proceed with that plan
-CLAUDE 
+CLAUDE + hand made changes
+
+In the FolderDashboard, allow to drag and drop PasswordEntry to a
+folder. Allow also 
 
 
 ## Future

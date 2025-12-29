@@ -4,19 +4,21 @@
     let {
         items = [],
         isMemoryCleared = false,
+        restoreSensitiveData,
         onSelect,
         onCopyUsername,
         onCopyPassword,
     }: {
         items: PasswordEntry[];
-        isMemoryCleared?: boolean;
+        isMemoryCleared: boolean;
+        restoreSensitiveData: () => void;
         onSelect: (item: PasswordEntry) => void;
         onCopyUsername: (text: string) => void;
         onCopyPassword: (text: string) => void;
     } = $props();
 
- function reload () {
-     location.reload();
+ async function reload () {
+     await restoreSensitiveData();
  }
 </script>
 

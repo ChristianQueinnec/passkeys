@@ -238,6 +238,7 @@
             <PasswordList
                 items={displayedEntries}
                 isMemoryCleared={security.isMemoryCleared}
+                restoreSensitiveData={security.restoreSensitiveData}
                 onSelect={vault.selectItem}
                 onCopyUsername={vault.copyToClipboard}
                 onCopyPassword={vault.copyToClipboard}

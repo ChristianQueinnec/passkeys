@@ -31,3 +31,5 @@ realdata/
 pass.csv
 pass.json
 test-results/
+server.password
+server.htpasswd

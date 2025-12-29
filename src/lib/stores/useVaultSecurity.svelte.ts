@@ -19,12 +19,17 @@ export function useVaultSecurity(
     function resetTimer() {
         if (inactivityTimer) clearTimeout(inactivityTimer);
 
-        inactivityTimer = setTimeout(() => {
-            clearSensitiveData();
+        inactivityTimer = setTimeout(async () => {
+            await clearSensitiveData();
         }, 60000); // 1 minute
     }
 
-    function clearSensitiveData() {
+    async function clearSensitiveData() {
+        if ( vault.isDirty ) {
+            // Save only in localstore
+            await vault.saveVault(false);
+        }
+
         const titlesOnly = vault.items.map((item) => ({
             id: item.id,
             title: item.title,
@@ -89,7 +94,7 @@ export function useVaultSecurity(
         get isMemoryCleared() {
             return isMemoryCleared;
         },
-        resetTimer,
+        //resetTimer,
         restoreSensitiveData,
     };
 }

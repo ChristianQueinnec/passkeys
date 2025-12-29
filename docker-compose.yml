@@ -1,17 +1,18 @@
+networks:
+  trinvnet:
+    external: true
+    name: snipnet
+# docker network create --subnet 172.55.0.0/16 snipnet
+
 services:
   passkeys:
-    build:
-      context: .
-      args:
-        - UID=1299
-        - GID=1299
-        - USER=queinnec
     image: registry.queinnec.org:5000/passkeys
     container_name: passkeys
+    networks:
+      trinvnet:
+        ipv4_address: 172.55.0.20
     expose:
       - "3000"
-    ports:
-      - "3000:3000"
     volumes:
       - ./realdata:/app/data
     restart: unless-stopped

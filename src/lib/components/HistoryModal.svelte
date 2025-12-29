@@ -16,6 +16,9 @@
 </script>
 
 <Modal {isOpen} {onClose} title="Vault History">
+    <p class="hint">
+        Don't forget to erase non-ciphered vaults if any!
+    </p>
     <div class="history-list">
         {#if historyFiles.length === 0}
             <p>No history found.</p>
@@ -63,4 +66,8 @@
         font-size: 0.8rem;
         padding: 0.25rem 0.5rem;
     }
+ p.hint {
+     margin-left: 2rem;
+     color: grey;
+ }
 </style>
