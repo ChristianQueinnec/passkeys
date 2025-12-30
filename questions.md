@@ -176,13 +176,14 @@ property in the `Editor` component.
 Antigravity
 
 Can you fix the drag and drop tests
-Antigravity
+OK Antigravity
 
 In the dropping process, When hovering over a folder, highlight the
 targetted folder.
+OK Antigravity
+
+Can you fix tests/e2e/security.spec.ts:43:5 › Security Inactivity Timeout › should clear vault from memory after inactivity and restore on interaction 
 Antigravity
-
-
 
 
 ## Future

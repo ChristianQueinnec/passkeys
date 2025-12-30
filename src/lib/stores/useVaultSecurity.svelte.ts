@@ -1,3 +1,4 @@
+import { untrack } from "svelte";
 import { decrypt } from "$lib/crypto";
 import { sortPasswordEntries } from "$lib/vault";
 import type { PasswordEntry, CipheredVaultData } from "$lib/types";
@@ -24,6 +25,9 @@ export function useVaultSecurity(
     let restorePromise: Promise<void> | null = null;
 
     function resetTimer() {
+        if (isMemoryCleared) {
+            restoreSensitiveData();
+        }
         if (inactivityTimer) clearTimeout(inactivityTimer);
 
         inactivityTimer = setTimeout(async () => {
@@ -88,7 +92,7 @@ export function useVaultSecurity(
             window.addEventListener(event, resetTimer),
         );
 
-        resetTimer(); // Start initial timer
+        untrack(() => resetTimer()); // Start initial timer
 
         return () => {
             events.forEach((event) =>
