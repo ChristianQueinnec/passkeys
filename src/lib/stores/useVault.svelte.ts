@@ -4,7 +4,20 @@ import { sortPasswordEntries, normalizeVaultItems } from "$lib/vault";
 import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
 
-export function useVault(encryptionKey: CryptoKey, username: string) {
+export function useVault(
+    encryptionKeyOrGetter: CryptoKey | (() => CryptoKey),
+    usernameOrGetter: string | (() => string),
+) {
+    const getEncryptionKey = () =>
+        typeof encryptionKeyOrGetter === "function"
+            ? (encryptionKeyOrGetter as () => CryptoKey)()
+            : encryptionKeyOrGetter;
+
+    const getUsername = () =>
+        typeof usernameOrGetter === "function"
+            ? (usernameOrGetter as () => string)()
+            : usernameOrGetter;
+
     // State
     let items = $state<PasswordEntry[]>([]);
     let selectedItem = $state<PasswordEntry | null>(null);
@@ -84,7 +97,7 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
                         const jsonStr = await decrypt(
                             encryptedData.cipher,
                             encryptedData.iv,
-                            encryptionKey,
+                            getEncryptionKey(),
                         );
                         unsortedItems = JSON.parse(jsonStr);
                         isDirty = false;
@@ -103,7 +116,7 @@ export function useVault(encryptionKey: CryptoKey, username: string) {
     async function saveVault(both = true) {
         if (isLoading) return;
         const jsonStr = JSON.stringify(items);
-        const encrypted = await encrypt(jsonStr, encryptionKey);
+        const encrypted = await encrypt(jsonStr, getEncryptionKey());
 
         const payload = {
             date: new Date().toISOString(),

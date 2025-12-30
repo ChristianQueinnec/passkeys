@@ -11,7 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
-		"reset-db": "echo '[{\"username\":\"admin\",\"password\":\"password\"},{\"username\":\"q\",\"password\":\"q\"},{\"username\":\"auth_test\",\"password\":\"q\"},{\"username\":\"history_test\",\"password\":\"q\"}]' > data/users.json && find data -mindepth 1 -not -name 'users.json' -exec rm -rf {} +",
+		"reset-db": "scripts/init.sh -t",
 		"test:e2e": "npm run reset-db && playwright test tests/e2e --workers=1",
 		"tests": "npm run test:unit && npm run test:e2e",
 		"build:container": "docker compose build"

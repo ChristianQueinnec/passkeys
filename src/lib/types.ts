@@ -29,3 +29,11 @@ export interface CipheredVaultData {
     iv: string;
     cipher: string;
 }
+
+export interface FolderNode {
+    name: string;
+    fullPath: string;
+    isOpen: boolean;
+    children: FolderNode[];
+    entries: PasswordEntry[];
+}

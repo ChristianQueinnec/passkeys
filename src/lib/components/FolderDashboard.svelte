@@ -6,19 +6,10 @@
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
-    import type { PasswordEntry } from "../types";
+    import type { PasswordEntry, FolderNode } from "../types";
     import type { Vault } from "../stores/useVault.svelte";
 
     let { encryptionKey, username, onToggleView } = $props();
-
-    // View-specific state (folder logic)
-    interface FolderNode {
-        name: string;
-        fullPath: string;
-        isOpen: boolean;
-        children: FolderNode[];
-        entries: any[];
-    }
 
     let folderTree = $state<FolderNode>({
         name: "Root",
@@ -32,18 +23,26 @@
     let displayedEntries = $state<PasswordEntry[]>([]);
 
     // Initialize composables
-    const vault = useVault(encryptionKey, username);
+    const vault = useVault(
+        () => encryptionKey,
+        () => username,
+    );
 
     // Security handles auto-lock and clearing data from memory
-    const security = useVaultSecurity(vault, encryptionKey, () => {
-        displayedEntries = [];
-    });
+    const security = useVaultSecurity(
+        vault,
+        () => encryptionKey,
+        () => {
+            displayedEntries = [];
+        },
+    );
 
     useVaultSync(vault);
 
     // Load vault on mount
     onMount(async () => {
         await vault.loadVault();
+        buildFolderTree();
     });
 
     // Cleanup on destroy
@@ -54,9 +53,7 @@
     // Build folder tree from items
     // Reactive update when items change
     $effect(() => {
-        // Access current items to track dependency
-        const currentItems = vault.items;
-        buildFolderTree();
+        //buildFolderTree();
     });
 
     function buildFolderTree() {

@@ -11,10 +11,17 @@
     let { encryptionKey, username, onToggleView } = $props();
 
     // Initialize composables
-    const vault = useVault(encryptionKey, username);
-    const security = useVaultSecurity(vault, encryptionKey, () => {
-        filteredFiles = [];
-    });
+    const vault = useVault(
+        () => encryptionKey,
+        () => username,
+    );
+    const security = useVaultSecurity(
+        vault,
+        () => encryptionKey,
+        () => {
+            filteredFiles = [];
+        },
+    );
     useVaultSync(vault);
 
     // View-specific state
@@ -161,7 +168,7 @@
         background: none;
         box-shadow: none;
     }
- .entries-pane {
-     padding: 1rem;
- }
+    .entries-pane {
+        padding: 1rem;
+    }
 </style>

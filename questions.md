@@ -175,6 +175,8 @@ folder. Remember that one can also directly change the `group`
 property in the `Editor` component.
 Antigravity
 
+Can you fix the drag and drop tests
+Antigravity
 
 ## Future
 

@@ -8,10 +8,17 @@ export function useVaultSecurity(
         items: PasswordEntry[];
         setItems: (items: PasswordEntry[]) => void;
         encryptedVaultData: CipheredVaultData | null;
+        isDirty: boolean;
+        saveVault: (both?: boolean) => Promise<void>;
     },
-    encryptionKey: CryptoKey,
+    encryptionKeyOrGetter: CryptoKey | (() => CryptoKey),
     additionalClearCallback?: () => void,
 ) {
+    const getEncryptionKey = () =>
+        typeof encryptionKeyOrGetter === "function"
+            ? (encryptionKeyOrGetter as () => CryptoKey)()
+            : encryptionKeyOrGetter;
+
     let isMemoryCleared = $state(false);
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
     let restorePromise: Promise<void> | null = null;
@@ -25,7 +32,7 @@ export function useVaultSecurity(
     }
 
     async function clearSensitiveData() {
-        if ( vault.isDirty ) {
+        if (vault.isDirty) {
             // Save only in localstore
             await vault.saveVault(false);
         }
@@ -36,17 +43,18 @@ export function useVaultSecurity(
             group: item.group,
         }));
         vault.setItems(titlesOnly as PasswordEntry[]);
-        
+
         if (additionalClearCallback) {
             additionalClearCallback();
         }
-        
+
         isMemoryCleared = true;
     }
 
     async function restoreSensitiveData() {
         if (!isMemoryCleared) return;
-        if (!vault.encryptedVaultData || !encryptionKey) {
+        const key = getEncryptionKey();
+        if (!vault.encryptedVaultData || !key) {
             alert("No encrypted vault data or encryption key");
             return;
         }
@@ -54,7 +62,7 @@ export function useVaultSecurity(
             const jsonStr = await decrypt(
                 vault.encryptedVaultData.cipher,
                 vault.encryptedVaultData.iv,
-                encryptionKey,
+                key,
             );
             const unsorted = JSON.parse(jsonStr);
             vault.setItems(sortPasswordEntries(unsorted));
