@@ -19,11 +19,25 @@ EOF
 
 create_users () {
     mkdir -p data/
-    echo "Creating one user: ${USER} and its associated password: $PASSWORD"
+    echo "Creating one user: ${USER} and its associated password: ${PASSWORD}"
     echo "Note this login and password, you will need them!"
     cat > data/users.json <<EOF
 [ { "username": "${USER}",
     "password": "${PASSWORD}" }
+]
+EOF
+}
+
+create_test_users () {
+    mkdir -p data/${USER}
+    echo "Creating user: ${USER} and its associated password: ${PASSWORD}"
+    echo "Note this login and password, you will need them!"
+    cat > data/users.json <<EOF
+[ {"username": "${USER}", "password": "${PASSWORD}"},
+  {"username":"admin", "password":"password"},
+  {"username":"q", "password":"q"},
+  {"username":"auth_test", "password":"q"},
+  {"username":"history_test", "password":"q"}
 ]
 EOF
 }
@@ -45,7 +59,65 @@ create_vault () {
     "modified": ${DATE}
   },
   {
-    "group": "test",
+    "group": "test/in",
+    "title": "me as ${USER}",
+    "username": "${USER}",
+    "password": "${PASSWORD}",
+    "site": "https://localhost/",
+    "tags": ["test", "example"],
+    "notes": "Another sample password entry",
+    "created": ${DATE},
+    "modified": ${DATE}
+  }
+]
+EOF
+}
+
+remove_test_vaults () {
+    ( cd data/
+      touch foobar
+      for file in *
+      do
+          case "$file" in
+              "users.json")
+                  :
+                  ;;
+              *)
+                  rm -rf $file
+                  ;;
+          esac
+      done
+    )
+}
+
+create_test_vault () {
+    remove_test_vaults
+    mkdir -p data/${USER}/
+    DATE=$(date "+%s")
+    cat > data/${USER}/vault-init.vault <<EOF
+[{
+    "group": "",
+    "title": "log on example",
+    "username": "me@example.org",
+    "password": "${PASSWORD}",
+    "site": "https://ex.ample.org/",
+    "tags": ["test"],
+    "notes": "A sample password entry",
+    "created": ${DATE},
+    "modified": ${DATE}
+  },{
+    "group": "",
+    "title": "another log on example",
+    "username": "me@example.org",
+    "password": "${PASSWORD}",
+    "site": "https://ex.ample.org/",
+    "tags": ["test", "other"],
+    "notes": "Another sample password entry",
+    "created": ${DATE},
+    "modified": ${DATE}
+  },
+  {
+    "group": "test/in",
     "title": "me as ${USER}",
     "username": "${USER}",
     "password": "${PASSWORD}",
@@ -100,6 +172,8 @@ do
             build_backend
             ;;
         t|test)
+            USER=admin
+            PASSWORD=password
             create_test_users
             create_test_vault
             ;;
