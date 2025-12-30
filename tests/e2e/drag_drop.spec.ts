@@ -82,6 +82,12 @@ test.describe('Drag and Drop', () => {
         await page.getByLabel('Group/Folder').fill('Folder C');
         await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
 
+        // Create another Item in Folder C to keep folder alive
+        await page.getByRole('button', { name: '+ New Entry' }).click();
+        await page.getByLabel('Title *').fill('Item Keep');
+        await page.getByLabel('Group/Folder').fill('Folder C');
+        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+
         await page.getByRole('button', { name: 'Folder C' }).click();
         const itemC = page.locator('[data-testid="vault-item"]', { hasText: 'Item C' });
         await expect(itemC).toBeVisible();

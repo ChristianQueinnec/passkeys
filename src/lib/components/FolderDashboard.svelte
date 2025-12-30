@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
+    import { onMount, onDestroy, untrack } from "svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
     import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
@@ -53,7 +53,11 @@
     // Build folder tree from items
     // Reactive update when items change
     $effect(() => {
-        //buildFolderTree();
+        // Access current items to track dependency
+        const _ = vault.items;
+        untrack(() => {
+            buildFolderTree();
+        });
     });
 
     function buildFolderTree() {
