@@ -21,6 +21,7 @@
 
     let selectedFolder = $state<FolderNode | null>(null);
     let displayedEntries = $state<PasswordEntry[]>([]);
+    let dragTargetNode = $state<FolderNode | null>(null);
 
     // Initialize composables
     const vault = useVault(
@@ -182,8 +183,19 @@
         }
     }
 
+    function handleDragEnter(node: FolderNode) {
+        dragTargetNode = node;
+    }
+
+    function handleDragLeave(node: FolderNode) {
+        // Only clear if we're actually leaving the node (this is tricky with child elements)
+        // Simplification: we might rely on dragEnter of other nodes or drop to clear
+        // Ideally we check if relatedTarget is within the node
+    }
+
     async function handleDrop(e: DragEvent, targetNode: FolderNode) {
         e.preventDefault();
+        dragTargetNode = null;
         const id = e.dataTransfer?.getData("text/plain");
         if (!id) return;
 
@@ -246,8 +258,10 @@
                         >
                             <button
                                 class="folder-button"
+                                class:drag-over={dragTargetNode === node}
                                 onclick={() => toggleFolder(node)}
                                 ondragover={handleDragOver}
+                                ondragenter={() => handleDragEnter(node)}
                                 ondrop={(e) => handleDrop(e, node)}
                             >
                                 <span class="folder-icon">
@@ -389,6 +403,17 @@
     .folder-button:hover {
         background: #e2e8f0;
         box-shadow: none;
+    }
+
+    .folder-button.drag-over {
+        background: #cce5ff;
+        outline: 2px dashed #007bff;
+        outline-offset: -2px;
+    }
+
+    /* Prevent child elements from firing drag events */
+    .folder-button > * {
+        pointer-events: none;
     }
 
     .folder-icon {

@@ -178,6 +178,13 @@ Antigravity
 Can you fix the drag and drop tests
 Antigravity
 
+In the dropping process, When hovering over a folder, highlight the
+targetted folder.
+Antigravity
+
+
+
+
 ## Future
 
 bypass Login page if coming from authenticated nginx proxy ?
