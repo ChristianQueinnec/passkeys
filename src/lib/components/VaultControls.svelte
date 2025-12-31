@@ -1,4 +1,6 @@
 <script lang="ts">
+    import type { Snippet } from "svelte";
+
     let {
         onToggleView,
         viewIcon,
@@ -13,7 +15,7 @@
         onSynchronize,
     }: {
         onToggleView: () => void;
-        viewIcon: string;
+        viewIcon: Snippet;
         viewLabel: string;
         onNewEntry: () => void;
         onSave: () => void;
@@ -29,7 +31,7 @@
 <div class="controls">
     <div class="actions">
         <button onclick={onToggleView} title="Switch view">
-            {@html viewIcon}
+            {@render viewIcon()}
             {viewLabel}
         </button>
         <button onclick={onNewEntry}>+ New Entry</button>
