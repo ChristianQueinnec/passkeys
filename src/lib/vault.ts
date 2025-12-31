@@ -34,10 +34,13 @@ export function filterPasswordEntries(entries: PasswordEntry[], filter: string):
 /**
  * Normalizes vault items by ensuring they have an ID and tags.
  */
-export function normalizeVaultItems(items: any[]): PasswordEntry[] {
-    return items.map(item => ({
+export function normalizeVaultItems(
+    items: Partial<PasswordEntry>[],
+): PasswordEntry[] {
+    return items.map((item) => ({
         ...item,
-        id: item.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)),
+        id: item.id || crypto.randomUUID(),
+        title: item.title || "Untitled",
         tags: item.tags || [],
-    }));
+    } as PasswordEntry));
 }

@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
     import type { Vault } from "../stores/useVault.svelte";
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
+    import FolderIcon from "$lib/icons/FolderIcon.svelte";
 
     let { encryptionKey, username, onToggleView, vault, security } = $props();
 
@@ -20,25 +20,15 @@
     }
 </script>
 
+{#snippet folderIconSnippet()}
+    <FolderIcon />
+{/snippet}
+
 <div class="dashboard">
     <div class="sidebar">
         <VaultControls
             {onToggleView}
-            viewIcon={`<svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <path
-                    d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"
-                />
-            </svg>`}
+            viewIcon={folderIconSnippet}
             viewLabel="Folder View"
             onNewEntry={vault.startCreate}
             onSave={vault.saveVault}
