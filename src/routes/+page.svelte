@@ -7,6 +7,9 @@
     import { api } from "$lib/api";
     import { onMount, tick } from "svelte";
     import Modal from "$lib/components/Modal.svelte";
+    import { useVault } from "$lib/stores/useVault.svelte";
+    import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
+    import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
 
     // Application State
     let startCpt = $state(0);
@@ -26,6 +29,25 @@
     let cpNewPassword = $state("");
     let cpError = $state("");
     let cpSuccess = $state("");
+
+    // Initialize Global Stores
+    // Pass getters because encryptionKey and username change over time
+    const vault = useVault(
+        () => encryptionKey as CryptoKey,
+        () => username,
+    );
+
+    // Security handles auto-lock and clearing data from memory
+    const security = useVaultSecurity(
+        vault,
+        () => encryptionKey as CryptoKey,
+        () => {
+            // Optional callback when memory is cleared.
+            // Child components listen to security.isMemoryCleared to update UI
+        },
+    );
+
+    useVaultSync(vault);
 
     // Check for existing token
     onMount(async () => {
@@ -50,7 +72,8 @@
             // For MVP using fixed salt as per previous implementation
             const fixedSalt = new TextEncoder().encode("mvp_salt_fixed");
             encryptionKey = await pbkdf2(masterPassword, fixedSalt);
-            // decrypt here the vault.....................
+            // Load vault once key is derived
+            await vault.loadVault();
             phase = 2; // Move to Dashboard
             await tick();
         } catch (e) {
@@ -64,6 +87,7 @@
         username = "";
         password = "";
         encryptionKey = null;
+        vault.cleanup();
         phase = 0;
         showUserMenu = false;
     }
@@ -145,6 +169,8 @@
                     bind:this={dashboardRef}
                     {encryptionKey}
                     {username}
+                    {vault}
+                    {security}
                     onToggleView={toggleDashboardView}
                 />
             {:else}
@@ -152,6 +178,8 @@
                     bind:this={dashboardRef}
                     {encryptionKey}
                     {username}
+                    {vault}
+                    {security}
                     onToggleView={toggleDashboardView}
                 />
             {/if}

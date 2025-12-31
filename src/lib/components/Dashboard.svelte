@@ -1,44 +1,18 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { useVault } from "$lib/stores/useVault.svelte";
-    import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
-    import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
+    import type { Vault } from "../stores/useVault.svelte";
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
 
-    let { encryptionKey, username, onToggleView } = $props();
-
-    // Initialize composables
-    const vault = useVault(
-        () => encryptionKey,
-        () => username,
-    );
-    const security = useVaultSecurity(
-        vault,
-        () => encryptionKey,
-        () => {
-            filteredFiles = [];
-        },
-    );
-    useVaultSync(vault);
+    let { encryptionKey, username, onToggleView, vault, security } = $props();
 
     // View-specific state
     let filter = $state("");
     let filteredFiles = $derived(
         sortPasswordEntries(filterPasswordEntries(vault.items, filter)),
     );
-
-    // Load vault on mount
-    onMount(async () => {
-        await vault.loadVault();
-    });
-
-    // Cleanup on destroy
-    onDestroy(() => {
-        vault.cleanup();
-    });
 
     // Expose synchronizeVault for parent component
     export async function synchronizeVault() {

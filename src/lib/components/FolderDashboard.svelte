@@ -9,7 +9,7 @@
     import type { PasswordEntry, FolderNode } from "../types";
     import type { Vault } from "../stores/useVault.svelte";
 
-    let { encryptionKey, username, onToggleView } = $props();
+    let { encryptionKey, username, onToggleView, vault, security } = $props();
 
     let folderTree = $state<FolderNode>({
         name: "Root",
@@ -23,32 +23,13 @@
     let displayedEntries = $state<PasswordEntry[]>([]);
     let dragTargetNode = $state<FolderNode | null>(null);
 
-    // Initialize composables
-    const vault = useVault(
-        () => encryptionKey,
-        () => username,
-    );
-
-    // Security handles auto-lock and clearing data from memory
-    const security = useVaultSecurity(
-        vault,
-        () => encryptionKey,
-        () => {
-            displayedEntries = [];
-        },
-    );
-
-    useVaultSync(vault);
-
     // Load vault on mount
     onMount(async () => {
-        await vault.loadVault();
-        buildFolderTree();
-    });
-
-    // Cleanup on destroy
-    onDestroy(() => {
-        vault.cleanup();
+        // Assume vault is already loaded or will be loaded by parent
+        // Just build tree if items exist
+        if (vault.items.length > 0) {
+            buildFolderTree();
+        }
     });
 
     // Build folder tree from items
@@ -84,7 +65,7 @@
                 continue;
             }
 
-            const parts = group.split("/").filter((p) => p.trim());
+            const parts = group.split("/").filter((p: string) => p.trim());
             let currentNode = root;
 
             for (let i = 0; i < parts.length; i++) {
@@ -199,7 +180,7 @@
         const id = e.dataTransfer?.getData("text/plain");
         if (!id) return;
 
-        const item = vault.items.find((i) => i.id === id);
+        const item = vault.items.find((i: PasswordEntry) => i.id === id);
         if (item) {
             const newGroup = targetNode.fullPath || undefined;
             // Only update if group is different
