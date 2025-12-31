@@ -5,6 +5,7 @@
     import FolderDashboard from "$lib/components/FolderDashboard.svelte";
     import { pbkdf2 } from "$lib/crypto";
     import { api } from "$lib/api";
+    import type { VaultView } from "$lib/types";
     import { onMount, tick } from "svelte";
     import Modal from "$lib/components/Modal.svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
@@ -20,7 +21,7 @@
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
-    let dashboardRef = $state<any>(null);
+    let dashboardRef = $state<VaultView | null>(null);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
 

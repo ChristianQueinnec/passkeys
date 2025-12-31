@@ -37,3 +37,7 @@ export interface FolderNode {
     children: FolderNode[];
     entries: PasswordEntry[];
 }
+
+export interface VaultView {
+    synchronizeVault: () => Promise<void>;
+}
