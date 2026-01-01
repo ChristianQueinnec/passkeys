@@ -34,13 +34,13 @@ archive.container :
 # Don't forget to be authenticated:
 #    docker login registry.queinnec.org:5000 username: codegradx
 
-run.remote.container :
+run.remote.container : archive.container 
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	ssh ${REMOTE} make -C Passkeys do.run.remote.container
 do.run.remote.container :
 	if docker network ls | grep -q snipnet ; then true ; else \
-	  docker network create --subnet 172.55.0.0/16 snipnet ; fi
-	docker compose up -d
+	   docker network create --subnet 172.55.0.0/16 snipnet ; fi
+	PASSKEYS=$$(cat passkeys.id) docker compose up -d
 
 clean :
 	-rm -f pass.*

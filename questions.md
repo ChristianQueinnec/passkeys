@@ -188,6 +188,10 @@ Antigravity
 Do you see code improvements in the Passkeys webapp
 Antigravity
 
+I would like to have an English and a French version, can you
+internationalize the Passkeys webapp.
+Antigravity
+
 
 ## Future
 

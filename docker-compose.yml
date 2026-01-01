@@ -1,15 +1,16 @@
 networks:
-  trinvnet:
+  snipnet:
     external: true
     name: snipnet
 # docker network create --subnet 172.55.0.0/16 snipnet
 
 services:
   passkeys:
-    image: registry.queinnec.org:5000/passkeys
+    image: registry.queinnec.org:5000/passkeys:${PASSKEYS}
     container_name: passkeys
+    hostname: passkeys.queinnec.org
     networks:
-      trinvnet:
+      snipnet:
         ipv4_address: 172.55.0.20
     expose:
       - "3000"
