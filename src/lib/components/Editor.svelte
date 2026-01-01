@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { i18n } from "$lib/stores/useI18n.svelte";
+
     let { item, onSave, onCancel } = $props();
 
     // Local state for the editor
@@ -40,37 +42,75 @@
 
 <div class="editor">
     <div class="field">
-        <label for="title">Title *</label>
-        <input id="title" type="text" required bind:value={title} />
+        <label for="title">{i18n.t("common.title")} *</label>
+        <input
+            id="title"
+            type="text"
+            required
+            bind:value={title}
+            data-testid="edit-title"
+        />
     </div>
     <div class="field">
-        <label for="site">Site URL</label>
-        <input id="site" type="text" bind:value={site} />
+        <label for="site">{i18n.t("common.site")}</label>
+        <input
+            id="site"
+            type="text"
+            bind:value={site}
+            data-testid="edit-site"
+        />
     </div>
     <div class="field">
-        <label for="username">Username</label>
-        <input id="username" type="text" bind:value={username} />
+        <label for="username">{i18n.t("common.username")}</label>
+        <input
+            id="username"
+            type="text"
+            bind:value={username}
+            data-testid="edit-username"
+        />
     </div>
     <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="text" bind:value={password} />
+        <label for="password">{i18n.t("common.password")}</label>
+        <input
+            id="password"
+            type="text"
+            bind:value={password}
+            data-testid="edit-password"
+        />
     </div>
     <div class="field">
-        <label for="group">Group/Folder (e.g., "Work/Email")</label>
-        <input id="group" type="text" bind:value={group} placeholder="Optional: folder/subfolder" />
+        <label for="group">{i18n.t("common.group")}</label>
+        <input
+            id="group"
+            type="text"
+            bind:value={group}
+            placeholder={i18n.t("common.group_placeholder")}
+            data-testid="edit-group"
+        />
     </div>
     <div class="field">
-        <label for="tags">Tags (comma separated)</label>
-        <input id="tags" type="text" bind:value={tags} />
+        <label for="tags">{i18n.t("common.tags")}</label>
+        <input
+            id="tags"
+            type="text"
+            bind:value={tags}
+            placeholder={i18n.t("common.tags_placeholder")}
+            data-testid="edit-tags"
+        />
     </div>
     <div class="field">
-        <label for="notes">Notes</label>
-        <textarea id="notes" bind:value={notes}></textarea>
+        <label for="notes">{i18n.t("common.notes")}</label>
+        <textarea id="notes" bind:value={notes} data-testid="edit-notes"
+        ></textarea>
     </div>
 
     <div class="actions">
-        <button onclick={handleSubmit} disabled={!title}>Save</button>
-        <button class="secondary" onclick={onCancel}>Cancel</button>
+        <button onclick={handleSubmit} disabled={!title} data-testid="edit-save"
+            >{i18n.t("common.save")}</button
+        >
+        <button class="secondary" onclick={onCancel} data-testid="edit-cancel"
+            >{i18n.t("common.cancel")}</button
+        >
     </div>
 </div>
 

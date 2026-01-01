@@ -12,33 +12,33 @@ test.describe('Drag and Drop', () => {
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         // Wait for Dashboard
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
 
         // Switch to Folder View
-        await page.getByRole('button', { name: 'Folder View' }).click();
-        await expect(page.getByText('Folders')).toBeVisible();
+        await page.getByTestId('toggle-view-btn').click();
+        await expect(page.getByText(/Folders|Dossiers/)).toBeVisible();
     });
 
     test('should move item to folder via drag and drop', async ({ page }) => {
         // Create Folder A item
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('Item A');
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('Item A');
         // Folder/Group input
-        await page.getByLabel('Group/Folder').fill('Folder A');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('edit-group').fill('Folder A');
+        await page.getByTestId('edit-save').click();
 
         // Create Folder B item (to create the folder)
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('Item B');
-        await page.getByLabel('Group/Folder').fill('Folder B');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('Item B');
+        await page.getByTestId('edit-group').fill('Folder B');
+        await page.getByTestId('edit-save').click();
 
         // Verify folders exist in tree
         await expect(page.getByRole('button', { name: 'Folder A' })).toBeVisible();
@@ -77,23 +77,23 @@ test.describe('Drag and Drop', () => {
 
     test('should update group when dropping on root', async ({ page }) => {
         // Create Item in Folder C
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('Item C');
-        await page.getByLabel('Group/Folder').fill('Folder C');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('Item C');
+        await page.getByTestId('edit-group').fill('Folder C');
+        await page.getByTestId('edit-save').click();
 
         // Create another Item in Folder C to keep folder alive
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('Item Keep');
-        await page.getByLabel('Group/Folder').fill('Folder C');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('Item Keep');
+        await page.getByTestId('edit-group').fill('Folder C');
+        await page.getByTestId('edit-save').click();
 
         await page.getByRole('button', { name: 'Folder C' }).click();
         const itemC = page.locator('[data-testid="vault-item"]', { hasText: 'Item C' });
         await expect(itemC).toBeVisible();
 
         // Drag to Root
-        const rootFolder = page.getByRole('button', { name: 'Root' });
+        const rootFolder = page.getByRole('button', { name: /Main Vault|Coffre Principal/ });
         const itemId = await itemC.getAttribute('data-id');
 
         // Simulate drop event on Root

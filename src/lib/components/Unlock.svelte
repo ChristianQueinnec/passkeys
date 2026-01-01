@@ -22,12 +22,7 @@
 <div class="card">
     <h2>{i18n.t("auth.unlock")}</h2>
     <p>
-        {i18n.t("auth.unlock_confirm", {
-            defaultValue:
-                i18n.language === "en"
-                    ? "Enter your vault password to unlock it."
-                    : "Entrez le mot de passe de votre coffre pour le déverrouiller.",
-        })}
+        {i18n.t("auth.unlock_confirm")}
     </p>
 
     <form
@@ -45,9 +40,7 @@
 
         <button type="submit" disabled={loading} data-testid="unlock-button">
             {loading
-                ? i18n.language === "en"
-                    ? "Deriving Key..."
-                    : "Dérivation de la clé..."
+                ? i18n.t("auth.deriving_key")
                 : i18n.t("auth.unlock_button")}
         </button>
     </form>

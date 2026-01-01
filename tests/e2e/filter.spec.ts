@@ -11,10 +11,10 @@ test.describe('Filter Operations', () => {
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
@@ -22,13 +22,13 @@ test.describe('Filter Operations', () => {
 
     test('should filter entries and reset filter', async ({ page }) => {
         // Create two entries
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('UniqueItem');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('UniqueItem');
+        await page.getByTestId('edit-save').click();
 
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('AnotherItem');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('AnotherItem');
+        await page.getByTestId('edit-save').click();
 
         // Check both visible
         await expect(page.getByText('UniqueItem')).toBeVisible();
@@ -42,7 +42,7 @@ test.describe('Filter Operations', () => {
         await expect(page.getByText('AnotherItem')).not.toBeVisible();
 
         // Reset filter
-        const resetBtn = page.getByRole('button', { name: 'Reset filter' });
+        const resetBtn = page.getByTestId('reset-filter');
         await expect(resetBtn).toBeVisible();
         await resetBtn.click();
 

@@ -10,10 +10,10 @@ test.describe('Security Inactivity Timeout', () => {
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         // Wait for Dashboard
@@ -22,20 +22,20 @@ test.describe('Security Inactivity Timeout', () => {
 
         // Ensure we have items
         if (await page.locator('[data-testid="vault-item"]').count() === 0) {
-            await page.getByRole('button', { name: '+ New Entry' }).click();
-            await page.getByLabel('Title *').fill('Security Test');
-            await page.getByLabel('Username', { exact: true }).fill('sectest');
-            await page.getByLabel('Password', { exact: true }).fill('secpass');
-            await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+            await page.getByTestId('new-entry-btn').click();
+            await page.getByTestId('edit-title').fill('Security Test');
+            await page.getByTestId('edit-username').fill('sectest');
+            await page.getByTestId('edit-password').fill('secpass');
+            await page.getByTestId('edit-save').click();
 
             // Must save vault to populate encryptedVaultData
-            await page.locator('.save-btn').click();
-            await expect(page.locator('.save-btn')).not.toBeVisible();
+            await page.getByTestId('save-vault-btn').click();
+            await expect(page.getByTestId('save-vault-btn')).not.toBeVisible();
         } else {
             // If items exist but isDirty (unlikely from fresh reload, but possible), save just in case
-            if (await page.locator('.save-btn').isVisible()) {
-                await page.locator('.save-btn').click();
-                await expect(page.locator('.save-btn')).not.toBeVisible();
+            if (await page.getByTestId('save-vault-btn').isVisible()) {
+                await page.getByTestId('save-vault-btn').click();
+                await expect(page.getByTestId('save-vault-btn')).not.toBeVisible();
             }
         }
     });
@@ -54,7 +54,7 @@ test.describe('Security Inactivity Timeout', () => {
         await page.clock.fastForward(61000);
 
         // 4. Verify empty state message
-        await expect(page.locator('.empty-state')).toContainText('Vault cleared from memory');
+        await expect(page.locator('.empty-state')).toHaveText(/Your vault has been cleared|votre coffre a été effacé/);
         await expect(page.locator('[data-testid="vault-item"]')).toHaveCount(0);
 
         // 5. Simulate interaction (mouse move)

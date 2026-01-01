@@ -28,18 +28,14 @@
 <div class="list">
     {#if isMemoryCleared}
         <div class="empty-state">
-            {i18n.language === "en"
-                ? "Security timeout: Vault cleared from memory."
-                : "Délai de sécurité : coffre effacé de la mémoire."}
+            {i18n.t("vault.security_timeout")}
             <div>
                 <button onclick={reload}>{i18n.t("vault.reload")}</button>
             </div>
         </div>
     {:else if items.length === 0}
         <div class="empty-state">
-            {i18n.language === "en"
-                ? "No entries to display"
-                : "Aucune entrée à afficher"}
+            {i18n.t("vault.no_entries")}
         </div>
     {:else}
         {#each items as item (item.id)}
@@ -63,6 +59,7 @@
                         <button
                             class="icon-btn"
                             onclick={() => onCopyUsername(item.username || "")}
+                            data-testid="copy-username-btn"
                             title={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.username")}
@@ -92,6 +89,7 @@
                         <button
                             class="icon-btn"
                             onclick={() => onCopyPassword(item.password || "")}
+                            data-testid="copy-password-btn"
                             title={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.password")}
@@ -120,12 +118,9 @@
                     <button
                         class="icon-btn"
                         onclick={() => onSelect(item)}
-                        title={i18n.language === "en"
-                            ? "View Details"
-                            : "Voir les détails"}
-                        aria-label={i18n.language === "en"
-                            ? "View Details"
-                            : "Voir les détails"}
+                        title={i18n.t("vault.view_details")}
+                        aria-label={i18n.t("vault.view_details")}
+                        data-testid="view-details-btn"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

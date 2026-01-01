@@ -7,16 +7,16 @@ test.describe('Vault Operations', () => {
         await page.evaluate(() => localStorage.clear());
         await page.reload();
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '0');
-        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+        await expect(page.getByTestId('login-button')).toBeVisible();
 
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
-        await page.getByPlaceholder('Vault Password').fill('q'); // Assuming master password matches for MVP demo
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q'); // Assuming master password matches for MVP demo
         await page.getByTestId('unlock-button').click();
 
         // Wait for Dashboard
@@ -26,34 +26,34 @@ test.describe('Vault Operations', () => {
 
     test('should create, edit and delete a vault entry', async ({ page }) => {
         // Create
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await expect(page.getByRole('heading', { name: 'New Item' })).toBeVisible();
+        await page.getByTestId('new-entry-btn').click();
+        await expect(page.getByTestId('modal-title')).toBeVisible(); // Need to add data-testid to Modal.svelte title
 
-        await page.getByLabel('Title *').fill('Test Site');
-        await page.getByLabel('Username', { exact: true }).fill('testuser');
-        await page.getByLabel('Password', { exact: true }).fill('secret123');
-        await page.getByLabel('Site URL', { exact: true }).fill('https://example.com');
+        await page.getByTestId('edit-title').fill('Test Site');
+        await page.getByTestId('edit-username').fill('testuser');
+        await page.getByTestId('edit-password').fill('secret123');
+        await page.getByTestId('edit-site').fill('https://example.com');
 
         // Scope to editor to avoid ambiguity with "Save Vault"
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.getByTestId('edit-save').click();
 
         // Verify in list
         await expect(page.getByText('Test Site')).toBeVisible();
 
         // Edit
-        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Test Site' }).getByRole('button', { name: 'View Details' }).click();
-        await page.getByRole('button', { name: 'Edit' }).click();
-        await page.getByLabel('Title *').fill('Updated Site');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Test Site' }).getByTestId('view-details-btn').click(); // Need to add to PasswordList
+        await page.getByTestId('details-edit').click(); // Need to add to DetailsModal
+        await page.getByTestId('edit-title').fill('Updated Site');
+        await page.getByTestId('edit-save').click();
 
         // Verify update
         await expect(page.getByText('Updated Site')).toBeVisible();
         await expect(page.getByText('Test Site')).not.toBeVisible();
 
         // Delete
-        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Updated Site' }).getByRole('button', { name: 'View Details' }).click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Updated Site' }).getByTestId('view-details-btn').click();
         page.on('dialog', dialog => dialog.accept());
-        await page.getByRole('button', { name: 'Delete' }).click();
+        await page.getByTestId('details-delete').click();
 
         // Verify deletion
         await expect(page.getByText('Updated Site')).not.toBeVisible();

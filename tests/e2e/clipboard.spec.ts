@@ -15,10 +15,10 @@ test.describe('Clipboard Reset', () => {
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         // Wait for Dashboard
@@ -27,11 +27,11 @@ test.describe('Clipboard Reset', () => {
 
         // Create a test item if none exist
         if (await page.locator('[data-testid="vault-item"]').count() === 0) {
-            await page.getByRole('button', { name: '+ New Entry' }).click();
-            await page.getByLabel('Title *').fill('Clipboard Test');
-            await page.getByLabel('Username', { exact: true }).fill('clipuser');
-            await page.getByLabel('Password', { exact: true }).fill('clippass');
-            await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+            await page.getByTestId('new-entry-btn').click();
+            await page.getByTestId('edit-title').fill('Clipboard Test');
+            await page.getByTestId('edit-username').fill('clipuser');
+            await page.getByTestId('edit-password').fill('clippass');
+            await page.getByTestId('edit-save').click();
             await expect(page.getByText('Clipboard Test')).toBeVisible();
         }
     });
@@ -42,7 +42,7 @@ test.describe('Clipboard Reset', () => {
         await expect(firstItem).toBeVisible();
 
         // Click copy username button
-        await firstItem.getByRole('button', { name: 'Copy Username' }).click();
+        await firstItem.getByTestId('copy-username-btn').click();
 
         // Verify it was copied
         let clipboardText = await page.evaluate(() => navigator.clipboard.readText());
@@ -61,7 +61,7 @@ test.describe('Clipboard Reset', () => {
         const firstItem = page.locator('[data-testid="vault-item"]').first();
 
         // Copy first time
-        await firstItem.getByRole('button', { name: 'Copy Username' }).click();
+        await firstItem.getByTestId('copy-username-btn').click();
         let clipboardText = await page.evaluate(() => navigator.clipboard.readText());
         expect(clipboardText).not.toBe('');
 
@@ -69,7 +69,7 @@ test.describe('Clipboard Reset', () => {
         await page.waitForTimeout(5000);
 
         // Copy again (resets timer)
-        await firstItem.getByRole('button', { name: 'Copy Password' }).click();
+        await firstItem.getByTestId('copy-password-btn').click();
         clipboardText = await page.evaluate(() => navigator.clipboard.readText());
         expect(clipboardText).not.toBe('');
 

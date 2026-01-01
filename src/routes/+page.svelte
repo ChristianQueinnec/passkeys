@@ -135,7 +135,7 @@
 <div class="app-container" data-phase={phase}>
     <div class="header">
         <div class="header-left">
-            <h1>{i18n.t("app.title")}</h1>
+            <h1 data-testid="app-title">{i18n.t("app.title")}</h1>
             <div class="lang-switcher">
                 <button
                     class:active={i18n.language === "en"}
@@ -157,14 +157,20 @@
                     {#if showUserMenu}
                         <div class="dropdown-menu">
                             {#if phase === 2}
-                                <button onclick={handleSynchronize}
+                                <button
+                                    onclick={handleSynchronize}
+                                    data-testid="menu-sync"
                                     >{i18n.t("vault.sync")}</button
                                 >
                             {/if}
-                            <button onclick={openChangePassword}
+                            <button
+                                onclick={openChangePassword}
+                                data-testid="menu-change-password"
                                 >{i18n.t("auth.change_password")}</button
                             >
-                            <button onclick={handleLogout}
+                            <button
+                                onclick={handleLogout}
+                                data-testid="menu-logout"
                                 >{i18n.t("auth.logout")}</button
                             >
                         </div>
@@ -211,11 +217,19 @@
     <div class="change-password-form">
         <label>
             {i18n.t("auth.old_password")}:
-            <input type="password" bind:value={cpOldPassword} />
+            <input
+                type="password"
+                bind:value={cpOldPassword}
+                data-testid="cp-old"
+            />
         </label>
         <label>
             {i18n.t("auth.new_password")}:
-            <input type="password" bind:value={cpNewPassword} />
+            <input
+                type="password"
+                bind:value={cpNewPassword}
+                data-testid="cp-new"
+            />
         </label>
         {#if cpError}
             <p class="error">{cpError}</p>
@@ -224,7 +238,7 @@
             <p class="success">{cpSuccess}</p>
         {/if}
         <div class="actions">
-            <button onclick={handleChangePassword}
+            <button onclick={handleChangePassword} data-testid="cp-submit"
                 >{i18n.t("auth.update_password")}</button
             >
         </div>

@@ -8,7 +8,7 @@
     <div class="modal-backdrop" onclick={onClose}>
         <div class="modal-content" onclick={(e) => e.stopPropagation()}>
             <div class="modal-header">
-                <h2>{title}</h2>
+                <h2 data-testid="modal-title">{title}</h2>
                 <button class="close" onclick={onClose}>&times;</button>
             </div>
             <div class="modal-body">

@@ -11,20 +11,20 @@ test.describe('Sync and Offline Recovery', () => {
 
         await page.getByPlaceholder('Username').fill('history_test');
         await page.getByPlaceholder('Password').fill('q');
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
         await expect(page.locator('.dashboard')).toBeVisible();
     });
 
     test('should detect newer version on server', async ({ page }) => {
         // Ensure we have a baseline
-        await page.getByRole('button', { name: '+ New Entry' }).click();
-        await page.getByLabel('Title *').fill('Sync Baseline');
-        await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
-        await page.getByRole('button', { name: 'Save Vault' }).click();
-        await expect(page.getByRole('button', { name: 'Save Vault' })).not.toBeVisible();
+        await page.getByTestId('new-entry-btn').click();
+        await page.getByTestId('edit-title').fill('Sync Baseline');
+        await page.getByTestId('edit-save').click();
+        await page.getByTestId('save-vault-btn').click();
+        await expect(page.getByTestId('save-vault-btn')).not.toBeVisible();
 
         // Simulate another client saving a new version by manually creating a file in data/history_test
         // This is a bit "heavy" for a frontend test but effective for verification if we have access.

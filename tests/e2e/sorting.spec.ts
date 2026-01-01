@@ -7,16 +7,16 @@ test.describe('Sorting Operations', () => {
         await page.evaluate(() => localStorage.clear());
         await page.reload();
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '0');
-        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+        await expect(page.getByTestId('login-button')).toBeVisible();
 
         await page.getByPlaceholder('Username').fill('q');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
@@ -29,9 +29,9 @@ test.describe('Sorting Operations', () => {
         const testTitles = ['Zebra', 'Apple', 'Banana'];
 
         for (const title of testTitles) {
-            await page.getByRole('button', { name: '+ New Entry' }).click();
-            await page.getByLabel('Title *').fill(title);
-            await page.locator('.editor').getByRole('button', { name: 'Save', exact: true }).click();
+            await page.getByTestId('new-entry-btn').click();
+            await page.getByTestId('edit-title').fill(title);
+            await page.getByTestId('edit-save').click();
         }
 
         // Wait for list to update and be sorted

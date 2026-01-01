@@ -24,41 +24,47 @@
     {#if item}
         <div class="details">
             <div class="field">
-                <strong>Site URL:</strong>
+                <strong>{i18n.t("common.site")}:</strong>
                 <a href={item.site} target="_blank">{item.site}</a>
             </div>
             <div class="field">
-                <strong>Username:</strong>
+                <strong>{i18n.t("common.username")}:</strong>
                 <span>{item.username}</span>
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.username || "")}
-                    >Copy</button
+                    >{i18n.t("common.copy")}</button
                 >
             </div>
             <div class="field">
-                <strong>Password:</strong>
+                <strong>{i18n.t("common.password")}:</strong>
                 <span>********</span>
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.password || "")}
-                    >Copy</button
+                    >{i18n.t("common.copy")}</button
                 >
             </div>
             <div class="field">
-                <strong>Tags:</strong>
+                <strong>{i18n.t("common.tags")}:</strong>
                 <span>{item.tags?.join(", ")}</span>
                 <span></span>
             </div>
             <div class="field">
-                <strong>Notes:</strong>
+                <strong>{i18n.t("common.notes")}:</strong>
                 <pre>{item.notes}</pre>
             </div>
 
             <div class="actions">
-                <button onclick={() => item && onEdit(item)}>Edit</button>
-                <button onclick={() => item && onDelete(item)} class="danger"
-                    >Delete</button
+                <button
+                    onclick={() => item && onEdit(item)}
+                    data-testid="details-edit">{i18n.t("common.edit")}</button
+                >
+                <button
+                    onclick={() => item && onDelete(item)}
+                    class="danger"
+                    data-testid="details-delete"
+                    >{i18n.t("common.delete")}</button
                 >
             </div>
         </div>

@@ -18,26 +18,21 @@
 
 <Modal {isOpen} {onClose} title={i18n.t("vault.history")}>
     <p class="hint">
-        {i18n.language === "en"
-            ? "Don't forget to erase non-ciphered vaults if any!"
-            : "N'oubliez pas d'effacer les coffres non-chiffrés s'il y en a !"}
+        {i18n.t("vault.history_hint")}
     </p>
 
     <div class="history-list">
         {#if historyFiles.length === 0}
             <p>
-                {i18n.language === "en"
-                    ? "No history found."
-                    : "Aucun historique trouvé."}
+                {i18n.t("vault.history_empty")}
             </p>
         {:else}
             <table>
                 <thead>
                     <tr>
-                        <th>{i18n.language === "en" ? "Date" : "Date"}</th>
-                        <th>{i18n.language === "en" ? "Size" : "Taille"}</th>
-                        <th>{i18n.language === "en" ? "Actions" : "Actions"}</th
-                        >
+                        <th>{i18n.t("common.date")}</th>
+                        <th>{i18n.t("common.size")}</th>
+                        <th>{i18n.t("common.actions")}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,6 +48,7 @@
                                 <button
                                     class="danger small"
                                     onclick={() => onDelete(file.name)}
+                                    data-testid="history-delete-btn"
                                     >{i18n.t("common.delete")}</button
                                 >
                             </td>

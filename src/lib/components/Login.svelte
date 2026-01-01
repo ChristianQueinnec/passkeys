@@ -40,7 +40,9 @@
       placeholder={i18n.t("auth.password")}
       bind:value={password}
     />
-    <button type="submit">{i18n.t("auth.login")}</button>
+    <button type="submit" data-testid="login-button"
+      >{i18n.t("auth.login")}</button
+    >
   </form>
 </div>
 

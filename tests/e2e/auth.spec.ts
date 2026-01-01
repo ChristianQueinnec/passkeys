@@ -4,11 +4,12 @@ test.describe('Authentication', () => {
     test.beforeEach(async ({ page }) => {
         page.on('console', msg => console.log(`BROWSER [${msg.type()}]: ${msg.text()}`));
         await page.goto('/');
-        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+        await expect(page.getByTestId('app-title')).toBeVisible();
+        await expect(page.getByTestId('login-button')).toBeVisible();
     });
 
     test('should show login screen initially', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+        await expect(page.getByTestId('login-button')).toBeVisible();
     });
 
     test('should fail login with invalid credentials', async ({ page }) => {
@@ -38,17 +39,17 @@ test.describe('Authentication', () => {
             console.error('Error on page:', errorMsg);
             throw e;
         }
-        await expect(page.getByRole('heading', { name: 'Unlock Vault' })).toBeVisible();
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
 
         // Should see user menu
         await expect(page.locator('.user-name')).toHaveText('auth_test');
 
         // Logout
         await page.locator('.user-btn').click();
-        await page.getByRole('button', { name: 'Logout' }).click();
+        await page.getByTestId('menu-logout').click();
 
         // Should be back to login
-        await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+        await expect(page.getByTestId('login-button')).toBeVisible();
     });
 
     test('should change password successfully', async ({ page }) => {
@@ -56,11 +57,11 @@ test.describe('Authentication', () => {
         await page.getByPlaceholder('Username').fill('auth_test');
         await page.getByPlaceholder('Password').fill('q');
         await page.waitForTimeout(500);
-        await page.getByRole('button', { name: 'Login' }).click();
+        await page.getByTestId('login-button').click();
 
         // Should see Unlock screen (Phase 1)
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder('Vault Password').fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
         // Should be in Dashboard (Phase 2)
@@ -69,19 +70,19 @@ test.describe('Authentication', () => {
 
         // Open menu
         await page.locator('.user-btn').click();
-        await page.getByRole('button', { name: 'Change Password' }).click();
+        await page.getByTestId('menu-change-password').click();
 
         // Fill form
-        await page.getByLabel('Current Password:').fill('q'); // Old
-        await page.getByLabel('New Password:').fill('newpass'); // New
-        await page.getByRole('button', { name: 'Update Password' }).click();
+        await page.getByTestId('cp-old').fill('q'); // Old
+        await page.getByTestId('cp-new').fill('newpass'); // New
+        await page.getByTestId('cp-submit').click();
 
-        await expect(page.getByText('Password updated successfully')).toBeVisible();
+        await expect(page.getByText('Your master password has been updated successfully.')).toBeVisible();
 
         // Cleanup: Revert password for other tests
-        await page.getByLabel('Current Password:').fill('newpass');
-        await page.getByLabel('New Password:').fill('q');
-        await page.getByRole('button', { name: 'Update Password' }).click();
-        await expect(page.getByText('Password updated successfully')).toBeVisible();
+        await page.getByTestId('cp-old').fill('newpass');
+        await page.getByTestId('cp-new').fill('q');
+        await page.getByTestId('cp-submit').click();
+        await expect(page.getByText('Your master password has been updated successfully.')).toBeVisible();
     });
 });

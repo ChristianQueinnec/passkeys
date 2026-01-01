@@ -31,17 +31,27 @@
 
 <div class="controls">
     <div class="actions">
-        <button onclick={onToggleView} title="Switch view">
+        <button
+            onclick={onToggleView}
+            title="Switch view"
+            data-testid="toggle-view-btn"
+        >
             {@render viewIcon()}
             {viewLabel}
         </button>
-        <button onclick={onNewEntry}>{i18n.t("vault.new_entry")}</button>
+        <button onclick={onNewEntry} data-testid="new-entry-btn"
+            >{i18n.t("vault.new_entry")}</button
+        >
         {#if isDirty}
-            <button class="save-btn" onclick={onSave}
-                >{i18n.t("vault.save")}</button
+            <button
+                class="save-btn"
+                onclick={onSave}
+                data-testid="save-vault-btn">{i18n.t("vault.save")}</button
             >
         {/if}
-        <button onclick={onHistory}>{i18n.t("vault.history")}</button>
+        <button onclick={onHistory} data-testid="history-btn"
+            >{i18n.t("vault.history")}</button
+        >
     </div>
 
     {#if offlineMode}
