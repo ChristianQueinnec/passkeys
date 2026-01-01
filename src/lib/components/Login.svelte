@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from "$lib/api";
   import PasswordInput from "./PasswordInput.svelte";
+  import { i18n } from "$lib/stores/useI18n.svelte";
 
   let username = $state("");
   let password = $state("");
@@ -19,7 +20,8 @@
 </script>
 
 <div class="card">
-  <h2>Login</h2>
+  <h2>{i18n.t("auth.login")}</h2>
+
   {#if error}
     <p class="error">{error}</p>
   {/if}
@@ -29,9 +31,16 @@
       handleLogin();
     }}
   >
-    <input type="text" placeholder="Username" bind:value={username} />
-    <PasswordInput placeholder="Password" bind:value={password} />
-    <button type="submit">Login</button>
+    <input
+      type="text"
+      placeholder={i18n.t("auth.username")}
+      bind:value={username}
+    />
+    <PasswordInput
+      placeholder={i18n.t("auth.password")}
+      bind:value={password}
+    />
+    <button type="submit">{i18n.t("auth.login")}</button>
   </form>
 </div>
 

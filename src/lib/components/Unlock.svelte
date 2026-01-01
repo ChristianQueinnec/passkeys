@@ -1,6 +1,7 @@
 <script lang="ts">
     import PasswordInput from "./PasswordInput.svelte";
     import { api } from "$lib/api";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let password = $state("");
     let showPassword = $state(false);
@@ -19,8 +20,16 @@
 </script>
 
 <div class="card">
-    <h2>Unlock Vault</h2>
-    <p>Enter your vault password to unlock it.</p>
+    <h2>{i18n.t("auth.unlock")}</h2>
+    <p>
+        {i18n.t("auth.unlock_confirm", {
+            defaultValue:
+                i18n.language === "en"
+                    ? "Enter your vault password to unlock it."
+                    : "Entrez le mot de passe de votre coffre pour le déverrouiller.",
+        })}
+    </p>
+
     <form
         onsubmit={(e) => {
             e.preventDefault();
@@ -28,10 +37,18 @@
         }}
     >
         <div class="input-group">
-            <PasswordInput placeholder="Vault Password" bind:value={password} />
+            <PasswordInput
+                placeholder={i18n.t("auth.unlock_placeholder")}
+                bind:value={password}
+            />
         </div>
+
         <button type="submit" disabled={loading} data-testid="unlock-button">
-            {loading ? "Deriving Key..." : "Unlock"}
+            {loading
+                ? i18n.language === "en"
+                    ? "Deriving Key..."
+                    : "Dérivation de la clé..."
+                : i18n.t("auth.unlock_button")}
         </button>
     </form>
 </div>

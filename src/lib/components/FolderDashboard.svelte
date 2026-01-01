@@ -7,14 +7,17 @@
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
     import ListIcon from "$lib/icons/ListIcon.svelte";
-    import type { PasswordEntry, FolderNode } from "../types";
-    import type { Vault } from "../stores/useVault.svelte";
+    import { i18n } from "$lib/stores/useI18n.svelte";
+
+    import type { PasswordEntry, FolderNode } from "$lib/types";
+    import type { Vault } from "$lib/stores/useVault.svelte";
 
     let { encryptionKey, username, onToggleView, vault, security } = $props();
 
     let folderTree = $state<FolderNode>({
-        name: "Root",
+        name: i18n.t("vault.root"),
         fullPath: "",
+
         isOpen: true,
         children: [],
         entries: [],
@@ -45,8 +48,9 @@
 
     function buildFolderTree() {
         const root: FolderNode = {
-            name: "Root",
+            name: i18n.t("vault.root"),
             fullPath: "",
+
             isOpen: true,
             children: [],
             entries: [],
@@ -204,7 +208,7 @@
         <VaultControls
             {onToggleView}
             viewIcon={listIconSnippet}
-            viewLabel="List View"
+            viewLabel={i18n.t("vault.view.list")}
             onNewEntry={startCreateInFolder}
             onSave={vault.saveVault}
             onHistory={vault.openHistory}
@@ -217,7 +221,8 @@
 
         <div class="main-content">
             <div class="folder-pane">
-                <h3>Folders</h3>
+                <h3>{i18n.t("vault.folders")}</h3>
+
                 <div class="folder-tree">
                     {#snippet renderFolder(node: FolderNode, level: number)}
                         <div
@@ -264,9 +269,10 @@
             <div class="entries-pane">
                 <h3>
                     {selectedFolder
-                        ? selectedFolder.fullPath || "Root"
-                        : "Entries"}
+                        ? selectedFolder.fullPath || i18n.t("vault.root")
+                        : i18n.t("vault.entries")}
                 </h3>
+
                 <PasswordList
                     items={displayedEntries}
                     isMemoryCleared={security.isMemoryCleared}

@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { PasswordEntry } from "$lib/types";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let {
         items = [],
@@ -27,13 +28,19 @@
 <div class="list">
     {#if isMemoryCleared}
         <div class="empty-state">
-            Security timeout: Vault cleared from memory.
+            {i18n.language === "en"
+                ? "Security timeout: Vault cleared from memory."
+                : "Délai de sécurité : coffre effacé de la mémoire."}
             <div>
-                <button onclick={reload}>Unlock vault</button>
+                <button onclick={reload}>{i18n.t("vault.reload")}</button>
             </div>
         </div>
     {:else if items.length === 0}
-        <div class="empty-state">No entries to display</div>
+        <div class="empty-state">
+            {i18n.language === "en"
+                ? "No entries to display"
+                : "Aucune entrée à afficher"}
+        </div>
     {:else}
         {#each items as item (item.id)}
             <div
@@ -56,8 +63,12 @@
                         <button
                             class="icon-btn"
                             onclick={() => onCopyUsername(item.username || "")}
-                            title="Copy Username"
-                            aria-label="Copy Username"
+                            title={i18n.t("common.copy") +
+                                " " +
+                                i18n.t("common.username")}
+                            aria-label={i18n.t("common.copy") +
+                                " " +
+                                i18n.t("common.username")}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -81,8 +92,12 @@
                         <button
                             class="icon-btn"
                             onclick={() => onCopyPassword(item.password || "")}
-                            title="Copy Password"
-                            aria-label="Copy Password"
+                            title={i18n.t("common.copy") +
+                                " " +
+                                i18n.t("common.password")}
+                            aria-label={i18n.t("common.copy") +
+                                " " +
+                                i18n.t("common.password")}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -105,8 +120,12 @@
                     <button
                         class="icon-btn"
                         onclick={() => onSelect(item)}
-                        title="View Details"
-                        aria-label="View Details"
+                        title={i18n.language === "en"
+                            ? "View Details"
+                            : "Voir les détails"}
+                        aria-label={i18n.language === "en"
+                            ? "View Details"
+                            : "Voir les détails"}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

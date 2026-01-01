@@ -11,6 +11,7 @@
     import { useVault } from "$lib/stores/useVault.svelte";
     import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     // Application State
     let startCpt = $state(0);
@@ -121,7 +122,7 @@
         try {
             cpError = "";
             await api.changePassword(cpOldPassword, cpNewPassword);
-            cpSuccess = "Password updated successfully";
+            cpSuccess = i18n.t("auth.password_updated");
             setTimeout(() => {
                 showChangePasswordModal = false;
             }, 3000);
@@ -133,7 +134,19 @@
 
 <div class="app-container" data-phase={phase}>
     <div class="header">
-        <h1>Passkeys</h1>
+        <div class="header-left">
+            <h1>{i18n.t("app.title")}</h1>
+            <div class="lang-switcher">
+                <button
+                    class:active={i18n.language === "en"}
+                    onclick={() => i18n.setLanguage("en")}>EN</button
+                >
+                <button
+                    class:active={i18n.language === "fr"}
+                    onclick={() => i18n.setLanguage("fr")}>FR</button
+                >
+            </div>
+        </div>
         {#if phase > 0}
             <div class="user-info">
                 <div class="user-menu-container">
@@ -145,13 +158,15 @@
                         <div class="dropdown-menu">
                             {#if phase === 2}
                                 <button onclick={handleSynchronize}
-                                    >Synchronize</button
+                                    >{i18n.t("vault.sync")}</button
                                 >
                             {/if}
                             <button onclick={openChangePassword}
-                                >Change Password</button
+                                >{i18n.t("auth.change_password")}</button
                             >
-                            <button onclick={handleLogout}>Logout</button>
+                            <button onclick={handleLogout}
+                                >{i18n.t("auth.logout")}</button
+                            >
                         </div>
                     {/if}
                 </div>
@@ -191,15 +206,15 @@
 <Modal
     isOpen={showChangePasswordModal}
     onClose={() => (showChangePasswordModal = false)}
-    title="Change Password"
+    title={i18n.t("auth.change_password")}
 >
     <div class="change-password-form">
         <label>
-            Current Password:
+            {i18n.t("auth.old_password")}:
             <input type="password" bind:value={cpOldPassword} />
         </label>
         <label>
-            New Password:
+            {i18n.t("auth.new_password")}:
             <input type="password" bind:value={cpNewPassword} />
         </label>
         {#if cpError}
@@ -209,7 +224,9 @@
             <p class="success">{cpSuccess}</p>
         {/if}
         <div class="actions">
-            <button onclick={handleChangePassword}>Update Password</button>
+            <button onclick={handleChangePassword}
+                >{i18n.t("auth.update_password")}</button
+            >
         </div>
     </div>
 </Modal>
@@ -231,6 +248,35 @@
     .header h1 {
         margin: 0;
         font-size: 1.25rem;
+    }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    .lang-switcher {
+        display: flex;
+        gap: 0.5rem;
+        background: #444;
+        padding: 0.2rem;
+        border-radius: 4px;
+    }
+    .lang-switcher button {
+        background: none;
+        border: none;
+        color: #999;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        cursor: pointer;
+        border-radius: 2px;
+        font-weight: bold;
+    }
+    .lang-switcher button:hover {
+        color: #fff;
+    }
+    .lang-switcher button.active {
+        background: #666;
+        color: #fff;
     }
     main {
         flex: 1;

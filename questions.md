@@ -183,14 +183,25 @@ targetted folder.
 OK Antigravity
 
 Can you fix tests/e2e/security.spec.ts:43:5 › Security Inactivity Timeout › should clear vault from memory after inactivity and restore on interaction 
-Antigravity
+OK Antigravity
 
 Do you see code improvements in the Passkeys webapp
-Antigravity
+OK Antigravity
 
 I would like to have an English and a French version, can you
 internationalize the Passkeys webapp.
-Antigravity
+OK Antigravity but partial for Unlock
+
+Enrich `translations.ts` with French and English sentences (for instance
+in `Unlock`)
+
+
+
+There are some constants hard coded in the client such as
+pollForUpdates, inactivityTimer, see for hash. Identify them, gather
+them in a `client-settings.json` file and fix client code to use these
+settings.
+
 
 
 ## Future

@@ -1,10 +1,11 @@
 <script lang="ts">
-    import type { Vault } from "../stores/useVault.svelte";
+    import type { Vault } from "$lib/stores/useVault.svelte";
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
     import FolderIcon from "$lib/icons/FolderIcon.svelte";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let { encryptionKey, username, onToggleView, vault, security } = $props();
 
@@ -29,7 +30,7 @@
         <VaultControls
             {onToggleView}
             viewIcon={folderIconSnippet}
-            viewLabel="Folder View"
+            viewLabel={i18n.t("vault.view.folder")}
             onNewEntry={vault.startCreate}
             onSave={vault.saveVault}
             onHistory={vault.openHistory}
@@ -43,7 +44,7 @@
         <div class="filter-container">
             <input
                 type="text"
-                placeholder="Filter..."
+                placeholder={i18n.t("vault.filter_placeholder")}
                 bind:value={filter}
                 data-testid="filter-input"
             />
@@ -51,8 +52,12 @@
                 <button
                     class="reset-filter"
                     onclick={() => (filter = "")}
-                    title="Reset filter"
-                    aria-label="Reset filter"
+                    title={i18n.language === "en"
+                        ? "Reset filter"
+                        : "Réinitialiser le filtre"}
+                    aria-label={i18n.language === "en"
+                        ? "Reset filter"
+                        : "Réinitialiser le filtre"}
                 >
                     ×
                 </button>

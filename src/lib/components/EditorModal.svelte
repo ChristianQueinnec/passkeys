@@ -2,6 +2,7 @@
     import Modal from "$lib/components/Modal.svelte";
     import Editor from "$lib/components/Editor.svelte";
     import type { PasswordEntry } from "$lib/types";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let {
         isOpen,
@@ -18,7 +19,11 @@
     } = $props();
 </script>
 
-<Modal {isOpen} {onClose} title={isCreating ? "New Item" : "Edit Item"}>
+<Modal
+    {isOpen}
+    {onClose}
+    title={isCreating ? i18n.t("vault.new_entry") : i18n.t("common.edit")}
+>
     {#if item}
         <Editor {item} {onSave} onCancel={onClose} />
     {/if}

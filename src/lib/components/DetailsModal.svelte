@@ -1,6 +1,7 @@
 <script lang="ts">
     import Modal from "$lib/components/Modal.svelte";
     import type { PasswordEntry } from "$lib/types";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let {
         isOpen,
@@ -33,7 +34,7 @@
                     class="small"
                     onclick={() => item && onCopy(item.username || "")}
                     >Copy</button
-                         >
+                >
             </div>
             <div class="field">
                 <strong>Password:</strong>
@@ -42,7 +43,7 @@
                     class="small"
                     onclick={() => item && onCopy(item.password || "")}
                     >Copy</button
-                         >
+                >
             </div>
             <div class="field">
                 <strong>Tags:</strong>

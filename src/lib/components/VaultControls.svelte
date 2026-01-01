@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     let {
         onToggleView,
@@ -34,26 +35,34 @@
             {@render viewIcon()}
             {viewLabel}
         </button>
-        <button onclick={onNewEntry}>+ New Entry</button>
+        <button onclick={onNewEntry}>{i18n.t("vault.new_entry")}</button>
         {#if isDirty}
-            <button class="save-btn" onclick={onSave}>Save Vault</button>
+            <button class="save-btn" onclick={onSave}
+                >{i18n.t("vault.save")}</button
+            >
         {/if}
-        <button onclick={onHistory}>History</button>
+        <button onclick={onHistory}>{i18n.t("vault.history")}</button>
     </div>
 
     {#if offlineMode}
-        <div class="warning">⚠️ Offline Mode: Vault may be out of date</div>
+        <div class="warning">⚠️ {i18n.t("vault.offline_mode")}</div>
     {/if}
 
     {#if newerVersionAvailable}
         <div class="warning sync-warning">
-            📦 A newer version is available on the server.
-            <button class="small" onclick={onSynchronize}>Sync Now</button>
+            📦 {i18n.t("vault.newer_version")}
+            <button class="small" onclick={onSynchronize}
+                >{i18n.t("vault.sync_now")}</button
+            >
         </div>
     {/if}
 
     {#if lastSavedDate}
-        <small>Last saved: {new Date(lastSavedDate).toISOString()}</small>
+        <small
+            >{i18n.t("vault.last_saved")}: {new Date(
+                lastSavedDate,
+            ).toLocaleString(i18n.language === "fr" ? "fr-FR" : "en-US")}</small
+        >
     {/if}
 </div>
 
