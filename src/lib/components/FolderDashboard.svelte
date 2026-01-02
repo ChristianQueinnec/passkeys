@@ -1,8 +1,5 @@
 <script lang="ts">
     import { onMount, untrack } from "svelte";
-    import { useVault } from "$lib/stores/useVault.svelte";
-    import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
-    import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import VaultControls from "$lib/components/VaultControls.svelte";
     import VaultModals from "$lib/components/VaultModals.svelte";
     import PasswordList from "$lib/components/PasswordList.svelte";

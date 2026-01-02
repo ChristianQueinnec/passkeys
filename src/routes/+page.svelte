@@ -5,7 +5,6 @@
     import FolderDashboard from "$lib/components/FolderDashboard.svelte";
     import { pbkdf2 } from "$lib/crypto";
     import { api } from "$lib/api";
-    import type { VaultView } from "$lib/types";
     import { onMount, tick } from "svelte";
     import Modal from "$lib/components/Modal.svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
