@@ -3,6 +3,7 @@ import { decrypt } from "$lib/crypto";
 import { sortPasswordEntries } from "$lib/vault";
 import type { PasswordEntry, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
+import { settings } from "./useSettings.svelte";
 
 export function useVaultSecurity(
     vault: {
@@ -32,7 +33,7 @@ export function useVaultSecurity(
 
         inactivityTimer = setTimeout(async () => {
             await clearSensitiveData();
-        }, 60000); // 1 minute
+        }, settings.current.inactivityTimeout);
     }
 
     async function clearSensitiveData() {

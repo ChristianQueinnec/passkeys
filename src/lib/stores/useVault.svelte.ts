@@ -3,6 +3,7 @@ import { decrypt, encrypt } from "$lib/crypto";
 import { sortPasswordEntries, normalizeVaultItems } from "$lib/vault";
 import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
+import { settings } from "./useSettings.svelte";
 
 export function useVault(
     encryptionKeyOrGetter: CryptoKey | (() => CryptoKey),
@@ -253,7 +254,7 @@ export function useVault(
                 // Uncaught (in promise) DOMException: Clipboard write was blocked due to lack of user activation.
             }
             clipboardTimeout = null;
-        }, 10000);
+        }, settings.current.clipboardTimeout);
     }
 
     // Cleanup function

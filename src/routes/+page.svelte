@@ -11,6 +11,7 @@
     import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
+    import { settings } from "$lib/stores/useSettings.svelte";
 
     // Application State
     let username = $state("");
@@ -49,6 +50,9 @@
 
     // Check for existing token
     onMount(async () => {
+        // Load settings first
+        await settings.load();
+
         if (api.token) {
             username = api.username || "";
             // Get CSRF token for existing session
@@ -65,10 +69,15 @@
 
     async function handleUnlock(masterPassword: string) {
         try {
-            // Derive key (PBKDF2) - In real app, salt should be user-specific from server
-            // For MVP using fixed salt as per previous implementation
-            const fixedSalt = new TextEncoder().encode("mvp_salt_fixed");
-            encryptionKey = await pbkdf2(masterPassword, fixedSalt);
+            // Derive key (PBKDF2) using externalized salt and iterations
+            const salt = new TextEncoder().encode(
+                settings.current.masterPasswordSalt,
+            );
+            encryptionKey = await pbkdf2(
+                masterPassword,
+                salt,
+                settings.current.pbkdf2Iterations,
+            );
             // Load vault once key is derived
             await vault.loadVault();
             phase = 2; // Move to Dashboard

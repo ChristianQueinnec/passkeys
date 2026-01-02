@@ -1,0 +1,48 @@
+import { browser } from '$app/environment';
+
+export interface ClientSettings {
+    pollForUpdatesInterval: number;
+    pollForUpdatesIntervalTest: number;
+    inactivityTimeout: number;
+    clipboardTimeout: number;
+    masterPasswordSalt: string;
+    pbkdf2Iterations: number;
+}
+
+const defaultSettings: ClientSettings = {
+    pollForUpdatesInterval: 60000,
+    pollForUpdatesIntervalTest: 1000,
+    inactivityTimeout: 60000,
+    clipboardTimeout: 10000,
+    masterPasswordSalt: "mvp_salt_fixed",
+    pbkdf2Iterations: 100000
+};
+
+function createSettingsStore() {
+    let current = $state<ClientSettings>(defaultSettings);
+    let loaded = $state(false);
+
+    async function load() {
+        if (!browser) return;
+        try {
+            const res = await fetch('/client-settings.json');
+            if (res.ok) {
+                const data = await res.json();
+                current = { ...defaultSettings, ...data };
+                loaded = true;
+                console.log('Client settings loaded:', current);
+            }
+        } catch (e) {
+            console.error('Failed to load client settings, using defaults:', e);
+            loaded = true; // Still mark as loaded to unblock app
+        }
+    }
+
+    return {
+        get current() { return current; },
+        get loaded() { return loaded; },
+        load
+    };
+}
+
+export const settings = createSettingsStore();

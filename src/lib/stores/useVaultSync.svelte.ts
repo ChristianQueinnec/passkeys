@@ -1,5 +1,6 @@
 import { api } from "$lib/api";
 import { browser } from "$app/environment";
+import { settings } from "./useSettings.svelte";
 
 export function useVaultSync(
     vault: {
@@ -12,7 +13,9 @@ export function useVaultSync(
 
     function startPolling() {
         if (pollTimer) clearInterval(pollTimer);
-        const interval = browser && (window as any).__TESTING__ ? 1000 : 60000;
+        const interval = browser && (window as any).__TESTING__
+            ? settings.current.pollForUpdatesIntervalTest
+            : settings.current.pollForUpdatesInterval;
         pollTimer = setInterval(pollForUpdates, interval);
     }
 

@@ -200,25 +200,19 @@ Are all these `$state()` really necessary ?
 OK Antigravity
 
 Check useless imports
-
-
+OK Antigravity
 
 There are some constants hard coded in the client such as
-pollForUpdates, inactivityTimer, see for hash. Identify them, gather
-them in a `client-settings.json` file and fix client code to use these
-settings.
-
+pollForUpdates, inactivityTimer, mvp_salt_fixed, etc.. Identify them,
+gather them in a `client-settings.json` file and fix client code to
+use these settings. No need to provide a form to alter these settings.
+These settings are read once at start up.
+OK Antigravity
 
 
 ## Future
 
 bypass Login page if coming from authenticated nginx proxy ?
-
-client-settings.json
-  pollForUpdates
-  inactivityTimer
-  seed for hash
-  s/useVaultSync/startVaultSync/g
 
 decipher only when copy to clipboard
 

@@ -87,7 +87,7 @@ export const decrypt = async (cipher: string, iv: string, key: CryptoKey): Promi
     return new TextDecoder().decode(decrypted);
 };
 
-export const pbkdf2 = async (password: string, salt: Uint8Array): Promise<CryptoKey> => {
+export const pbkdf2 = async (password: string, salt: Uint8Array, iterations: number = 100000): Promise<CryptoKey> => {
     const enc = new TextEncoder();
     const keyMaterial = await cryptoInstance!.subtle.importKey(
         "raw",
@@ -101,7 +101,7 @@ export const pbkdf2 = async (password: string, salt: Uint8Array): Promise<Crypto
         {
             name: "PBKDF2",
             salt: salt as BufferSource,
-            iterations: 100000,
+            iterations: iterations,
             hash: "SHA-256"
         },
         keyMaterial,
