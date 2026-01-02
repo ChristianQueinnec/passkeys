@@ -196,7 +196,8 @@ Enrich `translations.ts` with French and English sentences (for instance
 in `Unlock`)
 OK Antigravity
 
-
+Are all these `$state()` really necessary ?
+Antigravity
 
 
 
@@ -218,11 +219,7 @@ client-settings.json
   seed for hash
   s/useVaultSync/startVaultSync/g
 
-drag and drop entry to folder
-
 decipher only when copy to clipboard
-
-rebuild folder tree after vault change.
 
 loadVault avant unlock
 

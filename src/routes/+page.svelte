@@ -15,13 +15,11 @@
 
     // Application State
     let username = $state("");
-    let password = $state("");
     let encryptionKey = $state<CryptoKey | null>(null);
     let useFolderView = $state(true); // Default to folder view
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
-    let dashboardRef = $state<VaultView | null>(null);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
 
@@ -62,7 +60,6 @@
 
     async function handleLogin(newUsername: string, newPassword?: string) {
         username = newUsername;
-        if (newPassword) password = newPassword;
         phase = 1; // Move to Unlock
         await tick();
     }
@@ -86,7 +83,6 @@
     function handleLogout() {
         api.logout();
         username = "";
-        password = "";
         encryptionKey = null;
         vault.cleanup();
         phase = 0;
