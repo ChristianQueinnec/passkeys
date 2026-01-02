@@ -19,9 +19,9 @@ test.describe('Vault Operations', () => {
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q'); // Assuming master password matches for MVP demo
         await page.getByTestId('unlock-button').click();
 
-        // Wait for Dashboard
+        // Wait for Vault to be unlocked
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should create, edit and delete a vault entry', async ({ page }) => {

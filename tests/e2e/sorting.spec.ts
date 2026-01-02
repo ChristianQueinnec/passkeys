@@ -20,6 +20,12 @@ test.describe('Sorting Operations', () => {
         await page.getByTestId('unlock-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+
+        // Switch to List View for sorting
+        if (await page.locator('.folder-dashboard').isVisible()) {
+            await page.getByTestId('toggle-view-btn').click();
+        }
         await expect(page.locator('.dashboard')).toBeVisible();
     });
 

@@ -149,11 +149,6 @@
         });
     }
 
-    // Expose synchronizeVault for parent component
-    export async function synchronizeVault() {
-        await vault.synchronizeVault();
-    }
-
     // Drag and Drop Logic
     function handleDragStart(item: PasswordEntry, e: DragEvent) {
         if (e.dataTransfer) {

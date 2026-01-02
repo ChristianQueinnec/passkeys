@@ -14,11 +14,6 @@
     let filteredFiles = $derived(
         sortPasswordEntries(filterPasswordEntries(vault.items, filter)),
     );
-
-    // Expose synchronizeVault for parent component
-    export async function synchronizeVault() {
-        await vault.synchronizeVault();
-    }
 </script>
 
 {#snippet folderIconSnippet()}

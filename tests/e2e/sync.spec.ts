@@ -15,7 +15,7 @@ test.describe('Sync and Offline Recovery', () => {
 
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should detect newer version on server', async ({ page }) => {

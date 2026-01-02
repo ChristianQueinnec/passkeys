@@ -18,11 +18,10 @@ test.describe('Drag and Drop', () => {
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
-        // Wait for Dashboard
+        // Should be in Dashboard (Phase 2)
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
 
-        // Switch to Folder View
-        await page.getByTestId('toggle-view-btn').click();
+        // Verify we are in Folder View (now default)
         await expect(page.getByText(/Folders|Dossiers/)).toBeVisible();
     });
 

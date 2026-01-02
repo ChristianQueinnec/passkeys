@@ -194,6 +194,10 @@ OK Antigravity but partial for Unlock
 
 Enrich `translations.ts` with French and English sentences (for instance
 in `Unlock`)
+OK Antigravity
+
+
+
 
 
 
@@ -221,3 +225,5 @@ decipher only when copy to clipboard
 rebuild folder tree after vault change.
 
 loadVault avant unlock
+
+blob for vault rather than base64

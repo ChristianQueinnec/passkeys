@@ -21,8 +21,14 @@ test.describe('Clipboard Reset', () => {
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
-        // Wait for Dashboard
+        // Wait for Vault to be unlocked
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+
+        // Toggling to List View for clipboard tests if we are in Folder View
+        if (await page.locator('.folder-dashboard').isVisible()) {
+            await page.getByTestId('toggle-view-btn').click();
+        }
         await expect(page.locator('.dashboard')).toBeVisible();
 
         // Create a test item if none exist

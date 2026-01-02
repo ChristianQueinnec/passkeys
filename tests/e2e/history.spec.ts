@@ -18,7 +18,7 @@ test.describe('History Operations', () => {
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should manage history', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('History Operations', () => {
         await expect(unlockBtn).toBeVisible({ timeout: 10000 });
         await expect(unlockBtn).toBeEnabled();
         await unlockBtn.click();
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
         // now check history
         await page.getByTestId('history-btn').click();

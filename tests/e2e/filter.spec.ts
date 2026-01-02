@@ -16,8 +16,14 @@ test.describe('Filter Operations', () => {
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
-
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+
+        // Switch to List View if in Folder View
+        if (await page.locator('.folder-dashboard').isVisible()) {
+            await page.getByTestId('toggle-view-btn').click();
+        }
+        await expect(page.locator('.dashboard')).toBeVisible();
     });
 
     test('should filter entries and reset filter', async ({ page }) => {

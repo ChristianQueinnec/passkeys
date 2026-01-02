@@ -14,11 +14,10 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
 
     // Application State
-    let startCpt = $state(0);
     let username = $state("");
     let password = $state("");
     let encryptionKey = $state<CryptoKey | null>(null);
-    let useFolderView = $state(false); // Default to folder view
+    let useFolderView = $state(true); // Default to folder view
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
@@ -111,11 +110,9 @@
         cpSuccess = "";
     }
 
-    function handleSynchronize() {
+    async function handleSynchronize() {
         showUserMenu = false;
-        if (dashboardRef && dashboardRef.synchronizeVault) {
-            dashboardRef.synchronizeVault();
-        }
+        await vault.synchronizeVault();
     }
 
     async function handleChangePassword() {
@@ -188,7 +185,6 @@
         {:else if phase === 2 && encryptionKey}
             {#if useFolderView}
                 <FolderDashboard
-                    bind:this={dashboardRef}
                     {encryptionKey}
                     {username}
                     {vault}
@@ -197,7 +193,6 @@
                 />
             {:else}
                 <Dashboard
-                    bind:this={dashboardRef}
                     {encryptionKey}
                     {username}
                     {vault}

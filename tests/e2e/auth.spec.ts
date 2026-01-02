@@ -66,7 +66,7 @@ test.describe('Authentication', () => {
 
         // Should be in Dashboard (Phase 2)
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
         // Open menu
         await page.locator('.user-btn').click();
@@ -77,12 +77,12 @@ test.describe('Authentication', () => {
         await page.getByTestId('cp-new').fill('newpass'); // New
         await page.getByTestId('cp-submit').click();
 
-        await expect(page.getByText('Your master password has been updated successfully.')).toBeVisible();
+        await expect(page.getByText(/your (login|master) password has been updated successfully/i)).toBeVisible();
 
         // Cleanup: Revert password for other tests
         await page.getByTestId('cp-old').fill('newpass');
         await page.getByTestId('cp-new').fill('q');
         await page.getByTestId('cp-submit').click();
-        await expect(page.getByText('Your master password has been updated successfully.')).toBeVisible();
+        await expect(page.getByText(/your (login|master) password has been updated successfully/i)).toBeVisible();
     });
 });

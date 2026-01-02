@@ -16,9 +16,9 @@ test.describe('Security Inactivity Timeout', () => {
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
         await page.getByTestId('unlock-button').click();
 
-        // Wait for Dashboard
+        // Wait for Vault to be unlocked
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
         // Ensure we have items
         if (await page.locator('[data-testid="vault-item"]').count() === 0) {
