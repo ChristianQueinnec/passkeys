@@ -39,10 +39,11 @@ describe('Client Crypto Utilities (lib/crypto.ts)', () => {
         expect(decrypted).toBe(originalData);
     });
 
-    it('should derive a key using pbkdf2', async () => {
+    it('should derive a key using pbkdf2 with custom iterations', async () => {
         const password = 'my-password';
         const salt = new Uint8Array(16);
-        const key = await pbkdf2(password, salt);
+        const iterations = 1000;
+        const key = await pbkdf2(password, salt, iterations);
 
         expect(key.type).toBe('secret');
         expect(key.algorithm.name).toBe('AES-GCM');

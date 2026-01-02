@@ -23,7 +23,6 @@ function createSettingsStore() {
     let loaded = $state(false);
 
     async function load() {
-        if (!browser) return;
         try {
             const res = await fetch('/client-settings.json');
             if (res.ok) {
@@ -38,10 +37,16 @@ function createSettingsStore() {
         }
     }
 
+    function reset() {
+        current = defaultSettings;
+        loaded = false;
+    }
+
     return {
         get current() { return current; },
         get loaded() { return loaded; },
-        load
+        load,
+        reset
     };
 }
 

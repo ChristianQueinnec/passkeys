@@ -90,5 +90,13 @@ describe('Vault Utilities', () => {
             expect(Array.isArray(normalized[0].tags)).toBe(true);
             expect(normalized[0].tags?.length).toBe(0);
         });
+
+        it('should default missing title to "Untitled"', () => {
+            const rawItems = [
+                { username: 'u', password: 'p' }
+            ];
+            const normalized = normalizeVaultItems(rawItems);
+            expect(normalized[0].title).toBe('Untitled');
+        });
     });
 });

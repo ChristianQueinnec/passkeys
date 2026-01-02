@@ -209,6 +209,8 @@ use these settings. No need to provide a form to alter these settings.
 These settings are read once at start up.
 OK Antigravity
 
+Enrich unit tests to check newly added features.
+
 
 ## Future
 
