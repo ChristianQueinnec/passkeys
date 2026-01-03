@@ -210,6 +210,12 @@ These settings are read once at start up.
 OK Antigravity
 
 Enrich unit tests to check newly added features.
+OK Antigravity
+
+Do not store permanently authentication information (for instance,
+token and username) on an insecure device. Ask the user if the device
+is safe and act accordingly.
+OK Antigravity
 
 
 ## Future

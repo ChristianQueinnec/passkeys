@@ -3,8 +3,8 @@ import { browser } from '$app/environment';
 // Client-side API wrapper (updated for SvelteKit relative paths)
 
 export const api = {
-    token: browser ? localStorage.getItem('token') : null,
-    username: browser ? localStorage.getItem('username') : null,
+    token: browser ? (window.localStorage.getItem('token') || window.sessionStorage.getItem('token')) : null,
+    username: browser ? (window.localStorage.getItem('username') || window.sessionStorage.getItem('username')) : null,
     csrfToken: null as string | null,
 
     async getCSRFToken() {
@@ -24,7 +24,7 @@ export const api = {
         return null;
     },
 
-    async login(username: string, password: string) {
+    async login(username: string, password: string, trustDevice: boolean = false) {
         const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -35,8 +35,18 @@ export const api = {
         this.token = data.token;
         this.username = data.username;
         if (browser) {
-            if (this.token) localStorage.setItem('token', this.token);
-            if (this.username) localStorage.setItem('username', this.username);
+            console.log('Login success, trustDevice:', trustDevice);
+            const storage = trustDevice === true ? window.localStorage : window.sessionStorage;
+            const other = trustDevice === true ? window.sessionStorage : window.localStorage;
+
+            other.removeItem('token');
+            other.removeItem('username');
+
+            if (this.token) {
+                storage.setItem('token', this.token);
+                console.log('Token set in', trustDevice === true ? 'localStorage' : 'sessionStorage');
+            }
+            if (this.username) storage.setItem('username', this.username);
         }
         // Get CSRF token after login
         await this.getCSRFToken();
@@ -50,6 +60,8 @@ export const api = {
         if (browser) {
             localStorage.removeItem('token');
             localStorage.removeItem('username');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('username');
         }
     },
 
