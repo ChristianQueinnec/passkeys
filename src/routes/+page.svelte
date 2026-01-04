@@ -47,7 +47,7 @@
         },
     );
 
-    useVaultSync(vault);
+    useVaultSync(vault, () => phase === 2);
 
     async function checkVaultExists() {
         if (!api.token) return;

@@ -6,6 +6,7 @@ import { type Vault } from "./useVault.svelte";
 
 export function useVaultSync(
     vault: Vault,
+    isActiveGetter: () => boolean,
 ) {
     let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -37,7 +38,12 @@ export function useVaultSync(
 
     // Auto-start polling
     $effect(() => {
-        startPolling();
+        if (isActiveGetter()) {
+            startPolling();
+        } else {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = null;
+        }
         return () => {
             if (pollTimer) clearInterval(pollTimer);
         };

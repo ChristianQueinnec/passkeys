@@ -336,10 +336,11 @@ OK Antigravity
 Add an `help` menu item that opens (in another tab) the documentation of
 `Passkeys` held at
 `https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md`.
+OK Antigravity
 
-
-
-No need to poll the server before successful Unlock
+## 64 needless poll
+No need to poll the server for newer vaults before successful Unlock.
+OK Antigravity
 
 
 ## 64 enrich tests
