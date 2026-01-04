@@ -5,21 +5,13 @@ import type { PasswordEntry, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 
+import { type Vault } from "./useVault.svelte";
+
 export function useVaultSecurity(
-    vault: {
-        items: PasswordEntry[];
-        setItems: (items: PasswordEntry[]) => void;
-        encryptedVaultData: CipheredVaultData | null;
-        isDirty: boolean;
-        saveVault: (both?: boolean) => Promise<void>;
-    },
-    encryptionKeyOrGetter: CryptoKey | (() => CryptoKey),
+    vault: Vault,
+    getEncryptionKey: () => CryptoKey,
     additionalClearCallback?: () => void,
 ) {
-    const getEncryptionKey = () =>
-        typeof encryptionKeyOrGetter === "function"
-            ? (encryptionKeyOrGetter as () => CryptoKey)()
-            : encryptionKeyOrGetter;
 
     let isMemoryCleared = $state(false);
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;

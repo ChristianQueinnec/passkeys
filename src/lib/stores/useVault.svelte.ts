@@ -6,18 +6,9 @@ import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 
 export function useVault(
-    encryptionKeyOrGetter: CryptoKey | (() => CryptoKey),
-    usernameOrGetter: string | (() => string),
+    getEncryptionKey: () => CryptoKey,
+    getUsername: () => string,
 ) {
-    const getEncryptionKey = () =>
-        typeof encryptionKeyOrGetter === "function"
-            ? (encryptionKeyOrGetter as () => CryptoKey)()
-            : encryptionKeyOrGetter;
-
-    const getUsername = () =>
-        typeof usernameOrGetter === "function"
-            ? (usernameOrGetter as () => string)()
-            : usernameOrGetter;
 
     // State
     let items = $state<PasswordEntry[]>([]);

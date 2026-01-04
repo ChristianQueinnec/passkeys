@@ -2,12 +2,10 @@ import { api } from "$lib/api";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 
+import { type Vault } from "./useVault.svelte";
+
 export function useVaultSync(
-    vault: {
-        lastSavedDate: string | null;
-        setOfflineMode: (offline: boolean) => void;
-        setNewerVersionAvailable: (available: boolean) => void;
-    },
+    vault: Vault,
 ) {
     let pollTimer: ReturnType<typeof setInterval> | null = null;
 
