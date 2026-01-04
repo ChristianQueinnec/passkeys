@@ -7,7 +7,12 @@
     let showPassword = $state(false);
     let loading = $state(false);
 
-    let { onUnlock } = $props();
+    let { vaultExists, onUnlock } = $props();
+    const notice = $derived(
+        vaultExists
+            ? i18n.t("auth.unlock_vault_exists")
+            : i18n.t("auth.unlock_no_vault"),
+    );
 
     async function handleUnlock() {
         loading = true;
@@ -24,6 +29,9 @@
     <p>
         {i18n.t("auth.unlock_confirm")}
     </p>
+    <div class="unlock-notice" class:exists={vaultExists}>
+        {notice}
+    </div>
 
     <form
         onsubmit={(e) => {
@@ -53,5 +61,18 @@
     }
     .input-group {
         margin-bottom: 1rem;
+    }
+    .unlock-notice {
+        background: #f8f9fa;
+        border-left: 4px solid #6c757d;
+        padding: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        color: #495057;
+        line-height: 1.4;
+    }
+    .unlock-notice.exists {
+        border-left-color: #28a745;
+        background: #f0fff4;
     }
 </style>

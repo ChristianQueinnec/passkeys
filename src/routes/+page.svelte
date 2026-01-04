@@ -20,6 +20,7 @@
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
+    let vaultExists = $state(false);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
 
@@ -48,6 +49,24 @@
 
     useVaultSync(vault);
 
+    async function checkVaultExists() {
+        if (!api.token) return;
+        vaultExists = false; // Reset first
+        try {
+            // Check local
+            if (localStorage.getItem("offline_vault")) {
+                vaultExists = true;
+                return;
+            }
+            // Check server
+            const latest = await api.getLatestVault();
+            vaultExists = !!latest;
+        } catch (e) {
+            console.error("Failed to check vault existence", e);
+            vaultExists = false;
+        }
+    }
+
     // Check for existing token
     onMount(async () => {
         // Load settings first
@@ -57,12 +76,15 @@
             username = api.username || "";
             // Get CSRF token for existing session
             await api.getCSRFToken();
+            await checkVaultExists();
             phase = 1; // Go to unlock
         }
     });
 
     async function handleLogin(newUsername: string, newPassword?: string) {
         username = newUsername;
+        vaultExists = false; // Force reset
+        await checkVaultExists();
         phase = 1; // Move to Unlock
         await tick();
     }
@@ -80,6 +102,8 @@
             );
             // Load vault once key is derived
             await vault.loadVault();
+            // Upate vaultExists status after successful load just in case
+            vaultExists = true;
             phase = 2; // Move to Dashboard
             await tick();
         } catch (e) {
@@ -185,7 +209,7 @@
         {#if phase === 0}
             <Login onLogin={handleLogin} />
         {:else if phase === 1}
-            <Unlock onUnlock={handleUnlock} />
+            <Unlock {vaultExists} onUnlock={handleUnlock} />
         {:else if phase === 2 && encryptionKey}
             {#if useFolderView}
                 <FolderDashboard

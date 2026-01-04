@@ -3,6 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Trust Device Security', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
+        await page.reload();
     });
 
     test('should persist login in localStorage when device is trusted', async ({ page }) => {

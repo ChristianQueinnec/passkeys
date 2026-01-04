@@ -2,35 +2,45 @@
 
 These requests are too specific to be present in `README.md`.
 
+##1
 Does `fs-extra` really needed ? 
 NO 
 
+##2
 Generate a svg image showing a key in a cartoonish style. Derive a favicon from that image and install them in the webapp.
 OK
 
+##3
 Make the webapp a Progressive Web Application (aka PWA).
 OK -- but sw.js and manifest are handled by Vite.
    -- however the Docker container generation is ok.
 
+##4 favicon
 Also provide a `favicon.ico`
 OK -- but specify that the favicon.ico should be derived from favicon.svg
 
+##5 menu
 Transform the logout button into a menu item under the username.
 Provide also another menu item to change the user's password
 OK
 
+##6 css
 Is it possible to share common CSS sections in svelte files into `app.css`
 OK
 
+##7 enrich tests
 There are many missing test files not covering use cases. Please
 add them as needed.
 OK
 
+##8 enrich tests
 Please add e2e test files using playwright.
 UNFINISHED
 
+##9 offline
 offline mode (described in README)
 
+##10 unciphered vault
 If the vault received from the server is an array of JSON objects
 instead of the usual `date` and `data` properties, then the vault is
 not encrypted and the array is an array of entries. The client then
@@ -39,26 +49,32 @@ vault. Keep the extra properties that may appear in the items of the
 array.
 OK
 
+##11 bug
 Bug in saveVault: fixed by CLAUDE1.md
 
-
+##12 synchronize
 Add, in the user menu, a `synchronize` menu item to fetch the most
 recent vault in order to replace the current local vault.
 OK CLAUDE
 
+##13 styling buttons
 unify button styles: adopt round corners and appropriate color.
 OK CLAUDE BUTTON_STYLES.md
 
+##14 csrf
 Add CSRF to forms
 OK CLAUDE CSRF_PROTECTION.md
 
+##15 enrich tests
 Add new tests to check the CSRF feature, add also missing tests 
 related to the vault synchronization.
-CLAUDE...
+CLAUDE
 
+##16 bug fix
 Fix the `npm run test:unit` 
 OK Antigravity
 
+##17 shortcuts
 For every entry in the dashboard, 
 - use a more compact disposition, 
 - the title is a link to the site URL 
@@ -66,58 +82,73 @@ For every entry in the dashboard,
 - Also use a small icon for the View button.
 OK Antigravity
 
+##18 bug fix
 Fix the `npm run test:e2e` 
 OK Antigravity
 
+##19 enrich tests
 Add a test to check that, in Dashboard, entries are listed in
 alphabetical order of titles.
 OK Antigravity
 
+##20 filter
 In the `Filter` input, add a button (at the right of the input field)
 to reset the filter.
 OK Antigravity
 
+##21 id
 In Dashboard function loadVault, when ciphering an array of
 PasswordEntry, provide an id property when missing. This will help
 when deleting a PasswordEntry.
 OK Antigravity
 
+##22 eye
 For all input[type=password], provide a show password option as an 
 eye (open or not) in the right part of the input field to control
 whether the password is visible.
 OK CLAUDE
 
-When a username or a password is copied to the clipboard, ensure that the clipboard
-is reset after 10 seconds. 
+##23 timeout
+When a username or a password is copied to the clipboard, ensure that the 
+clipboard is reset after 10 seconds. 
 OK Antigravity
 
-Please check unit tests and provide additional ones if some features are not covered.
+##24 enrich tests
+Please check unit tests and provide additional ones if some features are 
+not covered.
 OK Antigravity
 
+##35 clear memory
 In order to ensure more security, ensure that, if the webapp UI is not
 used for a minute, then all usernames and passwords are erased from
 browser active memory. The next user interaction will have then to
 decipher again the vault without asking the user to input the vault key.
 Antigravity + a la main
 
+##36 refactor
 The Dashboard file is too big. Create new components for the History Modal, the
 Editor Modal and the Dails Modal.
 OK Antigravity
 
+##37 bug fix
 Fix the `tests/e2e/history.spec.ts` test. 
 OK Antigravity
  
+##38 monitor updates
 Periodically check if the webapp may quit the Offline Mode that is, if
 saving or synchronizing the vault can be done safely. Report if a more
 recent version the vault is available.
 OK Antigravity
 
+##39 README
 Please enhance the README of the Passkeys project.
 OK Antigravity
 
+##40
 update modified property
 HAND made
 
+##41 folder view
 Create another dashboard with a hierarchical presentation with
 folders, subfolders, etc. A toggle button in all dashboards will
 trigger the presentation of the alternate dashboard. The new dashboard
@@ -131,10 +162,12 @@ Create a new component to display filtered items or folder-chosen items.
 CLAUDE HIERARCHICAL_DASHBOARD.md HIERARCHICAL_QUICKREF.md
 OK but not satisfying
 
+##42 bug fix
 Clicking on a folder that have subfolders does not display its subfolders.
 CLAUDE SUBFOLDER_FIX.md
 OK but not very satisfying
 
+##43 bug fix
 It would be better, when clicking on the '>' character preceding the
 name of a folder, to display the subfolder right below it (with a small
 indentation). It is still good to list the entries on the right pane.
@@ -142,8 +175,7 @@ CLAUDE FOLDER_NAVIGATION_IMPROVEMENT.md NAVIGATION_QUICKREF.md
 OK but not at all satisfying
 so we revert and prepare a new prompt.
 
-## New prompt
-
+##44 revert and retry
 Create another dashboard (a new component) with a hierarchical
 presentation with folders, subfolders, etc. A toggle button in all
 dashboards will trigger the presentation of the alternate dashboard.
@@ -163,45 +195,58 @@ create a new component to display filtered items of the original
 OK CLAUDE HIERARCHICAL_DASHBOARD.md VISUAL_GUIDE.md
 with a little hand-made fix
 
+##45 refactor
 There are too much common code between Dashboard and FolderDashboard,
 propose a plan to refactor.
 CLAUDE REFACTORING_*.md
 
+##46 refactor
 proceed with that plan
 CLAUDE + hand made changes
 
+##47 drag and drop
 In the `FolderDashboard`, allow to drag and drop a PasswordEntry to a
 folder. Remember that one can also directly change the `group`
 property in the `Editor` component.
 Antigravity
 
+##48 bug fix
 Can you fix the drag and drop tests
 OK Antigravity
 
+##49 highlight
 In the dropping process, When hovering over a folder, highlight the
 targetted folder.
 OK Antigravity
 
-Can you fix tests/e2e/security.spec.ts:43:5 › Security Inactivity Timeout › should clear vault from memory after inactivity and restore on interaction 
+##50 bug fix
+Can you fix tests/e2e/security.spec.ts:43:5 › Security Inactivity Timeout 
+› should clear vault from memory after inactivity and restore on interaction 
 OK Antigravity
 
+##51 improvements
 Do you see code improvements in the Passkeys webapp
 OK Antigravity
 
+##52 internationalization
 I would like to have an English and a French version, can you
 internationalize the Passkeys webapp.
 OK Antigravity but partial for Unlock
 
+##53 internationalize again
 Enrich `translations.ts` with French and English sentences (for instance
 in `Unlock`)
 OK Antigravity
 
+##54 simplify
 Are all these `$state()` really necessary ?
 OK Antigravity
 
+##55 simplify imports
 Check useless imports
 OK Antigravity
 
+##56 settings
 There are some constants hard coded in the client such as
 pollForUpdates, inactivityTimer, mvp_salt_fixed, etc.. Identify them,
 gather them in a `client-settings.json` file and fix client code to
@@ -209,14 +254,17 @@ use these settings. No need to provide a form to alter these settings.
 These settings are read once at start up.
 OK Antigravity
 
+##57 enrich tests
 Enrich unit tests to check newly added features.
 OK Antigravity
 
+##58 safe device
 Do not store permanently authentication information (for instance,
 token and username) on an insecure device. Ask the user if the device
 is safe and act accordingly.
 OK Antigravity
 
+##59 user-guide
 Generate a MarkDown document (named `user-guide.md`) acting as a draft
 for a future user's guide to Passkeys. Adopt a concise style and
 communicate concepts clearly. After a general introduction, one
@@ -230,6 +278,7 @@ use login `admin` and password `password`. Remember that the Git
 repository is on `https://github.com/ChristianQueinnec/passkeys`.
 OK Claude
 
+##60 warn unciphered vaults
 Vaults stored on the server are all ciphered. However to ease the
 initialization of `Passkeys`, the first vault (often named
 `vault-init.vault`) may be unciphered. This is a temporary state since
@@ -239,13 +288,20 @@ as JSON object. A ciphered vault is an object while an unciphered
 vault is an array. Change the vault history to flag (with a warning
 sign) the unciphered vaults that should be deleted promptly. Propose a
 button to do so.
-Antigravity 
+OK Antigravity 
 
+##61 warn
+At `Unlock` time, notify the user that if a vault is present in the
+browser or on the server then the user should use its vault key. If
+there is no vault, notify the user that the vault key to be entered
+will be used, in the future, to decipher the vault still to be created.
+ok Antigravity
+
+##62 enrich tests
 Add tests to check the vault in various situations. Tests should
 check safe or unsafe device, absent or present vault at unlock, 
-synchronisation with vaults older or newer. 
+synchronisation with vaults older or newer, when online or offline.
 
-At `Unlock` time, notify the user is a vault is 
 
 
 ## FUTURE
