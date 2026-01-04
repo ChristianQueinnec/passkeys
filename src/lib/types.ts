@@ -23,6 +23,7 @@ export interface HistoryItem {
     name: string;
     size: number;
     mtime: Date;
+    isCiphered: boolean;
 }
 
 export interface CipheredVaultData {

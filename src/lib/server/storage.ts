@@ -21,11 +21,22 @@ export const listVaults = (username: string) => {
     return fs.readdirSync(userDir)
         .filter((f: string) => f.endsWith('.vault')) // Filter for vault files
         .map(file => {
-            const stats = fs.statSync(path.join(userDir, file));
+            const filePath = path.join(userDir, file);
+            const stats = fs.statSync(filePath);
+
+            // Read first character to detect if it's a ciphered object ({) or an array ([)
+            const fd = fs.openSync(filePath, 'r');
+            const buffer = Buffer.alloc(1);
+            fs.readSync(fd, buffer, 0, 1, 0);
+            fs.closeSync(fd);
+            const firstChar = buffer.toString('utf-8');
+            const isCiphered = firstChar === '{';
+
             return {
                 name: file,
                 size: stats.size,
-                mtime: stats.mtime
+                mtime: stats.mtime,
+                isCiphered
             };
         })
         .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());

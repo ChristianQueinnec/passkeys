@@ -1,7 +1,7 @@
 {
 	"name": "passkeys",
 	"private": true,
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --port 3000",
@@ -15,7 +15,7 @@
 		"test:e2e": "npm run reset-db && playwright test tests/e2e --workers=1",
 		"tests": "npm run test:unit && npm run test:e2e",
 		"build:container": "docker compose build",
-        "demo": "make run.demo"
+		"demo": "make run.demo"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.57.0",

@@ -17,6 +17,7 @@ test.describe('Trust Device Security', () => {
         await page.waitForTimeout(500);
 
         // Check localStorage
+        await page.waitForFunction(() => localStorage.getItem('token') !== null);
         const token = await page.evaluate(() => localStorage.getItem('token'));
         expect(token).not.toBeNull();
 
@@ -32,7 +33,8 @@ test.describe('Trust Device Security', () => {
     test('should only persist login in sessionStorage when device is NOT trusted', async ({ page }) => {
         await page.fill('input[placeholder="Username"]', 'admin');
         await page.fill('input[type="password"]', 'password');
-        // Keep trust checkbox UNCHECKED (default)
+        // Explicitly uncheck to be safe
+        await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('app-title')).toBeVisible();
@@ -45,6 +47,7 @@ test.describe('Trust Device Security', () => {
         expect(lToken).toBeNull();
 
         // Check sessionStorage (should have token)
+        await page.waitForFunction(() => sessionStorage.getItem('token') !== null);
         const sToken = await page.evaluate(() => sessionStorage.getItem('token'));
         expect(sToken).not.toBeNull();
 

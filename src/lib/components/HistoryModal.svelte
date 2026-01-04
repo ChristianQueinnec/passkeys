@@ -37,20 +37,44 @@
                 </thead>
                 <tbody>
                     {#each historyFiles as file}
-                        <tr>
-                            <td
-                                >{new Date(file.mtime).toLocaleString(
+                        <tr class={!file.isCiphered ? "unciphered-row" : ""}>
+                            <td>
+                                {new Date(file.mtime).toLocaleString(
                                     i18n.language === "fr" ? "fr-FR" : "en-US",
-                                )}</td
-                            >
+                                )}
+                                {#if !file.isCiphered}
+                                    <span
+                                        class="warning-icon"
+                                        title={i18n.t(
+                                            "vault.unciphered_warning",
+                                        )}
+                                    >
+                                        ⚠️
+                                    </span>
+                                {/if}
+                            </td>
                             <td>{file.size} B</td>
                             <td>
-                                <button
-                                    class="danger small"
-                                    onclick={() => onDelete(file.name)}
-                                    data-testid="history-delete-btn"
-                                    >{i18n.t("common.delete")}</button
-                                >
+                                {#if !file.isCiphered}
+                                    <button
+                                        class="danger small pulse"
+                                        onclick={() => onDelete(file.name)}
+                                        data-testid="history-delete-btn"
+                                        title={i18n.t(
+                                            "vault.unciphered_warning",
+                                        )}
+                                    >
+                                        {i18n.t("vault.delete_promptly")}
+                                    </button>
+                                {:else}
+                                    <button
+                                        class="danger small"
+                                        onclick={() => onDelete(file.name)}
+                                        data-testid="history-delete-btn"
+                                    >
+                                        {i18n.t("common.delete")}
+                                    </button>
+                                {/if}
                             </td>
                         </tr>
                     {/each}
@@ -78,5 +102,26 @@
     p.hint {
         margin-left: 2rem;
         color: grey;
+    }
+    .unciphered-row {
+        background-color: #fff9db;
+    }
+    .warning-icon {
+        margin-left: 0.5rem;
+        cursor: help;
+    }
+    .pulse {
+        animation: pulse-animation 2s infinite;
+    }
+    @keyframes pulse-animation {
+        0% {
+            box-shadow: 0 0 0 0px rgba(220, 53, 69, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0px rgba(220, 53, 69, 0);
+        }
     }
 </style>
