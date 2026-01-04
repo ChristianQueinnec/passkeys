@@ -13,7 +13,7 @@ Prepare the Passkeys webapp.
    -b    build and run the Passkeys backend
    -i    similar to -u -v -b
    -h    display usage
-   -t   similar to -u -v (for tests)
+   -t   similar to -u -v but for tests
 EOF
 }
 
@@ -106,13 +106,12 @@ create_test_vault () {
     "created": ${DATE},
     "modified": ${DATE}
   },{
-    "group": "",
-    "title": "another log on example",
-    "username": "me@example.org",
+    "group": "sources/git",
+    "title": "Git sources of Passkeys",
+    "username": "you@example.org",
     "password": "${PASSWORD}",
-    "site": "https://ex.ample.org/",
+    "site": "https://github.com/ChristianQueinnec/passkeys",
     "tags": ["test", "other"],
-    "notes": "Another sample password entry",
     "created": ${DATE},
     "modified": ${DATE}
   },

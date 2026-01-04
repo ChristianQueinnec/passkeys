@@ -25,6 +25,10 @@ run.tests :
 	scripts/init.sh -t
 	npm run tests
 
+run.demo :
+	./scripts/init.sh -t
+	npm run dev
+
 REMOTE=pk.queinnec.org
 archive.container :
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
