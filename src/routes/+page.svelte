@@ -193,6 +193,16 @@
                                 data-testid="menu-change-password"
                                 >{i18n.t("auth.change_password")}</button
                             >
+                            <a
+                                href="https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="menu-link"
+                                data-testid="menu-help"
+                                onclick={() => (showUserMenu = false)}
+                            >
+                                {i18n.t("app.help")}
+                            </a>
                             <button
                                 onclick={handleLogout}
                                 data-testid="menu-logout"
@@ -348,7 +358,8 @@
         display: flex;
         flex-direction: column;
     }
-    .dropdown-menu button {
+    .dropdown-menu button,
+    .menu-link {
         background: white;
         color: #333;
         border: none;
@@ -358,8 +369,12 @@
         width: 100%;
         border-radius: 0;
         font-weight: normal;
+        text-decoration: none;
+        display: block;
+        box-sizing: border-box;
     }
-    .dropdown-menu button:hover {
+    .dropdown-menu button:hover,
+    .menu-link:hover {
         background: #f0f0f0;
         transform: none;
         box-shadow: none;

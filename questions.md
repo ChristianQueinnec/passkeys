@@ -1,6 +1,19 @@
-# Additional requests to Antigravity
+# Additional requests to AI
 
-These requests are too specific to be present in `README.md`.
+This is the chronological set of prompts I gave to AI to further
+develop the `Passkeys` webapp after the initial generation triggered
+by the `CLAUDE.md` file. After every prompt, a git commit was
+performed so it is possible to relate the prompts with the diffs.
+
+Things proceed smoothly 
+- with Antigravity (Gemini 3 pro or Gemini flash)
+- and with Claude (claude-desktop)
+except for a glitch in the development around step 41-43, I `git
+revert` and start again with a better written prompt.
+
+This experience teaches me to proceed with small steps, with precise
+prompts. 
+
 
 ## 1
 Does `fs-extra` really needed ? 
@@ -49,8 +62,26 @@ vault. Keep the extra properties that may appear in the items of the
 array.
 OK
 
-## 11 bug
-Bug in saveVault: fixed by CLAUDE1.md
+## 11 bug in saveVault
+You are an expert in typescript debugging. You are in the directory
+`/home/queinnec/Passkeys/` where was developped a password manager
+named `Passkeys`. This webapp is a sveltekit project.
+
+Starting the server with `npm run dev` allows a browser client to log
+in, to input a vault password and to see the list of stored passwords.
+However, the vault is not saved in localstorage with that error:
+
+```
+crypto.ts:52 Uncaught (in promise) RangeError: Maximum call stack size exceeded
+    at encrypt (crypto.ts:52:29)
+    at async Module.track_reactivity_loss (chunk-WHQ2SJII.js?v=9cc14843:1495:15)
+    at async saveVault (Dashboard.svelte:90:24)
+    at async Module.track_reactivity_loss (chunk-WHQ2SJII.js?v=9cc14843:1495:15)
+    at async loadVault (Dashboard.svelte:59:33)
+```
+
+Can you propose a plan to fix it ?
+OK CLaude
 
 ## 12 synchronize
 Add, in the user menu, a `synchronize` menu item to fetch the most
@@ -297,11 +328,21 @@ there is no vault, notify the user that the vault key to be entered
 will be used, in the future, to decipher the vault still to be created.
 ok Antigravity
 
-## 62 simplify
+## 62 Store Type Simplification
 Simplify useVault or useVaultSecurity types according to their call sites.
 OK Antigravity
 
-## 63 enrich tests
+## 63 Help
+Add an `help` menu item that opens (in another tab) the documentation of
+`Passkeys` held at
+`https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md`.
+
+
+
+No need to poll the server before successful Unlock
+
+
+## 64 enrich tests
 Add tests to check the vault in various situations. Tests should
 check safe or unsafe device, absent or present vault at unlock, 
 synchronisation with vaults older or newer, when online or offline.
@@ -310,18 +351,11 @@ CLAUDE
 
 ##  FUTURE
 
-simplify useVault or useVaultSecurity types according to their call sites.
-
-Add `help` menu item to open (in another tab) the documentation of
-`Passkeys` held at
-`https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md`
-
 
 bypass Login page if coming from authenticated nginx proxy ?
 
 decipher only when copy to clipboard
 
-loadVault avant unlock
-
 blob for vault rather than base64
 
+weird csrf 
