@@ -1,0 +1,16 @@
+{
+    "name": "Passkeys - Secure Vault",
+    "short_name": "Passkeys",
+    "description": "A secure, simple passkey manager",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "lang": "en",
+    "scope": "./",
+    "icons": [{
+        "src": "favicon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml"
+    }]
+}
