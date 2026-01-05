@@ -26,6 +26,7 @@
     {required}
     {autocomplete}
     class="password-input"
+    data-testid="password-input"
   />
   <button
     type="button"

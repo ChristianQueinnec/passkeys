@@ -7,6 +7,7 @@ export interface ClientSettings {
     clipboardTimeout: number;
     masterPasswordSalt: string;
     pbkdf2Iterations: number;
+    pbkdf2IterationsTest: number;
 }
 
 const defaultSettings: ClientSettings = {
@@ -15,7 +16,8 @@ const defaultSettings: ClientSettings = {
     inactivityTimeout: 60000,
     clipboardTimeout: 10000,
     masterPasswordSalt: "mvp_salt_fixed",
-    pbkdf2Iterations: 100000
+    pbkdf2Iterations: 100000,
+    pbkdf2IterationsTest: 100
 };
 
 function createSettingsStore() {

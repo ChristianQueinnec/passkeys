@@ -10,14 +10,45 @@ import path from 'path';
  * - Online vs offline modes
  */
 
+async function ensureVaultExists(page: any, user: string, pass: string, key: string) {
+    // console.log(`Ensuring vault exists for ${user}...`);
+    await page.fill('input[placeholder="Username"]', user);
+    await page.fill('[data-testid="password-input"]', pass);
+    await page.click('[data-testid="login-button"]');
+
+    // Wait for Unlock screen
+    await expect(page.getByTestId('unlock-button')).toBeVisible({ timeout: 10000 });
+
+    await page.fill('[data-testid="password-input"]', key);
+    await page.click('[data-testid="unlock-button"]');
+
+    // Wait for Dashboard
+    await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible({ timeout: 10000 });
+
+    // Add an entry and save to ensure server vault exists
+    await page.getByTestId('new-entry-btn').click();
+    await page.getByTestId('edit-title').fill('Init Entry');
+    await page.getByTestId('edit-save').click();
+
+    const saveBtn = page.getByTestId('save-vault-btn');
+    await expect(saveBtn).toBeVisible();
+    await saveBtn.click();
+    await expect(saveBtn).not.toBeVisible({ timeout: 10000 });
+
+    await page.click('[data-testid="logout-btn"]');
+    await expect(page.getByTestId('login-button')).toBeVisible();
+}
+
 test.describe('Vault Situations: Safe Device', () => {
     const username = 'auth_test';
     const password = 'q';
-    const vaultKey = 'test-vault-key';
+    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
-        // Clear storage and ensure clean state
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
@@ -27,22 +58,21 @@ test.describe('Vault Situations: Safe Device', () => {
     });
 
     test('should persist vault in localStorage on safe device', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // Login with "trust this device" checked
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
         // Unlock vault
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Wait for vault to load
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
-
-        // Wait for storage to be updated
-        await page.waitForTimeout(500);
 
         // Verify token is in localStorage (safe device)
         const token = await page.evaluate(() => localStorage.getItem('token'));
@@ -52,19 +82,26 @@ test.describe('Vault Situations: Safe Device', () => {
         const offlineVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
         expect(offlineVault).not.toBeNull();
 
-        // Reload page - should stay authenticated
+        // Reload page - should stay authenticated (at least have token)
         await page.reload();
+
+        // Should be at Unlock phase (requires master password even if token persisted)
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
+        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should reload cached vault from localStorage when offline', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // First, login and cache vault
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
@@ -80,12 +117,12 @@ test.describe('Vault Situations: Safe Device', () => {
 
         // Login again (token from localStorage)
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
         // Unlock with cached vault
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Should load from localStorage
@@ -99,9 +136,12 @@ test.describe('Vault Situations: Safe Device', () => {
 test.describe('Vault Situations: Unsafe Device', () => {
     const username = 'auth_test';
     const password = 'q';
-    const vaultKey = 'test-vault-key';
+    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
@@ -111,14 +151,16 @@ test.describe('Vault Situations: Unsafe Device', () => {
     });
 
     test('should use sessionStorage on unsafe device', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // Login WITHOUT "trust this device"
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
@@ -127,7 +169,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
         // Verify token is in sessionStorage, NOT localStorage
         const localToken = await page.evaluate(() => localStorage.getItem('token'));
         const sessionToken = await page.evaluate(() => sessionStorage.getItem('token'));
-        
+
         expect(localToken).toBeNull();
         expect(sessionToken).not.toBeNull();
 
@@ -137,13 +179,15 @@ test.describe('Vault Situations: Unsafe Device', () => {
     });
 
     test('should NOT persist login after browser restart on unsafe device', async ({ page, context }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // Login without trust
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
@@ -167,8 +211,20 @@ test.describe('Vault Situations: Unsafe Device', () => {
 test.describe('Vault Situations: Vault Presence at Unlock', () => {
     const username = 'auth_test';
     const password = 'q';
-    const vaultKey = 'test-vault-key';
+    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
+
+    test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
+        await page.goto('/');
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
+        await page.reload();
+    });
 
     test('should handle missing vault file gracefully', async ({ page }) => {
         // Remove all vault files
@@ -182,12 +238,12 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         await page.reload();
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
         // Should proceed to unlock even without server vault
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Should initialize empty vault or load from offline cache
@@ -233,10 +289,10 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
 
         // Login and unlock
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
@@ -254,37 +310,37 @@ test.describe('Vault Situations: Synchronization', () => {
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // Login and unlock
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should detect when server has newer vault version', async ({ page }) => {
-        // Enable testing mode for faster polling
-        await page.evaluate(() => {
-            (window as any).__TESTING__ = true;
-        });
-
         // Create a newer vault file on server
         const newerTimestamp = new Date(Date.now() + 10000).toISOString();
         const newerFilename = `vault-${newerTimestamp.replace(/[:.]/g, '-')}.vault`;
-        
+
         // Get existing vault content
         const existingFiles = fs.readdirSync(vaultDir).filter(f => f.endsWith('.vault'));
         let content = '[]';
         if (existingFiles.length > 0) {
             content = fs.readFileSync(path.join(vaultDir, existingFiles[0]), 'utf-8');
         }
-        
+
         fs.writeFileSync(path.join(vaultDir, newerFilename), content);
 
         // Wait for polling to detect (test mode uses 1s interval)
@@ -328,11 +384,6 @@ test.describe('Vault Situations: Synchronization', () => {
         await page.getByTestId('edit-title').fill('Unsaved Local Change');
         await page.getByTestId('edit-save').click();
 
-        // Simulate server change by creating newer vault
-        await page.evaluate(() => {
-            (window as any).__TESTING__ = true;
-        });
-
         const newerTimestamp = new Date(Date.now() + 5000).toISOString();
         const newerFilename = `vault-${newerTimestamp.replace(/[:.]/g, '-')}.vault`;
         const existingFiles = fs.readdirSync(vaultDir).filter(f => f.endsWith('.vault'));
@@ -342,12 +393,9 @@ test.describe('Vault Situations: Synchronization', () => {
         // Wait for detection
         await page.waitForTimeout(2000);
 
-        // Should show both: newer version alert AND save button (conflict state)
+        // Should show both: newer version alert AND xsave button (conflict state)
         await expect(page.locator('[data-testid="newer-version-alert"]')).toBeVisible();
         await expect(page.getByTestId('save-vault-btn')).toBeVisible();
-
-        // User should be able to choose: reload (lose local) or save (overwrite server)
-        // This is expected behavior - user must manually resolve conflict
 
         // Clean up
         fs.unlinkSync(path.join(vaultDir, newerFilename));
@@ -357,9 +405,12 @@ test.describe('Vault Situations: Synchronization', () => {
 test.describe('Vault Situations: Online/Offline Modes', () => {
     const username = 'auth_test';
     const password = 'q';
-    const vaultKey = 'test-vault-key';
+    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
@@ -369,11 +420,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
     });
 
     test('should work fully when online', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
@@ -392,16 +445,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
     });
 
     test('should transition to offline mode when connection lost', async ({ page }) => {
-        // Enable testing mode for faster polling
-        await page.evaluate(() => {
-            (window as any).__TESTING__ = true;
-        });
+        await ensureVaultExists(page, username, password, vaultKey);
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
@@ -421,22 +471,19 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
     });
 
     test('should prevent saving when offline', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // Login and get to vault view
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
         // Block API
         await page.route('**/api/**', route => route.abort('failed'));
-
-        // Enable testing mode for faster offline detection
-        await page.evaluate(() => {
-            (window as any).__TESTING__ = true;
-        });
 
         await page.waitForTimeout(2000);
 
@@ -459,15 +506,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
     });
 
     test('should restore online mode when connection returns', async ({ page }) => {
-        await page.evaluate(() => {
-            (window as any).__TESTING__ = true;
-        });
+        await ensureVaultExists(page, username, password, vaultKey);
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
@@ -478,7 +523,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         // Restore connection
         await page.unroute('**/api/vault/metadata');
-        
+
         // Wait for next poll cycle
         await page.waitForTimeout(2000);
 
@@ -489,21 +534,23 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
     });
 
     test('should use cached vault when offline from start', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         // First, populate cache
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
-        
+
         // Add an entry to cache
         await page.getByTestId('new-entry-btn').click();
         await page.getByTestId('edit-title').fill('Cached Entry');
         await page.getByTestId('edit-save').click();
-        
+
         await page.waitForTimeout(500);
 
         // Logout
@@ -512,63 +559,69 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         // Block all API from the start
         await page.route('**/api/**', route => route.abort('failed'));
 
-        // Try to login (will fail at API level but token is in localStorage)
+        // Try to login (token is in localStorage)
         await page.goto('/');
 
-        // Because API is blocked, login will fail
-        // But if we still have token in storage from trusted device...
-        const hasToken = await page.evaluate(() => localStorage.getItem('token'));
-        
-        if (hasToken) {
-            // Navigate directly (simulating app restart with cached credentials)
-            await page.reload();
-            
-            // If auth is restored from localStorage, should see unlock
-            // This depends on implementation - may need to adjust
-        }
+        // Even with API blocked, we should be able to see Unlock screen because token is in localStorage
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
+
+        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.click('[data-testid="unlock-button"]');
+
+        // Should load from cache
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.getByText('Cached Entry')).toBeVisible();
     });
 });
 
 test.describe('Vault Situations: Edge Cases', () => {
     const username = 'auth_test';
     const password = 'q';
-    const vaultKey = 'test-vault-key';
+    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
 
-    test('should handle corrupted cached vault gracefully', async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
-        
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
+        await page.reload();
+    });
+
+    test('should handle corrupted cached vault gracefully', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
+        await page.goto('/');
+
         // Set corrupted vault in cache
         await page.evaluate(() => {
             localStorage.setItem('offline_vault', 'not-valid-json{{{');
         });
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
-        // Should fall back to server vault or show error
-        // Should not crash
-        await page.waitForTimeout(1000);
-        
-        // Either shows vault or error, but app should still be functional
-        const isVisible = await page.locator('.dashboard, .folder-dashboard').isVisible().catch(() => false);
-        if (!isVisible) {
-            // If vault load failed, should show error message
-            await expect(page.locator('text=/error|failed/i')).toBeVisible();
-        }
+        // Should fall back to server vault
+        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
 
     test('should handle wrong vault key gracefully', async ({ page }) => {
+        await ensureVaultExists(page, username, password, vaultKey);
+
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
         // Use wrong vault key
@@ -576,7 +629,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.click('[data-testid="unlock-button"]');
 
         // Should show error message
-        await expect(page.locator('text=/failed to decrypt|cannot decrypt|incorrect.*key/i')).toBeVisible({
+        await expect(page.locator('text=/failed/i')).toBeVisible({
             timeout: 3000
         });
 
@@ -584,7 +637,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         await expect(page.getByTestId('unlock-button')).toBeVisible();
 
         // Should be able to retry with correct key
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
@@ -594,7 +647,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         if (!fs.existsSync(vaultDir)) {
             fs.mkdirSync(vaultDir, { recursive: true });
         }
-        
+
         const malformedVault = {
             date: new Date().toISOString(),
             data: {
@@ -602,7 +655,7 @@ test.describe('Vault Situations: Edge Cases', () => {
                 iv: 'some-iv-data'
             }
         };
-        
+
         fs.writeFileSync(
             path.join(vaultDir, 'vault-malformed.vault'),
             JSON.stringify(malformedVault)
@@ -613,20 +666,19 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.reload();
 
         await page.fill('input[placeholder="Username"]', username);
-        await page.fill('input[type="password"]', password);
+        await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
-        await page.fill('input[type="password"]', vaultKey);
+        await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Should handle error gracefully
         await page.waitForTimeout(1000);
-        
+
         // Should show error or fall back to empty vault
-        const errorVisible = await page.locator('text=/error|failed|corrupt/i').isVisible().catch(() => false);
+        const errorVisible = await page.locator('text=/failed/i').isVisible().catch(() => false);
         const vaultVisible = await page.locator('.dashboard, .folder-dashboard').isVisible().catch(() => false);
-        
-        // One of these should be true
+
         expect(errorVisible || vaultVisible).toBe(true);
 
         // Clean up

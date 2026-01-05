@@ -1,5 +1,6 @@
 <script lang="ts">
     import Login from "$lib/components/Login.svelte";
+    import { browser } from "$app/environment";
     import Unlock from "$lib/components/Unlock.svelte";
     import Dashboard from "$lib/components/Dashboard.svelte";
     import FolderDashboard from "$lib/components/FolderDashboard.svelte";
@@ -95,11 +96,12 @@
             const salt = new TextEncoder().encode(
                 settings.current.masterPasswordSalt,
             );
-            encryptionKey = await pbkdf2(
-                masterPassword,
-                salt,
-                settings.current.pbkdf2Iterations,
-            );
+            const iterations =
+                browser && (window as any).__TESTING__
+                    ? settings.current.pbkdf2IterationsTest
+                    : settings.current.pbkdf2Iterations;
+
+            encryptionKey = await pbkdf2(masterPassword, salt, iterations);
             // Load vault once key is derived
             await vault.loadVault();
             // Upate vaultExists status after successful load just in case

@@ -6,14 +6,14 @@ does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 
 The webapp has two sides: the server side and the client side both
-written in Typescript with help of SvelteKit.
+written in Typescript with help of SvelteKit and Vite.
 
 The server side will offer an API (prefixed by `/api/`)
 - to post login information (with username and password),
-- to get the crypted file of information associated to the authenticated user,
-- to list the crypted files of information associated to the authenticated user with their date of recording,
-- to put a revised version of information associated to the authenticated user,
-- to remove a crypted file of information based on its date of recording.
+- to get the vault associated to the authenticated user,
+- to list the vaults associated to the authenticated user with their date of recording,
+- to put a revised vault associated to the authenticated user,
+- to remove a vault based on its date of recording.
 
 The default url of the server side (the `/` url) will deliver the
 code of the client side. 
@@ -24,10 +24,11 @@ with their date in a directory proper to every user. The vault file
 is a JSON file that also contains a date property. Dates should be
 displayed with ISO convention.
 
-Users' names and their hashed passwords are stored in a json file only
-available to the server side. However if the password does not contain
-a colon sign, that means that the password is not hashed. In that case,
-the `users.json` file should be rewritten with all passwords hashed.
+Users' names and their hashed passwords are stored in a json file
+(named `data/users.json`) only available to the server side. However
+if the password does not contain a colon sign, that means that the
+password is not hashed. In that case, the server should rewrite the
+`users.json` file with all passwords hashed.
 
 All the accesses to the server are logged. The server
 will be ultimately deployed as a Docker container mounting the `data`
@@ -35,24 +36,26 @@ directory where are stored information files.
 
 The client side will run in any modern browser. It will allow some
 user to authenticate and get the most recent associated vault. When
-authenticated, the name of the user appears along a `logout` button.
-The `Enter` key submits the form if username and password are filled.
-The webapp will then ask for the vault key allowing to decipher that
-file. The `Enter` key submits the form if a vault key is present. It
-must be possible to see temporarily the vault key. Report explicitly
-if the vault cannot be deciphered.
+authenticated, the name of the user reveals a menu containing a
+`logout` button. The webapp will then ask for the vault key allowing
+to decipher that file. It must be possible to see temporarily the
+vault or login password. Report explicitly if the vault cannot be
+deciphered.
 
-When the client receives a vault, it stores it persistently but still
-ciphered in the browser so it may be used in case of missing Internet
-connectivity. Of course, reusing that stored vault requires vault key.
-Report to the user that the vault might be out of date.
+if on a safe device, when the client receives a vault, it stores it
+persistently but still ciphered in the browser so it may be used in
+case of missing Internet connectivity. Of course, reusing that stored
+vault requires vault key. Report to the user that the vault might be
+out of date and allow to synchronize with the new version held in the
+server.
 
+On an unsafe device, the vault is not stored persistently.
 
-Information stored in a vault are made of a title, a username, a
-password, a site URL, some tags (simple words) as well as some textual
-notes. Only the title is mandatory.
+Information stored in a vault are made of a title, a group, a
+username, a password, a site URL, some tags (simple words) as well as
+some textual notes. Only the title is mandatory.
 
-Once deciphered in the browser, the information titles are displayed
+Once deciphered in the browser, the vault entries' titles are displayed
 and may be filtered. The filter is a string that may appear in all the
 textual fields of an information (case is not important). When one
 information is clicked, it is fully displayed in a popup (the password
@@ -60,7 +63,11 @@ is rendered with stars), the site url when clicked will display the
 site in another tab. the username and the password may be clicked and
 copied in order to be pasted elsewhere.
 
-Information may be individually managed that is, removed or edited.
+A view with folders based on the `group` properties of vault entries
+is also provided. Entries may be dragged and dropped onto folders in
+order to group related vault entries.
+
+Vault entries may be individually managed that is, removed or edited.
 When the vault is modified, propose a button to save it on the
 server after ciphering it.
 
@@ -68,3 +75,6 @@ Of course, test files should also be generated to test the server and
 the client sides. Use Vitest for unit testing and Playwright for
 component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
+
+After a prompt is successfully complete, run all tests to avoid
+regression. 

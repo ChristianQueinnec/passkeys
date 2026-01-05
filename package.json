@@ -13,7 +13,7 @@
 		"test:unit": "vitest run tests/unit",
 		"reset-db": "scripts/init.sh -t",
 		"test:e2e": "npm run reset-db && playwright test tests/e2e --workers=1",
-		"test:vault": "tests/run-vault-tests.sh all",
+		"test:vault": "npm run reset-db && tests/run-vault-tests.sh all",
 		"tests": "npm run test:unit && npm run test:e2e && npm run test:vault",
 		"build:container": "docker compose build",
 		"demo": "make run.demo"

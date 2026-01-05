@@ -6,10 +6,10 @@ by the `CLAUDE.md` file. After every prompt, a git commit was
 performed so it is possible to relate the prompts with the diffs.
 
 Things proceed smoothly 
-- with Antigravity (Gemini 3 pro or Gemini flash)
-- and with Claude (claude-desktop)
-except for a glitch in the development around step 41-43, I `git
-revert` and start again with a better written prompt.
+- with Antigravity (Gemini 3 pro or Gemini 3 flash). I especially like the Implementation plan and the final Walkthrough
+- and with Claude (claude-desktop) 
+except for a glitch in the development around step 41-43, where I decided 
+to `git revert` and start again with a better written prompt.
 
 This experience teaches me to proceed with small steps, with precise
 prompts. 
@@ -346,11 +346,18 @@ OK Antigravity
 Add tests to check the vault in various situations. Tests should
 check safe or unsafe device, absent or present vault at unlock, 
 synchronisation with vaults older or newer, when online or offline.
-CLAUDE
+CLAUDE many tests fail!
+
+## 65 Fix E2E Vault Situations Tests
+Some tests of `tests/e2e/vault_situations.spec.ts` fail, please fix them.
+Antigravity - long and painful fix
 
 
 ##  FUTURE
 
+Add a menu item to present a form allowing the user to change the
+master vault password. Warn the user to not confuse valut password
+change from login password change.
 
 bypass Login page if coming from authenticated nginx proxy ?
 
