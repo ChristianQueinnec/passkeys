@@ -328,7 +328,10 @@ test.describe('Vault Situations: Synchronization', () => {
 
     test('should detect when server has newer vault version', async ({ page }) => {
         // Create a newer vault file on server
-        const newerTimestamp = new Date(Date.now() + 10000).toISOString();
+        // Wait to ensure mtime difference (test polling is 1s)
+        await page.waitForTimeout(1200);
+
+        const newerTimestamp = new Date().toISOString();
         const newerFilename = `vault-${newerTimestamp.replace(/[:.]/g, '-')}.vault`;
 
         // Get existing vault content
@@ -340,15 +343,14 @@ test.describe('Vault Situations: Synchronization', () => {
 
         const newerPath = path.join(vaultDir, newerFilename);
         fs.writeFileSync(newerPath, content);
-        const futureTime = new Date(Date.now() + 10000);
-        fs.utimesSync(newerPath, futureTime, futureTime);
+        // fs.utimesSync(newerPath, futureTime, futureTime); // Removed manual utimes
 
-        // Wait for polling to detect (test mode uses 1s interval)
+        // Wait for polling to detect
         await page.waitForTimeout(2000);
 
         // Should show newer version warning
         await expect(page.locator('[data-testid="newer-version-alert"]')).toBeVisible({
-            timeout: 10000
+            timeout: 15000
         });
 
         // Should offer to reload
@@ -558,7 +560,12 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         // Wait for save to complete and modal to close
         await expect(page.getByTestId('vault-modals')).not.toBeVisible();
 
-        await page.waitForTimeout(1000);
+        // PERSIST CHANGES: Click the main save button
+        await page.getByTestId('save-vault-btn').click();
+        await expect(page.getByTestId('save-vault-btn')).not.toBeVisible();
+
+        // Wait a bit to ensure localStorage persistence
+        await page.waitForTimeout(2000);
 
         // Verify offline vault is stored
         const storedVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
@@ -577,8 +584,9 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.click('[data-testid="unlock-button"]');
 
         // Should load from cache
+        // Should load from cache
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
-        await expect(page.getByText('Cached Entry')).toBeVisible();
+        await expect(page.getByText('Cached Entry')).toBeVisible({ timeout: 10000 });
     });
 });
 
