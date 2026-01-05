@@ -495,12 +495,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.getByTestId('edit-title').fill('Offline Entry');
         await page.getByTestId('edit-save').click();
 
-        // Save button should appear but clicking should fail
+        // Save button should appear but be disabled
         const saveBtn = page.getByTestId('save-vault-btn');
         await expect(saveBtn).toBeVisible();
+        await expect(saveBtn).toBeDisabled();
 
-        // Try to save - should show error or disabled state
-        await saveBtn.click();
+        // Try to save - should be disabled
+        await expect(saveBtn).toBeDisabled();
 
         // Should show error message or remain dirty
         await page.waitForTimeout(500);

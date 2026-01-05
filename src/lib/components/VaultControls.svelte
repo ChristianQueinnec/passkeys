@@ -46,6 +46,7 @@
             <button
                 class="save-btn"
                 onclick={onSave}
+                disabled={offlineMode}
                 data-testid="save-vault-btn">{i18n.t("vault.save")}</button
             >
         {/if}

@@ -6,7 +6,7 @@ by the `CLAUDE.md` file. After every prompt, a git commit was
 performed so it is possible to relate the prompts with the diffs.
 
 Things proceed smoothly 
-- with Antigravity (Gemini 3 pro or Gemini 3 flash). I especially like the Implementation plan and the final Walkthrough
+- with Antigravity (Gemini 3 pro or Gemini 3 flash). I especially like the Implementation plan and the final Walkthrough. The title of the Walkthrough is a good summary for the associated git commit.
 - and with Claude (claude-desktop) 
 except for a glitch in the development around step 41-43, where I decided 
 to `git revert` and start again with a better written prompt.
@@ -264,7 +264,7 @@ with a little hand-made fix
 There are too much common code between Dashboard and FolderDashboard,
 propose a plan to refactor.
 
-CLAUDE REFACTORING_*.md
+CLAUDE REFACTORING_*.md COMPOSABLES_GUIDE.md
 
 ## 46 refactor
 proceed with that plan
@@ -401,12 +401,15 @@ Add tests to check the vault in various situations. Tests should
 check safe or unsafe device, absent or present vault at unlock, 
 synchronisation with vaults older or newer, when online or offline.
 
-CLAUDE many tests fail!
+CLAUDE VAULT_TESTING_SUMMARY.md IMPLEMENTATION_COMPLETE.md
+not ok: many tests fail!
 
 ## 65 Fix E2E Vault Situations Tests
 Some tests of `tests/e2e/vault_situations.spec.ts` fail, please fix them.
 
 Antigravity - long and painful fix
+
+There are still tests that fail, fix them
 
 
 ##  FUTURE
