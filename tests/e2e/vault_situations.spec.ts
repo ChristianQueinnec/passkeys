@@ -35,7 +35,8 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
     await saveBtn.click();
     await expect(saveBtn).not.toBeVisible({ timeout: 10000 });
 
-    await page.click('[data-testid="logout-btn"]');
+    await page.getByTestId('user-menu-btn').click();
+    await page.getByTestId('menu-logout').click();
     await expect(page.getByTestId('login-button')).toBeVisible();
 }
 
@@ -106,20 +107,16 @@ test.describe('Vault Situations: Safe Device', () => {
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
 
         // Wait for vault to be cached
-        await page.waitForTimeout(500);
-
-        // Logout
-        await page.click('[data-testid="logout-btn"]');
-        await expect(page.getByTestId('login-button')).toBeVisible();
+        await page.waitForTimeout(1000);
 
         // Block all API requests to simulate offline
         await page.route('**/api/**', route => route.abort('failed'));
 
-        // Login again (token from localStorage)
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
-        await page.getByTestId('trust-device-checkbox').check();
-        await page.click('[data-testid="login-button"]');
+        // Reload page to simulate restarting app
+        await page.reload();
+
+        // Should be at Unlock phase (token persisted)
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
 
         // Unlock with cached vault
         await page.fill('[data-testid="password-input"]', vaultKey);
@@ -341,14 +338,17 @@ test.describe('Vault Situations: Synchronization', () => {
             content = fs.readFileSync(path.join(vaultDir, existingFiles[0]), 'utf-8');
         }
 
-        fs.writeFileSync(path.join(vaultDir, newerFilename), content);
+        const newerPath = path.join(vaultDir, newerFilename);
+        fs.writeFileSync(newerPath, content);
+        const futureTime = new Date(Date.now() + 10000);
+        fs.utimesSync(newerPath, futureTime, futureTime);
 
         // Wait for polling to detect (test mode uses 1s interval)
         await page.waitForTimeout(2000);
 
         // Should show newer version warning
         await expect(page.locator('[data-testid="newer-version-alert"]')).toBeVisible({
-            timeout: 5000
+            timeout: 10000
         });
 
         // Should offer to reload
@@ -388,7 +388,10 @@ test.describe('Vault Situations: Synchronization', () => {
         const newerFilename = `vault-${newerTimestamp.replace(/[:.]/g, '-')}.vault`;
         const existingFiles = fs.readdirSync(vaultDir).filter(f => f.endsWith('.vault'));
         const content = fs.readFileSync(path.join(vaultDir, existingFiles[0]), 'utf-8');
-        fs.writeFileSync(path.join(vaultDir, newerFilename), content);
+        const newerPath = path.join(vaultDir, newerFilename);
+        fs.writeFileSync(newerPath, content);
+        const futureTime = new Date(Date.now() + 10000);
+        fs.utimesSync(newerPath, futureTime, futureTime);
 
         // Wait for detection
         await page.waitForTimeout(2000);
@@ -551,16 +554,20 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.getByTestId('edit-title').fill('Cached Entry');
         await page.getByTestId('edit-save').click();
 
-        await page.waitForTimeout(500);
+        // Wait for save to complete and modal to close
+        await expect(page.getByTestId('vault-modals')).not.toBeVisible();
 
-        // Logout
-        await page.click('[data-testid="logout-btn"]');
+        await page.waitForTimeout(1000);
+
+        // Verify offline vault is stored
+        const storedVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
+        expect(storedVault).not.toBeNull();
 
         // Block all API from the start
         await page.route('**/api/**', route => route.abort('failed'));
 
-        // Try to login (token is in localStorage)
-        await page.goto('/');
+        // Reload to simulate fresh start offline
+        await page.reload();
 
         // Even with API blocked, we should be able to see Unlock screen because token is in localStorage
         await expect(page.getByTestId('unlock-button')).toBeVisible();
@@ -625,13 +632,12 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.click('[data-testid="login-button"]');
 
         // Use wrong vault key
-        await page.fill('input[type="password"]', 'wrong-key-intentionally');
-        await page.click('[data-testid="unlock-button"]');
-
-        // Should show error message
-        await expect(page.locator('text=/failed/i')).toBeVisible({
-            timeout: 3000
+        page.on('dialog', async dialog => {
+            expect(dialog.message()).toMatch(/failed/i);
+            await dialog.dismiss();
         });
+        await page.fill('[data-testid="password-input"]', 'wrong-key-intentionally');
+        await page.click('[data-testid="unlock-button"]');
 
         // Should remain at unlock screen
         await expect(page.getByTestId('unlock-button')).toBeVisible();

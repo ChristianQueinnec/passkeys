@@ -55,11 +55,13 @@
     </div>
 
     {#if offlineMode}
-        <div class="warning">⚠️ {i18n.t("vault.offline_mode")}</div>
+        <div class="warning" data-testid="offline-indicator">
+            ⚠️ {i18n.t("vault.offline_mode")}
+        </div>
     {/if}
 
     {#if newerVersionAvailable}
-        <div class="warning sync-warning">
+        <div class="warning sync-warning" data-testid="newer-version-alert">
             📦 {i18n.t("vault.newer_version")}
             <button class="small" onclick={onSynchronize}
                 >{i18n.t("vault.sync_now")}</button

@@ -144,6 +144,23 @@ export const api = {
         return res.json();
     },
 
+    async vaultExists(username: string, token?: string) {
+        const t = token || this.token;
+        if (!t) return false;
+        try {
+            const res = await fetch('/api/vault/metadata', {
+                headers: { 'Authorization': `Bearer ${t}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return !!data.mtime;
+            }
+        } catch (e) {
+            console.error('Failed to check vault existence:', e);
+        }
+        return false;
+    },
+
     async deleteVault(filename: string) {
         if (!this.token) throw new Error('Not authenticated');
 

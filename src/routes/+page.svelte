@@ -177,7 +177,11 @@
         {#if phase > 0}
             <div class="user-info">
                 <div class="user-menu-container">
-                    <button class="user-btn" onclick={toggleMenu}>
+                    <button
+                        class="user-btn"
+                        onclick={toggleMenu}
+                        data-testid="user-menu-btn"
+                    >
                         <span class="user-name">{username}</span>
                         <span class="arrow">▼</span>
                     </button>
