@@ -342,7 +342,6 @@ OK Antigravity
 No need to poll the server for newer vaults before successful Unlock.
 OK Antigravity
 
-
 ## 64 enrich tests
 Add tests to check the vault in various situations. Tests should
 check safe or unsafe device, absent or present vault at unlock, 
