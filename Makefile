@@ -21,13 +21,20 @@ run.container :
 	@echo "Browse http://localhost:3000"
 	docker logs -f --tail 100 passkeys
 
-run.tests :
-	scripts/init.sh -t
-	npm run tests
-
+# Run the webapp in dev mode without container:
 run.demo :
 	./scripts/init.sh -t
+	@echo "Browse now http://localhost:3000"
 	npm run dev
+
+# Run tests after checking that a server runs (dev mode or container):
+run.tests :
+	scripts/init.sh -t
+	if curl --silent http://localhost:3000 > /dev/null ; then true ; else \
+	  npm run dev ; fi
+	npm run tests:unit
+	npm run tests:e2e
+
 
 REMOTE=pk.queinnec.org
 archive.container :

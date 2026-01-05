@@ -71,7 +71,13 @@ export const translations = {
         "common.date": "Date",
         "common.size": "Size",
         "common.actions": "Actions",
-        "common.untitled": "New Untitled Entry"
+        "common.untitled": "New Untitled Entry",
+        "vault.change_password": "Change Vault Password",
+        "vault.change_password_warning": "Warning: This changes the password used to decrypt your vault. It is DIFFERENT from your login password.",
+        "vault.old_master_password": "Current Vault Password",
+        "vault.new_master_password": "New Vault Password",
+        "vault.confirm_new_master_password": "Confirm New Vault Password",
+        "vault.password_changed": "Vault password changed successfully."
     },
     fr: {
         "app.title": "Passkeys - Coffre Sécurisé",
@@ -145,7 +151,13 @@ export const translations = {
         "common.date": "Date",
         "common.size": "Taille",
         "common.actions": "Actions",
-        "common.untitled": "Nouvelle entrée sans titre"
+        "common.untitled": "Nouvelle entrée sans titre",
+        "vault.change_password": "Changer le mot de passe du coffre",
+        "vault.change_password_warning": "Attention : Ceci modifie le mot de passe utilisé pour déchiffrer votre coffre. Il est DIFFÉRENT de votre mot de passe de connexion.",
+        "vault.old_master_password": "Mot de passe actuel du coffre",
+        "vault.new_master_password": "Nouveau mot de passe du coffre",
+        "vault.confirm_new_master_password": "Confirmer le nouveau mot de passe",
+        "vault.password_changed": "Le mot de passe du coffre a été modifié avec succès."
     }
 };
 

@@ -66,12 +66,14 @@ export function useVault(
             }
         }
 
+        let success = false;
         try {
             unsortedItems = [];
             if (vaultContent) {
                 if (Array.isArray(vaultContent)) {
                     unsortedItems = normalizeVaultItems(vaultContent);
                     isDirty = true;
+                    success = true;
                 } else {
                     try {
                         const parsed = vaultContent;
@@ -93,16 +95,21 @@ export function useVault(
                         );
                         unsortedItems = JSON.parse(jsonStr);
                         isDirty = false;
+                        success = true;
                     } catch (e) {
                         alert("Failed to decrypt vault.");
+                        success = false;
                     }
                 }
+            } else {
+                // No content? 
+                success = false;
             }
         } finally {
             items = sortPasswordEntries(unsortedItems);
             isLoading = false;
         }
-        return true;
+        return success;
     }
 
     async function saveVault(both = true) {

@@ -411,12 +411,18 @@ Antigravity - long and painful fix
 
 There are still tests that fail, fix them
 
+Make sure no test fail
+
+## 66 Change Master Vault Password 
+Add a menu item to present a form allowing the user to change the
+master vault password. Warn the user to not confuse vault password
+change from login password change.
+
+Antigravity unfinished
+
+
 
 ##  FUTURE
-
-Add a menu item to present a form allowing the user to change the
-master vault password. Warn the user to not confuse valut password
-change from login password change.
 
 bypass Login page if coming from authenticated nginx proxy ?
 

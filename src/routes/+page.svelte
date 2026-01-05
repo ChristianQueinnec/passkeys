@@ -13,6 +13,7 @@
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
+    import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
 
     // Application State
     let username = $state("");
@@ -24,6 +25,7 @@
     let vaultExists = $state(false);
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
+    let showChangeVaultPasswordModal = $state(false);
 
     // Change Password State
     let cpOldPassword = $state("");
@@ -103,10 +105,13 @@
 
             encryptionKey = await pbkdf2(masterPassword, salt, iterations);
             // Load vault once key is derived
-            await vault.loadVault();
-            // Upate vaultExists status after successful load just in case
-            vaultExists = true;
-            phase = 2; // Move to Dashboard
+            const success = await vault.loadVault();
+
+            if (success) {
+                // Upate vaultExists status after successful load just in case
+                vaultExists = true;
+                phase = 2; // Move to Dashboard
+            }
             await tick();
         } catch (e) {
             alert("Failed to derive key");
@@ -157,6 +162,17 @@
             cpError = e.message;
         }
     }
+    async function handleVaultPasswordChange(newKey: CryptoKey) {
+        encryptionKey = newKey;
+        await tick();
+        // Force save to re-encrypt with new key
+        // We pass true to save to server as well
+        await vault.saveVault(true);
+        // Show success logic if needed (modal handles success callback then close)
+        // Check if save was successful? saveVault handles errors with alerts.
+        // Alert user of success
+        alert(i18n.t("vault.password_changed"));
+    }
 </script>
 
 <div class="app-container" data-phase={phase}>
@@ -192,6 +208,14 @@
                                     onclick={handleSynchronize}
                                     data-testid="menu-sync"
                                     >{i18n.t("vault.sync")}</button
+                                >
+                                <button
+                                    onclick={() => {
+                                        showUserMenu = false;
+                                        showChangeVaultPasswordModal = true;
+                                    }}
+                                    data-testid="menu-change-vault-password"
+                                    >{i18n.t("vault.change_password")}</button
                                 >
                             {/if}
                             <button
@@ -283,6 +307,14 @@
         </div>
     </div>
 </Modal>
+
+<ChangeVaultPasswordModal
+    isOpen={showChangeVaultPasswordModal}
+    onClose={() => (showChangeVaultPasswordModal = false)}
+    onSuccess={handleVaultPasswordChange}
+    {encryptionKey}
+    encryptedVaultData={vault.encryptedVaultData}
+/>
 
 <style>
     .app-container {
