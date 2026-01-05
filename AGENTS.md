@@ -8,6 +8,8 @@ create a webapp with these capabilities.
 The webapp has two sides: the server side and the client side both
 written in Typescript with help of SvelteKit and Vite.
 
+## Server side
+
 The server side will offer an API (prefixed by `/api/`)
 - to post login information (with username and password),
 - to get the vault associated to the authenticated user,
@@ -19,10 +21,15 @@ The default url of the server side (the `/` url) will deliver the
 code of the client side. 
 
 The server has no clue about how to decipher the vaults that is, the
-crypted files of information. The server stores these vaults
-with their date in a directory proper to every user. The vault file
-is a JSON file that also contains a date property. Dates should be
-displayed with ISO convention.
+crypted files of information. The server stores these vaults with
+their date in a directory proper to every user. The vault file is a
+JSON file that also contains a date property. Dates should be
+displayed with ISO convention. However there is a special case needed
+when importing passwords information (from Keepass for instance): a
+vault may contain an unciphered array of Password entries. This
+unciphered vault will be rewritten as soon as downloaded to a client
+that cipher it and store it back ciphered. Unciphered vaults are 
+explicitly signalled in the vault history.
 
 Users' names and their hashed passwords are stored in a json file
 (named `data/users.json`) only available to the server side. However
@@ -33,6 +40,11 @@ password is not hashed. In that case, the server should rewrite the
 All the accesses to the server are logged. The server
 will be ultimately deployed as a Docker container mounting the `data`
 directory where are stored information files.
+
+The `Passkeys` webapp can be installed as a PWA (Progressive Web
+Application) with its appropriate favicon.
+
+## Client side
 
 The client side will run in any modern browser. It will allow some
 user to authenticate and get the most recent associated vault. When
@@ -49,7 +61,8 @@ vault requires vault key. Report to the user that the vault might be
 out of date and allow to synchronize with the new version held in the
 server.
 
-On an unsafe device, the vault is not stored persistently.
+On an unsafe device, the vault and authentication information should
+not be stored persistently.
 
 Information stored in a vault are made of a title, a group, a
 username, a password, a site URL, some tags (simple words) as well as
@@ -71,10 +84,17 @@ Vault entries may be individually managed that is, removed or edited.
 When the vault is modified, propose a button to save it on the
 server after ciphering it.
 
+## Rules
+
+The webapp may be used on a safe or unsafe device, this device may
+be online or offline. 
+
 Of course, test files should also be generated to test the server and
 the client sides. Use Vitest for unit testing and Playwright for
 component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
 
 After a prompt is successfully complete, run all tests to avoid
-regression. 
+regression.
+
+
