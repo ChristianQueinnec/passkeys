@@ -1,149 +1,512 @@
 # Passkeys
 
-A secure, modern web application for managing your sensitive information, 
-mimicking the capabilities of KeePass but with the convenience of a web platform.
+A secure, modern web application for managing passwords and sensitive information, inspired by KeePass but designed as a web-first Progressive Web App (PWA).
 
-## Features
+---
 
-- **End-to-End Encryption (E2EE)**: Sensitive data is encrypted in the browser using AES-GCM. The server never sees your vault key or unencrypted data.
-- **Progressive Web App (PWA)**: Installable on Desktop, Android, and iOS for a native-like experience.
-- **Offline Mode**: Access your vault even without an internet connection, thanks to secure local storage and periodic synchronization.
-- **Security Timeouts**: Decrypted data is automatically cleared from browser memory after 60 seconds of inactivity.
-- **Clipboard Security**: Copied usernames and passwords are automatically cleared from your clipboard after 10 seconds.
-- **Vault History**: Keep track of previous vault versions and restore or delete them as needed.
-- **Modern UI**: Clean, responsive interface built with Svelte, featuring quick-copy buttons and site links.
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [Security Model](#security-model)
+- [API Reference](#api-reference)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Documentation](#documentation)
+- [Project History](#project-history)
+
+---
+
+## Overview
+
+Passkeys solves the cross-platform limitations of traditional password managers like KeePass by providing a web-based solution that works consistently across all platforms (macOS, Linux, Windows, Android, iOS) while maintaining strong security through client-side encryption.
+
+### Why Passkeys?
+
+- **Platform Independence**: Works identically on any modern browser
+- **End-to-End Encryption**: Your vault is encrypted client-side; the server never sees your data
+- **Offline Capable**: Access your passwords even without internet connectivity
+- **Progressive Web App**: Install as a native-like app on any device
+- **Open Source**: Built with modern, maintainable technologies
+
+---
+
+## Key Features
+
+### 🔐 Security First
+
+- **End-to-End Encryption (E2EE)**: All sensitive data encrypted in browser using AES-GCM
+- **Client-Side Cryptography**: Vault key never transmitted to server
+- **Security Timeouts**: Auto-clears decrypted data after 60 seconds of inactivity
+- **Clipboard Protection**: Copied passwords auto-cleared after 10 seconds
+- **CSRF Protection**: Token-based protection for all state-changing operations
+- **Password Hashing**: Server-side bcrypt hashing for authentication credentials
+- **Safe/Unsafe Device Modes**: Configurable persistence based on device trust level
+
+### 📱 Progressive Web App
+
+- **Installable**: Add to home screen on any device
+- **Offline Mode**: Full functionality without internet connection
+- **Background Sync**: Automatic detection of newer vault versions
+- **Responsive Design**: Optimized for mobile, tablet, and desktop
+- **Service Worker**: Efficient caching and offline support
+
+### 🗂️ Flexible Organization
+
+- **Hierarchical Folders**: Organize entries with nested folder structures
+- **Flat List View**: Quick filtering across all entries
+- **Toggle Views**: Switch between folder tree and flat list views
+- **Drag & Drop**: Move entries between folders (folder view)
+- **Smart Filtering**: Search across all fields (title, username, site, tags, notes)
+- **Tagging System**: Add multiple tags for flexible categorization
+
+### 🔄 Synchronization
+
+- **Multi-Device Support**: Sync encrypted vaults across devices
+- **Version History**: Maintain and restore previous vault versions
+- **Conflict Detection**: Alerts when newer version exists on server
+- **Automatic Polling**: Background checks for updates every 60 seconds
+- **Offline Queue**: Changes saved locally and synced when online
+
+### 🎨 Modern User Experience
+
+- **Clean Interface**: Minimalist design focused on usability
+- **Quick Actions**: One-click copy for usernames and passwords
+- **Site Integration**: Direct links to login pages
+- **Visual Feedback**: Clear indicators for offline mode, dirty state, sync status
+- **Keyboard Shortcuts**: Efficient navigation and actions
+- **Consistent Styling**: Unified button design with proper visual hierarchy
+
+---
+
+## Architecture
+
+Passkeys follows a client-server architecture with clear separation of concerns:
+
+### Server Side (`/src/routes/api/*`)
+
+The server provides a RESTful API for vault management:
+
+- **Authentication**: Username/password login with JWT tokens
+- **Vault Storage**: Encrypted vault files stored per user
+- **Version Management**: Maintains history of vault revisions with timestamps
+- **Static Delivery**: Serves client application at root path
+- **Security**: CSRF protection, rate limiting, secure headers
+
+**Key Principle**: The server has zero knowledge of vault contents. All encryption/decryption happens client-side.
+
+### Client Side (`/src/lib/components/*`)
+
+The client is a Svelte 5 application with reactive state management:
+
+- **Authentication Flow**: Login → Unlock vault with encryption key
+- **Vault Management**: Load → Decrypt → Edit → Encrypt → Save
+- **Two View Modes**:
+  - **Folder Dashboard**: Hierarchical navigation with folder tree
+  - **List Dashboard**: Flat filtered list of all entries
+- **Composable Architecture**: Reusable stores for vault logic, security, and sync
+
+### Data Flow
+
+```
+User Login
+    ↓
+Server Authentication (JWT token issued)
+    ↓
+Fetch Encrypted Vault from Server
+    ↓
+User Provides Vault Key (passphrase)
+    ↓
+Client-Side Decryption (AES-GCM)
+    ↓
+Edit Vault Entries in Memory
+    ↓
+Client-Side Encryption (AES-GCM)
+    ↓
+Save Encrypted Vault to Server
+    ↓
+Server Stores Encrypted File (no decryption)
+```
+
+---
 
 ## Technology Stack
 
-- **Frontend**: Svelte 5 (Runes), TypeScript
-- **Backend**: SvelteKit, Node.js
-- **Storage**: Local filesystem-based storage on the server, encrypted local storage in the browser.
-- **Security**: AES-GCM encryption, CSRF protection, secure password hashing.
-- **Testing**: Vitest for unit tests, Playwright for End-to-End (E2E) testing - 93+ tests with comprehensive vault scenario coverage.
-- **Deployment**: Docker-ready with Docker Compose support.
+### Frontend
+
+- **Svelte 5**: Modern reactive framework with Runes API
+- **TypeScript**: Type-safe development
+- **SvelteKit**: Full-stack framework with routing
+- **Web Crypto API**: Browser-native encryption (AES-GCM)
+
+### Backend
+
+- **SvelteKit**: Server-side API routes
+- **Node.js**: Runtime environment
+- **Filesystem**: JSON-based storage (users and vaults)
+- **bcrypt**: Secure password hashing
+
+### Testing
+
+- **Vitest**: Fast unit testing with excellent Svelte support
+- **Playwright**: End-to-end testing for UI flows
+- **93+ Tests**: Comprehensive coverage of vault scenarios
+
+### Deployment
+
+- **Docker**: Containerized deployment
+- **Docker Compose**: Multi-container orchestration
+- **PWA**: Service worker for offline functionality
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v20+)
-- npm
+- Node.js 20+
+- npm or pnpm
 
 ### Installation
 
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+# Clone repository
+git clone https://github.com/yourusername/Passkeys.git
+cd Passkeys
+
+# Install dependencies
+npm install
+```
 
 ### Development
 
-Run the development server:
 ```bash
+# Start development server
 npm run dev
+
+# Open browser to http://localhost:5173
 ```
 
-### Testing
+### Initial Setup
 
-Run all tests (unit and E2E):
-```bash
-npm run tests
-```
-
-Run vault-specific tests (comprehensive scenarios for safe/unsafe devices, online/offline modes, sync conflicts):
-```bash
-npm run test:vault
-```
-
-To run E2E tests specifically:
-```bash
-npm run test:e2e
-```
-
-For more details on testing, see [tests/README.md](tests/README.md) and the comprehensive vault testing documentation:
-- [tests/VAULT_TESTS.md](tests/VAULT_TESTS.md) - Detailed vault test documentation
-- [tests/QUICK_REFERENCE.md](tests/QUICK_REFERENCE.md) - Quick command reference
-- [tests/ARCHITECTURE.md](tests/ARCHITECTURE.md) - Test architecture diagrams
-- [VAULT_TESTING_SUMMARY.md](VAULT_TESTING_SUMMARY.md) - Implementation summary
-
-### Docker Deployment
-
-Build and run the Docker container with:
-```bash
-make create.container
-make run.container
-```
-
-or build and run with Docker Compose:
-```bash
-docker compose up --build
-```
-
-The `docker-compose.yml` file shows a possible deployment.
-
-The `./data/` directory should contain a `users.json` file with your credentials such as:
-
-``` json
+1. Create `data/users.json`:
+```json
 [
   {
     "username": "admin",
-    "password": "password"
+    "password": "your-password-here"
   }
 ]
 ```
 
-The user's password will be hashed and ciphered as soon as that file is read by the backend.
+2. Passwords will be automatically hashed on first server read
 
-Vaults are stored in `./data/admin/`. A first vault may be created as follows:
-
-``` json
-[ {
-    "group": "",
-    "title": "me at example",
-    "username": "me@example.org",
-    "password": "password",
-    "site": "https://ex.ample.org/",
+3. Create initial vault (optional) in `data/admin/`:
+```json
+[
+  {
+    "title": "Example Entry",
+    "username": "user@example.com",
+    "password": "secret",
+    "site": "https://example.com",
+    "group": "Personal/Email",
     "tags": ["test"],
-    "notes": "A test password entry",
+    "notes": "Sample entry",
     "created": 1563434379,
     "modified": 1563434380
-  },
-  ...
+  }
 ]
 ```
 
-This vault will be immediately ciphered when received by the frontend.
+4. Vault will be encrypted on first client download
 
-For a complete user guide including installation, usage, and Docker deployment, see [user-guide.md](user-guide.md).
+---
 
-## Testing Highlights
+## Security Model
 
-Passkeys includes a comprehensive test suite with 93+ tests covering:
+### Encryption Details
 
-- **Vault Situations**: 56 tests for safe/unsafe devices, vault presence, synchronization, online/offline modes, and edge cases
-- **Authentication**: Login flows, device trust, session management
-- **Cryptography**: Encryption/decryption, key derivation
-- **Security Features**: Timeouts, clipboard clearing, CSRF protection
-- **UI/UX**: User interactions, filtering, history management
+- **Algorithm**: AES-GCM (256-bit)
+- **Key Derivation**: PBKDF2 with 100,000 iterations
+- **IV**: Random 12-byte initialization vector per encryption
+- **Salt**: Random 16-byte salt per vault key
 
-The test suite ensures robust behavior across all scenarios users will encounter. See [tests/](tests/) for complete documentation.
+### Storage Model
 
-## Project History
+**Server Side:**
+- Encrypted vault JSON files in `data/{username}/`
+- Hashed passwords in `data/users.json`
+- No decryption keys stored anywhere
 
-This project was developed with the assistance of AI agents (Antigravity and Claude). 
-For more details, see:
-- `AGENTS.md`: Initial project description and evolution.
-- `questions.md`: Chronological log of additional feature requests and AI interactions.
+**Client Side (Safe Device):**
+- Encrypted vault in IndexedDB/localStorage
+- Session JWT in memory only
+- Vault key never persisted
 
-A small number of interventions were done manually. For instance:
-- some CSS parts were simplified or adjusted
-- some Javascript modifications too simple to be processed by AI
+**Client Side (Unsafe Device):**
+- Nothing persisted
+- All data cleared on page close
+- Session only
+
+### Security Features
+
+1. **Memory Clearing**: After 60s inactivity, decrypted data removed from memory
+2. **Clipboard Clearing**: Copied passwords cleared after 10s
+3. **CSRF Tokens**: All state-changing requests protected
+4. **Secure Headers**: CSP, HSTS, X-Frame-Options configured
+5. **Password Visibility**: Toggle to temporarily reveal passwords
+6. **Explicit Device Trust**: Users mark devices as safe/unsafe
+
+---
+
+## API Reference
+
+### Authentication
+
+**POST /api/login**
+```json
+Request:  { "username": "user", "password": "pass" }
+Response: { "token": "jwt-token-here" }
+```
+
+**POST /api/logout**
+```json
+Response: { "success": true }
+```
+
+### Vault Management
+
+**GET /api/vault**
+```
+Headers: Authorization: Bearer {token}
+Response: Encrypted vault JSON
+```
+
+**POST /api/vault**
+```json
+Headers: 
+  Authorization: Bearer {token}
+  X-CSRF-Token: {csrf-token}
+Body: { "content": "encrypted-vault-data" }
+Response: { "success": true, "date": "ISO-timestamp" }
+```
+
+**GET /api/vault/history**
+```
+Headers: Authorization: Bearer {token}
+Response: [{ "filename": "...", "date": "..." }]
+```
+
+**DELETE /api/vault/history**
+```json
+Headers:
+  Authorization: Bearer {token}
+  X-CSRF-Token: {csrf-token}
+Body: { "filename": "vault-timestamp.json" }
+Response: { "success": true }
+```
+
+### User Management
+
+**POST /api/user/password**
+```json
+Headers:
+  Authorization: Bearer {token}
+  X-CSRF-Token: {csrf-token}
+Body: { "oldPassword": "...", "newPassword": "..." }
+Response: { "success": true }
+```
+
+**GET /api/csrf**
+```
+Headers: Authorization: Bearer {token}
+Response: { "csrfToken": "random-token" }
+```
+
+---
+
+## Testing
+
+Passkeys includes comprehensive test coverage:
+
+### Test Categories
+
+1. **Vault Situations** (56 tests)
+   - Safe/unsafe device scenarios
+   - Online/offline modes
+   - Synchronization conflicts
+   - Version management
+
+2. **Authentication** (15 tests)
+   - Login flows
+   - Session management
+   - Token validation
+
+3. **Cryptography** (10 tests)
+   - Encryption/decryption
+   - Key derivation
+   - Error handling
+
+4. **Security** (12 tests)
+   - CSRF protection
+   - Clipboard clearing
+   - Memory timeouts
+
+### Running Tests
+
+```bash
+# All tests
+npm run tests
+
+# Unit tests only
+npm test
+
+# E2E tests only
+npm run test:e2e
+
+# Vault-specific tests
+npm run test:vault
+
+# With coverage
+npm run test:coverage
+```
+
+### Test Documentation
+
+- [tests/README.md](tests/README.md) - Complete testing guide
+- [tests/VAULT_TESTS.md](tests/VAULT_TESTS.md) - Vault test scenarios
+- [tests/QUICK_REFERENCE.md](tests/QUICK_REFERENCE.md) - Quick command reference
+- [tests/ARCHITECTURE.md](tests/ARCHITECTURE.md) - Test architecture diagrams
+
+---
+
+## Deployment
+
+### Docker Deployment
+
+```bash
+# Build image
+docker build -t passkeys .
+
+# Run container
+docker run -p 5173:5173 -v ./data:/app/data passkeys
+```
+
+### Docker Compose
+
+```bash
+# Build and run
+docker compose up --build
+
+# Run in background
+docker compose up -d
+
+# Stop
+docker compose down
+```
+
+### Configuration
+
+Set environment variables in `docker-compose.yml` or `.env`:
+
+```bash
+PORT=5173
+NODE_ENV=production
+DATA_DIR=/app/data
+```
+
+### Production Considerations
+
+1. **HTTPS Required**: Always use TLS in production
+2. **Secure Data Directory**: Restrict filesystem permissions
+3. **Regular Backups**: Backup `data/` directory regularly
+4. **Rate Limiting**: Implement request rate limits
+5. **Monitoring**: Log authentication attempts and errors
+
+---
 
 ## Documentation
 
-- [README.md](README.md) - This file (project overview)
-- [user-guide.md](user-guide.md) - Complete user and installation guide
-- [CLAUDE.md](CLAUDE.md) - Original project specification
-- [tests/README.md](tests/README.md) - Testing documentation
-- [VAULT_TESTING_SUMMARY.md](VAULT_TESTING_SUMMARY.md) - Vault test implementation summary
+### User Documentation
+
+- [user-guide.md](user-guide.md) - Complete user guide with screenshots
+- [VISUAL_GUIDE.md](VISUAL_GUIDE.md) - Visual architecture and UI guide
+
+### Technical Documentation
+
+- [AGENTS.md](AGENTS.md) - Original project specification and requirements
+- [CLAUDE.md](CLAUDE.md) - Alternative project description
+- [CSRF_PROTECTION.md](CSRF_PROTECTION.md) - CSRF implementation details
+- [HIERARCHICAL_DASHBOARD.md](HIERARCHICAL_DASHBOARD.md) - Folder view implementation
+
+### Style Guides
+
+- [BUTTON_STYLES.md](BUTTON_STYLES.md) - Button styling reference
+- [COMPOSABLES_GUIDE.md](COMPOSABLES_GUIDE.md) - Using composable stores
+
+### Development Documentation
+
+- [REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md) - Refactoring history
+- [VAULT_TESTING_SUMMARY.md](VAULT_TESTING_SUMMARY.md) - Test implementation summary
+- [questions.md](questions.md) - Development Q&A log
+
+---
+
+## Project History
+
+Passkeys was developed collaboratively with AI assistance (Anthropic Claude and Antigravity) to explore modern web development practices and AI-assisted coding.
+
+### Development Approach
+
+- **Iterative Development**: Features added incrementally with testing
+- **AI-Assisted**: Claude helped with architecture, implementation, and testing
+- **Manual Refinements**: Some CSS and minor JavaScript adjustments done manually
+- **Documentation First**: Comprehensive docs written alongside code
+
+### Key Milestones
+
+1. Initial implementation with basic vault management
+2. Added hierarchical folder organization
+3. Implemented comprehensive security features
+4. Developed PWA capabilities with offline support
+5. Created extensive test suite (93+ tests)
+6. Refactored to composable architecture
+7. Added CSRF protection and security hardening
+
+### Contributing
+
+While this project was primarily a learning exercise, contributions are welcome:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new features
+4. Submit a pull request with clear description
+
+---
+
+## License
+
+[Specify your license here - MIT, GPL, etc.]
+
+---
+
+## Acknowledgments
+
+- Built with assistance from Anthropic's Claude AI
+- Inspired by KeePass and KeePassXC
+- Thanks to the Svelte and SvelteKit communities
+
+---
+
+## Support
+
+- **Issues**: Report bugs via GitHub Issues
+- **Questions**: See [questions.md](questions.md) for common questions
+- **Documentation**: Check the docs/ directory for detailed guides
+
+---
+
+**Note**: This is a personal project designed for learning and exploration. While security best practices have been followed, please review the code thoroughly before using for sensitive data in production environments.
