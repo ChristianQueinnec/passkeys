@@ -2,15 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
+import type { User } from '$lib/types';
 
 const USERS_FILE = path.join(process.cwd(), 'data/users.json');
 
-export const getUsers = () => {
+export const getUsers = (): User[] => {
     if (!fs.existsSync(USERS_FILE)) {
         return [];
     }
     const content = fs.readFileSync(USERS_FILE, 'utf-8');
-    const users = JSON.parse(content);
+    const users: User[] = JSON.parse(content);
 
     let modified = false;
     for (const user of users) {
@@ -28,14 +29,14 @@ export const getUsers = () => {
     return users;
 };
 
-export const getUser = (username: string) => {
+export const getUser = (username: string): User | undefined => {
     const users = getUsers();
-    return users.find((u: any) => u.username === username);
+    return users.find(u => u.username === username);
 };
 
-export const updateUserPassword = (username: string, newPassword: string) => {
+export const updateUserPassword = (username: string, newPassword: string): boolean => {
     const users = getUsers();
-    const userIndex = users.findIndex((u: any) => u.username === username);
+    const userIndex = users.findIndex(u => u.username === username);
 
     if (userIndex === -1) {
         throw new Error('User not found');

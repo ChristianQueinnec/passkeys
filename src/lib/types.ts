@@ -42,3 +42,8 @@ export interface FolderNode {
 export interface VaultView {
     synchronizeVault: () => Promise<void>;
 }
+
+export type User = {
+    username: string;
+    password: string;
+};

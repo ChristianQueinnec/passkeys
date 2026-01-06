@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import type { User } from '$lib/types';
+
+
 
 test.describe('Unlock Guidance Message', () => {
     const adminUser = 'admin';
@@ -9,7 +12,7 @@ test.describe('Unlock Guidance Message', () => {
     test.beforeAll(async () => {
         const usersFile = path.join(process.cwd(), 'data', 'users.json');
         if (fs.existsSync(usersFile)) {
-            const users = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
+            const users: User[] = JSON.parse(fs.readFileSync(usersFile, 'utf8'));
             if (!users.find(u => u.username === 'no_vault_user')) {
                 users.push({ username: 'no_vault_user', password: 'password' });
                 fs.writeFileSync(usersFile, JSON.stringify(users));

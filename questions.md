@@ -418,7 +418,34 @@ Add a menu item to present a form allowing the user to change the
 master vault password. Warn the user to not confuse vault password
 change from login password change.
 
-Antigravity unfinished
+Antigravity unfinished.................
+
+## 67 New improved README.md 
+Read this AGENTS.md file and propose an improved README.md file that will 
+help you to be up to date with Passkeys in order to answer new questions
+
+CLAUDE improved_readme.md
+
+## 68 
+In HistoryModal, added a bin icon. Made the hint only visible when appropriate.
+
+HAND-MADE
+
+## 69 Fix Svelte check diagnostics
+Fix Svelte check diagnostics
+
+CLAUDE
+
+For the diagnostic related to unlock_guidance.spec.ts - Line 13,
+I prefer the creation of a new type `User` so reading `users.json`
+yields an array of User. Please fix that test.
+
+I copied the `User` type into `types.ts`, show me which files may
+use with profit that new type.
+
+CLAUDE OK 
+
+## 70 Change Master Vault Password (continued)
 
 
 
@@ -431,3 +458,5 @@ decipher only when copy to clipboard
 blob for vault rather than base64
 
 weird csrf 
+
+use eslint, svelte-check

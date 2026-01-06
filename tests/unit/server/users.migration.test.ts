@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 import { getUsers } from '$lib/server/users';
+import type { User } from '$lib/types';
 
 vi.mock('fs');
 
@@ -10,7 +11,7 @@ describe('getUsers migration', () => {
     });
 
     it('should migrate plain text passwords correctly', () => {
-        const mockUsers = [
+        const mockUsers: User[] = [
             { username: 'testuser', password: 'plainPassword' }
         ];
 
@@ -21,7 +22,7 @@ describe('getUsers migration', () => {
 
         expect(fs.writeFileSync).toHaveBeenCalled();
         const callArgs = vi.mocked(fs.writeFileSync).mock.calls[0];
-        const writtenContent = JSON.parse(callArgs[1] as string);
+        const writtenContent: User[] = JSON.parse(callArgs[1] as string);
 
         // Verification
         // Check that password is now hashed (contains colon) and is not the original

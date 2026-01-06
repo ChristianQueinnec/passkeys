@@ -86,8 +86,8 @@ server after ciphering it.
 
 ## Rules
 
-The webapp may be used on a safe or unsafe device, this device may
-be online or offline. 
+The webapp may be used on a device you trust or not. Moreover this
+device may be online or offline.
 
 Of course, test files should also be generated to test the server and
 the client sides. Use Vitest for unit testing and Playwright for
@@ -97,4 +97,10 @@ directory and add scripts entries in `package.json`.
 After a prompt is successfully complete, run all tests to avoid
 regression.
 
-
+See other files:
+- [README.md] - Overview of Passkeys
+- [BUTTON_STYLES.md] - Button Style Guide
+- [COMPOSABLES_GUIDE.md]- Using the Composables
+- [CSRF_PROTECTION.md] - CSRF Protection
+- [HIERARCHICAL_DASHBOARD.md] - Hierarchical Dashboard Implementation
+- [VISUAL_GUIDE.md] - Visual Guide

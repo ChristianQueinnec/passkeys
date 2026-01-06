@@ -2,7 +2,7 @@ work :
 	./scripts/init.sh
 
 # Use docker to create the container:
-create.container :
+XXX.create.container :
 	date +%Y%m%d_%H%M%S | tr -d '\n' > passkeys.tag
 	docker compose build \
 		--build-arg UID=$$(id -u) \
@@ -12,12 +12,27 @@ create.container :
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
 	docker inspect -f '{{.Id}}' registry.queinnec.org:5000/passkeys | \
       sed -E -e 's/sha256://' -e 's/^(.{12}).*/\1/' > passkeys.id
-	docker tag registry.queinnec.org:5000/passkeys \
+	docker tag registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
 # @cajou: 10 minutes
 
+create.container :
+	date +%Y%m%d_%H%M%S | tr -d '\n' > passkeys.tag
+	docker buildx build \
+		--build-arg UID=$$(id -u) \
+		--build-arg GID=$$(id -g) \
+		--build-arg USER=$${USER} \
+		-t registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag) .
+	docker inspect -f '{{.Id}}' registry.queinnec.org:5000/passkeys | \
+      sed -E -e 's/sha256://' -e 's/^(.{12}).*/\1/' > passkeys.id
+	docker tag registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag) \
+		registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
+	docker tag registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag) \
+		registry.queinnec.org:5000/passkeys
+# @cajou: 10 minutes
+
 run.container :
-	docker compose up -d
+	PASSKEYS=$$(cat passkeys.id) docker compose up -d
 	@echo "Browse http://localhost:3000"
 	docker logs -f --tail 100 passkeys
 
@@ -32,8 +47,8 @@ run.tests :
 	scripts/init.sh -t
 	if curl --silent http://localhost:3000 > /dev/null ; then true ; else \
 	  npm run dev ; fi
-	npm run tests:unit
-	npm run tests:e2e
+	npm run test:unit
+	npm run test:e2e
 
 
 REMOTE=pk.queinnec.org

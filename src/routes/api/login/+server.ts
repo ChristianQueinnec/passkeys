@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
 import type { RequestEvent } from './$types';
+import type { User } from '$lib/types';
 
 export async function POST({ request }: RequestEvent) {
     const { username, password } = await request.json();
@@ -11,7 +12,7 @@ export async function POST({ request }: RequestEvent) {
     }
 
     try {
-        const user = getUser(username);
+        const user: User | undefined = getUser(username);
         if (!user) {
             return json({ error: 'Invalid credentials' }, { status: 401 });
         }

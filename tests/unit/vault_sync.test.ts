@@ -252,10 +252,13 @@ describe('Vault Synchronization Logic', () => {
         it('should stop polling when vault locked', () => {
             const pollFunction = vi.fn();
             let isActive = true;
-            let timer: NodeJS.Timeout | null = null;
+            // In Node.js environments, setInterval returns a NodeJS.Timeout, 
+            // but in test environments (Vitest with fake timers), it may return a number. 
+            let timer: ReturnType<typeof setInterval> | null = null;
 
             const startPolling = () => {
                 if (timer) clearInterval(timer);
+                // @ts-ignore   
                 timer = setInterval(pollFunction, 1000);
             };
 
@@ -367,7 +370,7 @@ describe('Vault Synchronization Logic', () => {
                 }
             };
 
-            const isValid = 
+            const isValid =
                 metadata.date !== undefined &&
                 metadata.data !== undefined &&
                 metadata.data.iv !== undefined &&
@@ -382,7 +385,7 @@ describe('Vault Synchronization Logic', () => {
                 data: null
             };
 
-            const isValid = 
+            const isValid =
                 metadata.data !== null &&
                 !isNaN(new Date(metadata.date).getTime());
 
@@ -411,9 +414,9 @@ describe('Vault Synchronization Logic', () => {
                 }
             };
 
-            const isEncrypted = !Array.isArray(vaultContent) && 
-                               typeof vaultContent === 'object' &&
-                               vaultContent.data !== undefined;
+            const isEncrypted = !Array.isArray(vaultContent) &&
+                typeof vaultContent === 'object' &&
+                vaultContent.data !== undefined;
 
             expect(isEncrypted).toBe(true);
         });
@@ -487,7 +490,7 @@ describe('Vault Synchronization Logic', () => {
                 }
             };
 
-            const isValidStructure = 
+            const isValidStructure =
                 vault.date !== undefined &&
                 vault.data !== undefined &&
                 typeof vault.data.iv === 'string' &&
@@ -536,7 +539,7 @@ describe('Vault Synchronization Logic', () => {
             };
 
             // Extra fields should not break validation
-            const isValid = 
+            const isValid =
                 vault.data?.iv !== undefined &&
                 vault.data?.cipher !== undefined;
 
