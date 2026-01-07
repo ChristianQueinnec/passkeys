@@ -40,6 +40,7 @@ Passkeys solves the cross-platform limitations of traditional password managers 
 
 - **End-to-End Encryption (E2EE)**: All sensitive data encrypted in browser using AES-GCM
 - **Client-Side Cryptography**: Vault key never transmitted to server
+- **Input Sanitization**: Comprehensive validation of all API inputs to prevent injection attacks
 - **Security Timeouts**: Auto-clears decrypted data after 60 seconds of inactivity
 - **Clipboard Protection**: Copied passwords auto-cleared after 10 seconds
 - **CSRF Protection**: Token-based protection for all state-changing operations
@@ -440,6 +441,7 @@ DATA_DIR=/app/data
 - [AGENTS.md](AGENTS.md) - Original project specification and requirements
 - [CLAUDE.md](CLAUDE.md) - Alternative project description
 - [CSRF_PROTECTION.md](CSRF_PROTECTION.md) - CSRF implementation details
+- [INPUT_SANITIZATION.md](INPUT_SANITIZATION.md) - Input validation and sanitization guide
 - [HIERARCHICAL_DASHBOARD.md](HIERARCHICAL_DASHBOARD.md) - Folder view implementation
 
 ### Style Guides

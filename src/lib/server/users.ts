@@ -39,7 +39,7 @@ export const updateUserPassword = (username: string, newPassword: string): boole
     const userIndex = users.findIndex(u => u.username === username);
 
     if (userIndex === -1) {
-        throw new Error('User not found');
+        throw new Error(`User ${username} not found`);
     }
 
     users[userIndex].password = createHashedEntrySync(newPassword);

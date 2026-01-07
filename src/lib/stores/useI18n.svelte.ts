@@ -1,5 +1,5 @@
-import { translations, type Language } from '$lib/i18n/translations';
 import { browser } from '$app/environment';
+import { translations, type Language } from '$lib/i18n/translations';
 
 class I18nStore {
     language = $state<Language>('en');

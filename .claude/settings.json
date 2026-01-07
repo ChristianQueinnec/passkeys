@@ -1,0 +1,16 @@
+{
+    "permissions": {
+        "deny": [
+            "Read(./pass.*)",
+            "Read(./.#*)",
+            "Read(./*~)",
+            "Read(./server.htpasswd)",
+            "Read(./server.password)",
+            "Read(./.git)",
+            "Read(./build)",
+            "Bash(curl:*)",
+            "Bash(wget:*)",
+            "Bash(rm -rf:*)"
+        ],
+    }
+}

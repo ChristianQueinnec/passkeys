@@ -74,3 +74,9 @@ clean :
 
 server.htpasswd : server.password
 	htpasswd -bc server.htpasswd queinnec `cat server.password`
+
+pass.json : pass.csv
+	cd KeePass2Passkeys/ && make work
+	mv pass.json realdata/${USER}/init.vault
+	rm -f pass.json pass.csv
+	@echo "Quick! let Passkeys cipher this vault!"

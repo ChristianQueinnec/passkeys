@@ -32,15 +32,8 @@ describe('I18n Store', () => {
         expect(i18n.t('missing.key')).toBe('missing.key');
     });
 
-    it('should interpolate parameters', () => {
-        // Find a key with parameters or use a mock if none exist.
-        // Currently there are no parameterised keys in translations.ts based on my previous view.
-        // Let's add a temporary mock check if needed, but for now we'll just test the logic with a manual check.
-
-        // Manually testing the .t interpolation logic via prototype if possible or just assuming it works
-        // since we reviewed the code. Let's try to use a key that *could* have them.
-
-        // Let's verify our assumptions about translations.ts
-        // I'll check translations.ts for any {variable}
+    it('should interpolate parameters', () => {        
+        expect(i18n.t('vault.history.delete_confirm', {
+            filename: 'ABCD' })).toBe('Delete history snapshot ABCD?');
     });
 });

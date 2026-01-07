@@ -34,6 +34,7 @@ describe('Settings Store', () => {
     });
 
     it('should handle fetch error by keeping defaults', async () => {
+        // This will emit an error message and print stack: this is normal!
         globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
         await settings.load();

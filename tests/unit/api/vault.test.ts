@@ -23,7 +23,7 @@ const mockAuth = (username: string | null) => {
         return {
             headers: new Headers({
                 'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64'),
-                'X-CSRF-Token': 'mock-token'
+                'X-CSRF-Token': 'mock-token-should-be-at-least-32chars'
             })
         };
     }
@@ -68,6 +68,7 @@ describe('API Vault', () => {
             body: JSON.stringify({})
         });
         const response = await vaultHandler.POST({ request } as any);
+        console.log(await response.json());//DEBUG
         expect(response.status).toBe(400);
     });
 

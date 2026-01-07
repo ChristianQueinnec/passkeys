@@ -51,12 +51,12 @@ describe('API Login', () => {
     });
 
     it('should return 401 if password invalid', async () => {
-        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'hash' } as any);
+        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'hash12345678' } as any);
         vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(false);
 
         const request = new Request('http://localhost', {
             method: 'POST',
-            body: JSON.stringify({ username: 'test', password: 'wrong' }),
+            body: JSON.stringify({ username: 'test', password: 'w56rong12345' }),
         });
         const response = await loginHandler.POST({ request } as any);
 
@@ -64,12 +64,12 @@ describe('API Login', () => {
     });
 
     it('should return token on success', async () => {
-        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'hash' } as any);
+        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'hash12345678' } as any);
         vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(true);
 
         const request = new Request('http://localhost', {
             method: 'POST',
-            body: JSON.stringify({ username: 'test', password: 'correct' }),
+            body: JSON.stringify({ username: 'test', password: 'hash12345678' }),
         });
         const response = await loginHandler.POST({ request } as any);
         const data = await response.json();

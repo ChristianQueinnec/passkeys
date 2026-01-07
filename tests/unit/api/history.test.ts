@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as historyHandler from '../../../src/routes/api/vault/history/+server';
 import * as storage from '$lib/server/storage';
 import * as users from '$lib/server/users';
+import * as csrf from '$lib/server/csrf';
 
 vi.mock('$lib/server/storage', () => ({
     listVaults: vi.fn(),
@@ -21,7 +22,7 @@ const mockAuth = (username: string | null) => {
         return {
             headers: new Headers({
                 'Authorization': 'Bearer ' + Buffer.from(`${username}:hash`).toString('base64'),
-                'X-CSRF-Token': 'mock-token'
+                'X-CSRF-Token': 'mock-token-should-be-at-least-32chars'
             })
         };
     }
@@ -46,7 +47,7 @@ describe('API History', () => {
         expect(data).toEqual(mockVaults);
     });
 
-    it('DELETE should return 400 if filename missing', async () => {
+    it('DELETE should return 403 if filename missing', async () => {
         const { headers } = mockAuth('testuser');
         // No query param
         const url = new URL('http://localhost/api/vault/history');
@@ -71,7 +72,7 @@ describe('API History', () => {
 
     it('DELETE should prevent path traversal', async () => {
         const { headers } = mockAuth('testuser');
-        const url = new URL('http://localhost/api/vault/history?filename=../auth.log');
+        const url = new URL('http://localhost/api/vault/history?filename=../auth.vault');
         const request = new Request(url, { method: 'DELETE', headers });
 
         const response = await historyHandler.DELETE({ request, url } as any);

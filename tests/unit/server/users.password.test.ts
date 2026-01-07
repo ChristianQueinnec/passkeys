@@ -37,6 +37,6 @@ describe('updateUserPassword', () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readFileSync).mockReturnValue('[]');
 
-        expect(() => updateUserPassword('unknown', 'pass')).toThrow('User not found');
+        expect(() => updateUserPassword('unknown', 'pass')).toThrow('User unknown not found');
     });
 });

@@ -441,12 +441,53 @@ I prefer the creation of a new type `User` so reading `users.json`
 yields an array of User. Please fix that test.
 
 I copied the `User` type into `types.ts`, show me which files may
-use with profit that new type.
+use with profit that new type. 
+
+Yes implement these changes
 
 CLAUDE OK 
 
-## 70 Change Master Vault Password (continued)
+## 70 Sanitize inputs to server API
+All user's requests to the server API must be sanitized.
 
+The `test-sanitization.sh` still shows some errors, fix them
+
+fix errors when running `npm run test:unit`
+
+OK CLAUDE INPUT_SANITIZATION.md SANITIZATION_*.md SECURITY_CHECKLIST.md IMPLEMENTATION_COMPLETE.md
+
+Finalized by hand. csrf tokens should be at least 32 chars.
+Remove vitest.config.ts
+
+
+
+
+
+
+Generate a correct test in i18n.test.ts for the 'should interpolate parameters'
+
+
+
+## 71 Refactor API routes
+Refactor API routes in order to share getAuthUser() functions or other
+similar functionalities.
+
+CLAUDE 
+
+
+## ?? Change Master Vault Password (continued)
+
+
+
+
+
+In Unlock, focus on the input field.
+
+Generate an OpenAPI specification (in JSON format) of the Passkeys API.
+
+There are some SVG icons (for instance in PasswordList, HistoryModal
+and PasswordInput), generate UserIcon, PasswordIcon, DetailsIcon,
+BinIcon, EyeIcon as Svelte components and use them where useful.
 
 
 ##  FUTURE
@@ -457,6 +498,4 @@ decipher only when copy to clipboard
 
 blob for vault rather than base64
 
-weird csrf 
 
-use eslint, svelte-check

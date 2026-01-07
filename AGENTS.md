@@ -5,6 +5,8 @@ Keepass (and its derivates Keepassx, Keepassxc, etc.) is great but
 does not work equally on MacOS, Linux, Android, etc. so I want to
 create a webapp with these capabilities.
 
+This `AGENTS.md` file is thoroughly expanded in `README.md`.
+
 The webapp has two sides: the server side and the client side both
 written in Typescript with help of SvelteKit and Vite.
 
@@ -95,12 +97,4 @@ component and E2E testing. Place these files under the `tests`
 directory and add scripts entries in `package.json`.
 
 After a prompt is successfully complete, run all tests to avoid
-regression.
-
-See other files:
-- [README.md] - Overview of Passkeys
-- [BUTTON_STYLES.md] - Button Style Guide
-- [COMPOSABLES_GUIDE.md]- Using the Composables
-- [CSRF_PROTECTION.md] - CSRF Protection
-- [HIERARCHICAL_DASHBOARD.md] - Hierarchical Dashboard Implementation
-- [VISUAL_GUIDE.md] - Visual Guide
+regression, also run Svelte check diagnostics.
