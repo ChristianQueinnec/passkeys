@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Vault Operations', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         // Login and unlock
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
@@ -10,13 +13,13 @@ test.describe('Vault Operations', () => {
         await expect(page.getByTestId('login-button')).toBeVisible();
 
         await page.getByPlaceholder('Username').fill('q');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Password').fill('password');
         await page.waitForTimeout(500);
         await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q'); // Assuming master password matches for MVP demo
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password'); // Assuming master password matches for MVP demo
         await page.getByTestId('unlock-button').click();
 
         // Wait for Vault to be unlocked

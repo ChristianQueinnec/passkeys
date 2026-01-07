@@ -1,19 +1,19 @@
 import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
-import { sanitizeUsername, sanitizePassword } from '$lib/server/sanitizer';
+import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 
 export async function POST({ request }: RequestEvent) {
     try {
-        const body = await request.json();
+        const body = await sanitizeRequestBody(request);
         const { username, password } = body;
 
         // Validate required fields
         if (!username || !password) {
             return json({ error: 'Username and password required' },
-                        { status: 400 });
+                { status: 400 });
         }
 
         // Sanitize inputs
@@ -30,7 +30,7 @@ export async function POST({ request }: RequestEvent) {
         // Authenticate user
         const user: User | undefined = getUser(sanitizedUsername);
         if (!user) {
-            return json({ error: 'Invalid credentials1' }, { status: 401 });
+            return json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
         const [salt, hash] = user.password.split(':');
@@ -41,9 +41,9 @@ export async function POST({ request }: RequestEvent) {
             return json({ token, username: sanitizedUsername });
         }
 
-        return json({ error: 'Invalid credentials2' }, { status: 401 });
+        return json({ error: 'Invalid credentials' }, { status: 401 });
     } catch (e: any) {
-        console.error('Login error:', e);
-        return json({ error: 'Internal Error' }, { status: 500 });
+        console.error('[API] Login error:', e.message);
+        return json({ error: e.message || 'Internal Error' }, { status: 500 });
     }
 }

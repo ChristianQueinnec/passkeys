@@ -1,35 +1,12 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
-import { getUser } from '$lib/server/users';
-import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
-import { sanitizeToken, sanitizeFilename, sanitizeCSRFToken } from '$lib/server/sanitizer';
-
-function getAuthUser(request: Request) {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) return null;
-
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') return null;
-
-    try {
-        const sanitizedToken = sanitizeToken(parts[1]);
-        const decoded = Buffer.from(sanitizedToken, 'base64').toString('utf-8');
-        const [username, ...rest] = decoded.split(':');
-        const passwordHash = rest.join(':');
-
-        const user = getUser(username);
-        if (user && user.password === passwordHash) {
-            return user;
-        }
-    } catch (e) {
-        return null;
-    }
-    return null;
-}
+import { verifyRequest } from '$lib/server/auth';
+import { sanitizeFilename } from '$lib/server/sanitizer';
 
 export const GET: RequestHandler = async ({ request }) => {
-    const user = getAuthUser(request);
-    if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
+    const result = await verifyRequest(request);
+    if (result instanceof Response) return result;
+    const user = result;
 
     try {
         const vaults = listVaults(user.username);
@@ -42,27 +19,9 @@ export const GET: RequestHandler = async ({ request }) => {
 
 export const DELETE: RequestHandler = async ({ request, url }) => {
     try {
-        const user = getAuthUser(request);
-        if (!user) return json({ error: 'Unauthorized' }, { status: 401 });
-
-        // Validate CSRF token with sanitization
-        const csrfTokenRaw = request.headers.get('X-CSRF-Token');
-        const sessionId = getSessionIdFromRequest(request);
-
-        if (!csrfTokenRaw || !sessionId) {
-            return json({ error: 'Missing CSRF token' }, { status: 403 });
-        }
-
-        let csrfToken: string;
-        try {
-            csrfToken = sanitizeCSRFToken(csrfTokenRaw);
-        } catch (sanitizeError: any) {
-            return json({ error: 'Invalid CSRF token format' }, { status: 403 });
-        }
-
-        if (!validateCSRFToken(sessionId, csrfToken)) {
-            return json({ error: 'Invalid CSRF token' }, { status: 403 });
-        }
+        const result = await verifyRequest(request, { csrf: true });
+        if (result instanceof Response) return result;
+        const user = result;
 
         // Sanitize filename from query parameter
         const filenameRaw = url.searchParams.get('filename');

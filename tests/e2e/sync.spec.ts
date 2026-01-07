@@ -4,16 +4,19 @@ import path from 'path';
 
 test.describe('Sync and Offline Recovery', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         // Login and unlock
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
         await page.getByPlaceholder('Username').fill('history_test');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Password').fill('password');
         await page.getByTestId('login-button').click();
 
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
         await page.getByTestId('unlock-button').click();
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });

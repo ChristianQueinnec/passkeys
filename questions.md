@@ -457,22 +457,13 @@ fix errors when running `npm run test:unit`
 OK CLAUDE INPUT_SANITIZATION.md SANITIZATION_*.md SECURITY_CHECKLIST.md IMPLEMENTATION_COMPLETE.md
 
 Finalized by hand. csrf tokens should be at least 32 chars.
-Remove vitest.config.ts
-
-
-
-
-
-
-Generate a correct test in i18n.test.ts for the 'should interpolate parameters'
-
-
+Remove vitest.config.ts: npm run tests fails if present.
 
 ## 71 Refactor API routes
 Refactor API routes in order to share getAuthUser() functions or other
 similar functionalities.
 
-CLAUDE 
+Antigravity UNFINISHED
 
 
 ## ?? Change Master Vault Password (continued)

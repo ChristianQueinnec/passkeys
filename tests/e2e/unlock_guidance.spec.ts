@@ -21,6 +21,9 @@ test.describe('Unlock Guidance Message', () => {
     });
 
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();

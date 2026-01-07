@@ -16,6 +16,7 @@ describe('Input Sanitization', () => {
             expect(sanitizeUsername('user123')).toBe('user123');
             expect(sanitizeUsername('test.user')).toBe('test.user');
             expect(sanitizeUsername('my-user')).toBe('my-user');
+            expect(sanitizeUsername('user@domain.com')).toBe('user@domain.com');
         });
 
         it('should trim whitespace', () => {
@@ -45,7 +46,6 @@ describe('Input Sanitization', () => {
         });
 
         it('should reject invalid characters', () => {
-            expect(() => sanitizeUsername('user@domain')).toThrow('Username contains invalid characters');
             expect(() => sanitizeUsername('user name')).toThrow('Username contains invalid characters');
             expect(() => sanitizeUsername('user$123')).toThrow('Username contains invalid characters');
         });
@@ -142,7 +142,7 @@ describe('Input Sanitization', () => {
         });
 
         it('should allow filenames without .json extension when not required', () => {
-            expect(sanitizeFilename('document.txt', false)).toBe('document.txt');
+            expect(sanitizeFilename('document.txt')).toBe('document.txt');
         });
 
         it('should reject empty filenames', () => {

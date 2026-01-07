@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('History Operations', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         // Login and unlock
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
@@ -10,12 +13,12 @@ test.describe('History Operations', () => {
         await expect(page.getByTestId('login-button')).toBeVisible();
 
         await page.getByPlaceholder('Username').fill('history_test');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Password').fill('password');
         await page.waitForTimeout(500);
         await page.getByTestId('login-button').click();
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
         await page.getByTestId('unlock-button').click();
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
@@ -55,7 +58,7 @@ test.describe('History Operations', () => {
         // If reload, we go back to Unlock screen if logged in.
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
         const unlockBtn = page.getByTestId('unlock-button');
         await expect(unlockBtn).toBeVisible({ timeout: 10000 });
         await expect(unlockBtn).toBeEnabled();

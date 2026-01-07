@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
@@ -28,7 +31,7 @@ test.describe('Authentication', () => {
 
     test('should login successfully and manage session', async ({ page }) => {
         await page.getByPlaceholder('Username').fill('auth_test');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Password').fill('password');
         await page.waitForTimeout(500);
         await page.keyboard.press('Enter');
 
@@ -44,13 +47,13 @@ test.describe('Authentication', () => {
     });
 
     test('should change password successfully', async ({ page }) => {
-        await page.getByPlaceholder('Username').fill('auth_test');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Username').fill('pass_change_test');
+        await page.getByPlaceholder('Password').fill('password');
         await page.waitForTimeout(500);
         await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
         await page.getByTestId('unlock-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
@@ -59,14 +62,14 @@ test.describe('Authentication', () => {
         await page.locator('.user-btn').click();
         await page.getByTestId('menu-change-password').click();
 
-        await page.getByTestId('cp-old').fill('q');
-        await page.getByTestId('cp-new').fill('newpass');
+        await page.getByTestId('cp-old').fill('password');
+        await page.getByTestId('cp-new').fill('newpassword');
         await page.getByTestId('cp-submit').click();
 
         await expect(page.getByText(/your (login|master) password has been updated successfully/i)).toBeVisible();
 
-        await page.getByTestId('cp-old').fill('newpass');
-        await page.getByTestId('cp-new').fill('q');
+        await page.getByTestId('cp-old').fill('newpassword');
+        await page.getByTestId('cp-new').fill('password');
         await page.getByTestId('cp-submit').click();
         await expect(page.getByText(/your (login|master) password has been updated successfully/i)).toBeVisible();
     });

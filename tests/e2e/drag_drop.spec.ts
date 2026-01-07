@@ -4,18 +4,21 @@ test.describe('Drag and Drop', () => {
     test.setTimeout(120000);
 
     test.beforeEach(async ({ page, context }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         // Login and unlock
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
         await page.getByPlaceholder('Username').fill('q');
-        await page.getByPlaceholder('Password').fill('q');
+        await page.getByPlaceholder('Password').fill('password');
         await page.waitForTimeout(500);
         await page.getByTestId('login-button').click();
 
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
-        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('q');
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
         await page.getByTestId('unlock-button').click();
 
         // Should be in Dashboard (Phase 2)

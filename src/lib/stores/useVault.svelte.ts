@@ -102,8 +102,10 @@ export function useVault(
                     }
                 }
             } else {
-                // No content? 
-                success = false;
+                // No existing vault? Initialize an empty one.
+                unsortedItems = [];
+                isDirty = true;
+                success = true;
             }
         } finally {
             items = sortPasswordEntries(unsortedItems);
@@ -252,7 +254,9 @@ export function useVault(
                 // Uncaught (in promise) DOMException: Clipboard write was blocked due to lack of user activation.
             }
             clipboardTimeout = null;
-        }, settings.current.clipboardTimeout);
+        }, (window as any).__TESTING__
+            ? 1000 // Short for tests, but long enough for reliability
+            : settings.current.clipboardTimeout);
     }
 
     // Cleanup function

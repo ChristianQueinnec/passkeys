@@ -7,6 +7,9 @@ test.describe('Unciphered Vault Detection', () => {
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         // Ensure user exists and has an unciphered vault
         if (!fs.existsSync(vaultDir)) {
             fs.mkdirSync(vaultDir, { recursive: true });

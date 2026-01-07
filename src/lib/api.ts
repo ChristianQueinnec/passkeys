@@ -141,7 +141,21 @@ export const api = {
             const err = await res.json();
             throw new Error(err.error || 'Failed to update password');
         }
-        return res.json();
+        const data = await res.json();
+        if (data.token) {
+            this.token = data.token;
+            if (browser && this.token) {
+                // Determine which storage was being used
+                if (window.localStorage.getItem('token')) {
+                    window.localStorage.setItem('token', this.token);
+                } else if (window.sessionStorage.getItem('token')) {
+                    window.sessionStorage.setItem('token', this.token);
+                }
+            }
+            // Refresh CSRF token for the new auth token
+            await this.getCSRFToken();
+        }
+        return data;
     },
 
     async vaultExists(username: string, token?: string) {

@@ -11,17 +11,20 @@ import path from 'path';
  */
 
 async function ensureVaultExists(page: any, user: string, pass: string, key: string) {
-    // console.log(`Ensuring vault exists for ${user}...`);
+    console.log(`[DEBUG] Ensuring vault exists for ${user}...`);
     await page.fill('input[placeholder="Username"]', user);
     await page.fill('[data-testid="password-input"]', pass);
     await page.click('[data-testid="login-button"]');
 
+    console.log(`[DEBUG] Waiting for Unlock screen for ${user}...`);
     // Wait for Unlock screen
     await expect(page.getByTestId('unlock-button')).toBeVisible({ timeout: 10000 });
 
+    console.log(`[DEBUG] Unlocking for ${user}...`);
     await page.fill('[data-testid="password-input"]', key);
     await page.click('[data-testid="unlock-button"]');
 
+    console.log(`[DEBUG] Waiting for Dashboard for ${user}...`);
     // Wait for Dashboard
     await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible({ timeout: 10000 });
 
@@ -42,8 +45,8 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 
 test.describe('Vault Situations: Safe Device', () => {
     const username = 'auth_test';
-    const password = 'q';
-    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
+    const password = 'password';
+    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
@@ -132,8 +135,8 @@ test.describe('Vault Situations: Safe Device', () => {
 
 test.describe('Vault Situations: Unsafe Device', () => {
     const username = 'auth_test';
-    const password = 'q';
-    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
+    const password = 'password';
+    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -207,8 +210,8 @@ test.describe('Vault Situations: Unsafe Device', () => {
 
 test.describe('Vault Situations: Vault Presence at Unlock', () => {
     const username = 'auth_test';
-    const password = 'q';
-    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
+    const password = 'password';
+    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
@@ -302,8 +305,8 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
 
 test.describe('Vault Situations: Synchronization', () => {
     const username = 'history_test';
-    const password = 'q';
-    const vaultKey = 'q';
+    const password = 'password';
+    const vaultKey = 'password';
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
@@ -409,8 +412,8 @@ test.describe('Vault Situations: Synchronization', () => {
 
 test.describe('Vault Situations: Online/Offline Modes', () => {
     const username = 'auth_test';
-    const password = 'q';
-    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
+    const password = 'password';
+    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -592,8 +595,8 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
 test.describe('Vault Situations: Edge Cases', () => {
     const username = 'auth_test';
-    const password = 'q';
-    const vaultKey = 'q'; // Use 'q' as vault key to match test setup
+    const password = 'password';
+    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {

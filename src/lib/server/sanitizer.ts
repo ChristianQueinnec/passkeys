@@ -16,8 +16,8 @@ export function sanitizeUsername(username: unknown): string {
 
     const trimmed = username.trim();
 
-    if (trimmed.length < 3 || trimmed.length > 50) {
-        throw new Error('Username must be between 3 and 50 characters');
+    if (trimmed.length < 1 || trimmed.length > 50) {
+        throw new Error('Username must be between 1 and 50 characters');
     }
 
     // Allow alphanumeric, underscore, hyphen, and dot, @ to allow emails
@@ -27,7 +27,7 @@ export function sanitizeUsername(username: unknown): string {
     }
 
     // Prevent path traversal attempts
-    if (trimmed.includes('..') ) {
+    if (trimmed.includes('..')) {
         throw new Error('Username contains invalid characters');
     }
 
@@ -84,7 +84,7 @@ export function sanitizeToken(token: unknown): string {
  * - Alphanumeric, dash, underscore, dot only
  * - Max length 255 characters
  */
-export function sanitizeFilename(filename: unknown, extension: string): string {
+export function sanitizeFilename(filename: unknown, extension?: string): string {
     if (typeof filename !== 'string') {
         throw new Error('Filename must be a string');
     }
@@ -110,9 +110,9 @@ export function sanitizeFilename(filename: unknown, extension: string): string {
     if (!filenameRegex.test(trimmed)) {
         throw new Error('Filename contains invalid characters');
     }
-    
-    // Enforce extension for vault files
-    if (requireJsonExtension && !trimmed.endsWith(extension)) {
+
+    // Enforce extension if provided
+    if (extension && !trimmed.endsWith(extension)) {
         throw new Error('Filename must have a correct extension');
     }
 

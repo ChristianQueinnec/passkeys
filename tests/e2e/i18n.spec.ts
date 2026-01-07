@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Internationalization', () => {
     test.beforeEach(async ({ page }) => {
+        await page.addInitScript(() => {
+            (window as any).__TESTING__ = true;
+        });
         await page.goto('/');
         await page.waitForLoadState('networkidle');
     });

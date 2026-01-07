@@ -34,7 +34,7 @@ export const getUser = (username: string): User | undefined => {
     return users.find(u => u.username === username);
 };
 
-export const updateUserPassword = (username: string, newPassword: string): boolean => {
+export const updateUserPassword = (username: string, newPassword: string): User => {
     const users = getUsers();
     const userIndex = users.findIndex(u => u.username === username);
 
@@ -44,5 +44,5 @@ export const updateUserPassword = (username: string, newPassword: string): boole
 
     users[userIndex].password = createHashedEntrySync(newPassword);
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    return true;
+    return users[userIndex];
 };

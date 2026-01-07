@@ -33,11 +33,12 @@ create_test_users () {
     echo "Creating user: ${USER} and its associated password: ${PASSWORD}"
     echo "Note this login and password, you will need them!"
     cat > data/users.json <<EOF
-[ {"username": "${USER}", "password": "${PASSWORD}"},
-  {"username":"admin", "password":"password"},
-  {"username":"q", "password":"q"},
-  {"username":"auth_test", "password":"q"},
-  {"username":"history_test", "password":"q"}
+[ {"username":"admin", "password":"password"},
+  {"username":"q", "password":"password"},
+  {"username":"auth_test", "password":"password"},
+  {"username":"history_test", "password":"password"},
+  {"username":"pass_change_test", "password":"password"},
+  {"username":"vault_change_test", "password":"password"}
 ]
 EOF
 }
