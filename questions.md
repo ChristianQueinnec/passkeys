@@ -452,7 +452,7 @@ All user's requests to the server API must be sanitized.
 
 The `test-sanitization.sh` still shows some errors, fix them
 
-fix errors when running `npm run test:unit`
+Fix errors when running `npm run test:unit`
 
 OK CLAUDE INPUT_SANITIZATION.md SANITIZATION_*.md SECURITY_CHECKLIST.md IMPLEMENTATION_COMPLETE.md
 

@@ -1,16 +1,19 @@
 <script lang="ts">
     import type { PasswordEntry } from "$lib/types";
-    import { i18n } from "$lib/stores/useI18n.svelte";
+ import { i18n } from "$lib/stores/useI18n.svelte";
+ import DetailsIcon from "$lib/icons/DetailsIcon.svelte";
+ import UserIcon from "$lib/icons/UserIcon.svelte";
+ import PasswordIcon from "$lib/icons/PasswordIcon.svelte";
 
-    let {
-        items = [],
-        isMemoryCleared = false,
-        restoreSensitiveData,
-        onSelect,
-        onCopyUsername,
-        onCopyPassword,
-        onDragStart,
-    }: {
+ let {
+     items = [],
+     isMemoryCleared = false,
+     restoreSensitiveData,
+     onSelect,
+     onCopyUsername,
+     onCopyPassword,
+     onDragStart,
+ }: {
         items: PasswordEntry[];
         isMemoryCleared: boolean;
         restoreSensitiveData: () => void;
@@ -66,21 +69,8 @@
                             aria-label={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.username")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                ><path
-                                    d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
-                                /><circle cx="12" cy="7" r="4" /></svg
                             >
+                            <UserIcon/>
                         </button>
                     {:else}
                         <span class="icon-filler"></span>
@@ -96,21 +86,8 @@
                             aria-label={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.password")}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                ><path
-                                    d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4c.9.1 1.8-.2 2.6-.8l4.3-4.3c.6-.6.8-1.5.7-2.4l-.2-2.1c-.1-.9-.9-1.6-1.8-1.7l-2.1-.2c-.9-.1-1.8.1-2.4.7l-4.3 4.3c-.6.8-.9 1.7-.8 2.6L11 15.2V17H8v3H5v-2H2Zm12-11a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"
-                                /></svg
                             >
+                            <PasswordIcon/>
                         </button>
                     {:else}
                         <span class="icon-filler"></span>
@@ -121,22 +98,10 @@
                         title={i18n.t("vault.view_details")}
                         aria-label={i18n.t("vault.view_details")}
                         data-testid="view-details-btn"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            ><path
-                                d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"
-                            /><circle cx="12" cy="12" r="3" /></svg
                         >
+                        <DetailsIcon/>
                     </button>
+                     <span></span>
                 </div>
             </div>
         {/each}
