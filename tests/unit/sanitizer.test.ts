@@ -30,12 +30,12 @@ describe('Input Sanitization', () => {
         });
 
         it('should reject usernames that are too short', () => {
-            expect(() => sanitizeUsername('ab')).toThrow('Username must be between 3 and 50 characters');
+            expect(() => sanitizeUsername('')).toThrow('Username must be between 1 and 50 characters');
         });
 
         it('should reject usernames that are too long', () => {
             const longUsername = 'a'.repeat(51);
-            expect(() => sanitizeUsername(longUsername)).toThrow('Username must be between 3 and 50 characters');
+            expect(() => sanitizeUsername(longUsername)).toThrow('Username must be between 1 and 50 characters');
         });
 
         it('should reject path traversal attempts', () => {

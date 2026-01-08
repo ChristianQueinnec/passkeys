@@ -30,7 +30,7 @@ export async function POST({ request }: RequestEvent) {
         // Authenticate user
         const user: User | undefined = getUser(sanitizedUsername);
         if (!user) {
-            return json({ error: 'Invalid credentials' }, { status: 401 });
+            return json({ error: 'Invalid credentials1' }, { status: 401 });
         }
 
         const [salt, hash] = user.password.split(':');
@@ -41,7 +41,7 @@ export async function POST({ request }: RequestEvent) {
             return json({ token, username: sanitizedUsername });
         }
 
-        return json({ error: 'Invalid credentials' }, { status: 401 });
+        return json({ error: 'Invalid credentials2' }, { status: 401 });
     } catch (e: any) {
         console.error('[API] Login error:', e.message);
         return json({ error: e.message || 'Internal Error' }, { status: 500 });

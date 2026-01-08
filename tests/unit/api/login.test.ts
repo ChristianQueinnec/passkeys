@@ -15,13 +15,20 @@ describe('API Login', () => {
         vi.resetAllMocks();
     });
 
+    function makeHeaders () {
+        return new Headers({
+            'Content-Type': 'application/json' });
+    }
+
     it('should return 400 if password missing', async () => {
         const request = new Request('http://localhost', {
             method: 'POST',
+            headers: makeHeaders(),
             body: JSON.stringify({ username: 'test' }), // Missing password
         });
         const response = await loginHandler.POST({ request } as any);
         const data = await response.json();
+        console.log({data});//DEBUG
 
         expect(response.status).toBe(400);
         expect(data.error).toBe('Username and password required');
@@ -30,6 +37,7 @@ describe('API Login', () => {
     it('should return 400 if username  missing', async () => {
         const request = new Request('http://localhost', {
             method: 'POST',
+            headers: makeHeaders(),
             body: JSON.stringify({ password: 'test' }), // Missing username
         });
         const response = await loginHandler.POST({ request } as any);
@@ -43,6 +51,7 @@ describe('API Login', () => {
         vi.mocked(users.getUser).mockReturnValue(undefined);
         const request = new Request('http://localhost', {
             method: 'POST',
+            headers: makeHeaders(),
             body: JSON.stringify({ username: 'unknown', password: 'password' }),
         });
         const response = await loginHandler.POST({ request } as any);
@@ -56,6 +65,7 @@ describe('API Login', () => {
 
         const request = new Request('http://localhost', {
             method: 'POST',
+            headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'w56rong12345' }),
         });
         const response = await loginHandler.POST({ request } as any);
@@ -69,6 +79,7 @@ describe('API Login', () => {
 
         const request = new Request('http://localhost', {
             method: 'POST',
+            headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'hash12345678' }),
         });
         const response = await loginHandler.POST({ request } as any);

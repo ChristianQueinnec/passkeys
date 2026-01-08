@@ -214,6 +214,7 @@ export async function sanitizeRequestBody(
     maxSize = 10 * 1024 * 1024
 ): Promise<any> {
     const contentType = request.headers.get('content-type');
+    console.log(request);//DEBUG
 
     if (!contentType || !contentType.includes('application/json')) {
         throw new Error('Content-Type must be application/json');
