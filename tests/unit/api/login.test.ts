@@ -28,7 +28,6 @@ describe('API Login', () => {
         });
         const response = await loginHandler.POST({ request } as any);
         const data = await response.json();
-        console.log({data});//DEBUG
 
         expect(response.status).toBe(400);
         expect(data.error).toBe('Username and password required');
