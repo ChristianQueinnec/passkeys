@@ -5,9 +5,9 @@
   export let placeholder: string = "Password";
   export let id: string = "vault-password";
   export let name: string = "";
-  export let required: boolean = false;
   export let autocomplete: HTMLInputAttributes["autocomplete"] =
-    "current-password";
+      "current-password";
+ export let autofocus: boolean = false;
 
   let showPassword = false;
 
@@ -22,9 +22,9 @@
     bind:value
     {placeholder}
     {id}
-    {name}
-    {required}
+    required
     {autocomplete}
+    {autofocus}
     class="password-input"
     data-testid="password-input"
   />

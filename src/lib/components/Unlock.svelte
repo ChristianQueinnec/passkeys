@@ -41,6 +41,7 @@
     >
         <div class="input-group">
             <PasswordInput
+                autofocus={true}
                 placeholder={i18n.t("auth.unlock_placeholder")}
                 bind:value={password}
             />
