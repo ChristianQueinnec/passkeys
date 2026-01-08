@@ -212,7 +212,7 @@ export function sanitizeString(
 export async function sanitizeRequestBody(
     request: Request,
     maxSize = 10 * 1024 * 1024
-): Promise<string> {
+): Promise<any> {
     const contentType = request.headers.get('content-type');
 
     if (!contentType || !contentType.includes('application/json')) {

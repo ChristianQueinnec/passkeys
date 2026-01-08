@@ -1,15 +1,22 @@
 <script lang="ts">
-  import type { HTMLInputAttributes } from "svelte/elements";
+ import type { HTMLInputAttributes } from "svelte/elements";
+ import { onMount } from 'svelte';
 
   export let value: string = "";
   export let placeholder: string = "Password";
   export let id: string = "vault-password";
-  export let name: string = "";
   export let autocomplete: HTMLInputAttributes["autocomplete"] =
       "current-password";
  export let autofocus: boolean = false;
 
-  let showPassword = false;
+ let showPassword = false;
+ let passwordinput : HTMLElement | null;
+
+ onMount(() => {
+     if (autofocus && passwordinput) {
+         passwordinput.focus();
+     }
+ });
 
   function togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -17,14 +24,14 @@
 </script>
 
 <div class="password-input-wrapper">
-  <input
+    <input
+     bind:this={passwordinput}
     type={showPassword ? "text" : "password"}
     bind:value
     {placeholder}
     {id}
     required
     {autocomplete}
-    {autofocus}
     class="password-input"
     data-testid="password-input"
   />
