@@ -465,8 +465,12 @@ similar functionalities.
 
 Antigravity UNFINISHED
 
+## 72 componentize svg 
+There are some SVG icons (for instance in PasswordList, HistoryModal
+and PasswordInput), generate UserIcon, PasswordIcon, DetailsIcon,
+BinIcon, EyeIcon as Svelte components and use them where useful.
 
-
+Hand made
 
 
 ## ?? Change Master Vault Password (continued)
@@ -478,11 +482,6 @@ Antigravity UNFINISHED
 In Unlock, focus on the input field.
 
 Generate an OpenAPI specification (in JSON format) of the Passkeys API.
-
-There are some SVG icons (for instance in PasswordList, HistoryModal
-and PasswordInput), generate UserIcon, PasswordIcon, DetailsIcon,
-BinIcon, EyeIcon as Svelte components and use them where useful.
-
 
 ##  FUTURE
 
