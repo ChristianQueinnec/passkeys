@@ -2,6 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { getLatestVault, saveVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizeVaultContent, sanitizeRequestBody } from '$lib/server/sanitizer';
+import type { LatestVaultResponse, ErrorResponse, SaveVaultResponse, SaveVaultRequest } from '$lib/server/requestTypes';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);
@@ -10,11 +11,11 @@ export const GET: RequestHandler = async ({ request }) => {
 
     try {
         const vault = getLatestVault(user.username);
-        if (!vault) return json({ error: 'Not found' }, { status: 404 });
+        if (!vault) return json({ error: 'Not found' } as ErrorResponse, { status: 404 });
         return json(JSON.parse(vault));
     } catch (e: any) {
         console.error('Vault GET error:', e);
-        return json({ error: 'Internal error' }, { status: 500 });
+        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
     }
 }
 
@@ -25,25 +26,25 @@ export const POST: RequestHandler = async ({ request }) => {
 
     try {
         // Parse and sanitize request body
-        const body = await sanitizeRequestBody(request);
+        const body = await sanitizeRequestBody(request) as SaveVaultRequest;
         const { content } = body;
 
         if (!content) {
-            return json({ error: 'Missing content' }, { status: 400 });
+            return json({ error: 'Missing content' } as ErrorResponse, { status: 400 });
         }
 
         let sanitizedContent: string;
         try {
             sanitizedContent = sanitizeVaultContent(content);
         } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message }, { status: 400 });
+            return json({ error: sanitizeError.message } as ErrorResponse, { status: 400 });
         }
 
         // Save vault
         const filename = saveVault(user.username, sanitizedContent);
-        return json({ success: true, filename });
+        return json({ success: true, filename } as SaveVaultResponse, { status: 200 });
     } catch (e: any) {
         console.error('[API] Vault POST error:', e.message);
-        return json({ error: e.message || 'Internal error' }, { status: 500 });
+        return json({ error: e.message || 'Internal error' } as ErrorResponse, { status: 500 });
     }
 }

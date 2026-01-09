@@ -4,6 +4,7 @@ import { verifyPassword } from '$lib/server/crypto-utils';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import type { RequestEvent } from './$types';
+import type { PasswordChangeRequest, ErrorResponse, PasswordChangeResponse } from '$lib/server/requestTypes';
 
 export async function POST({ request }: RequestEvent) {
     try {
@@ -12,11 +13,11 @@ export async function POST({ request }: RequestEvent) {
         const user = result;
 
         // Parse and sanitize request body
-        const body = await sanitizeRequestBody(request);
+        const body = await sanitizeRequestBody(request) as PasswordChangeRequest;
         const { oldPassword, newPassword } = body;
 
         if (!oldPassword || !newPassword) {
-            return json({ error: 'Missing parameters' }, { status: 400 });
+            return json({ error: 'Missing parameters' } as ErrorResponse, { status: 400 });
         }
 
         let sanitizedOldPassword: string;
@@ -26,7 +27,7 @@ export async function POST({ request }: RequestEvent) {
             sanitizedOldPassword = sanitizePassword(oldPassword);
             sanitizedNewPassword = sanitizePassword(newPassword);
         } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message }, { status: 400 });
+            return json({ error: sanitizeError.message } as ErrorResponse, { status: 400 });
         }
 
         // Verify old password
@@ -34,7 +35,7 @@ export async function POST({ request }: RequestEvent) {
         const isValid = await verifyPassword(sanitizedOldPassword, hash, salt);
 
         if (!isValid) {
-            return json({ error: 'Invalid current password' }, { status: 403 });
+            return json({ error: 'Invalid current password' } as ErrorResponse, { status: 403 });
         }
 
         // Update password
@@ -44,9 +45,11 @@ export async function POST({ request }: RequestEvent) {
         }
 
         const newToken = Buffer.from(`${user.username}:${updatedUser.password}`).toString('base64');
-        return json({ success: true, token: newToken, username: user.username });
+        return json({ success: true, token: newToken, username: user.username } as PasswordChangeResponse,
+            { status: 200 });
     } catch (e: any) {
         console.error('Password change error:', e.message);
-        return json({ error: e.message || 'Failed to update password' }, { status: 500 });
+        return json({ error: e.message || 'Failed to update password' } as ErrorResponse,
+            { status: 500 });
     }
 }

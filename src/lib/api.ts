@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LatestVaultResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, VaultDescription } from './server/requestTypes';
 
 // Client-side API wrapper (updated for SvelteKit relative paths)
 
@@ -14,7 +15,7 @@ export const api = {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as CSRFTokenResponse;
                 this.csrfToken = data.csrfToken;
                 return this.csrfToken;
             }
@@ -31,7 +32,7 @@ export const api = {
             body: JSON.stringify({ username, password })
         });
         if (!res.ok) throw new Error('Login failed');
-        const data = await res.json();
+        const data = await res.json() as LoginResponse;
         this.token = data.token;
         this.username = data.username;
         if (browser) {
@@ -72,10 +73,10 @@ export const api = {
         });
         if (res.status === 404) return null;
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json() as ErrorResponse;
             throw new Error(err.error || 'Failed to get vault');
         }
-        return res.json();
+        return res.json() as Promise<VaultDescription>;
     },
 
     async getLatestVaultMetadata() {
@@ -87,7 +88,7 @@ export const api = {
             const err = await res.json();
             throw new Error(err.error || 'Failed to get metadata');
         }
-        return res.json();
+        return res.json() as Promise<NewerVaultResponse>;
     },
 
     async saveVault(content: string) {
@@ -108,7 +109,7 @@ export const api = {
             body: JSON.stringify({ content })
         });
         if (!res.ok) throw new Error('Failed to save vault');
-        return res.json();
+        return res.json() as Promise<SaveVaultResponse>;
     },
 
     async getVaultHistory() {
@@ -117,7 +118,7 @@ export const api = {
             headers: { 'Authorization': `Bearer ${this.token}` }
         });
         if (!res.ok) throw new Error('Failed to list history');
-        return res.json();
+        return res.json() as Promise<VaultDescription[]>;
     },
 
     async changePassword(oldPassword: string, newPassword: string) {
@@ -141,7 +142,7 @@ export const api = {
             const err = await res.json();
             throw new Error(err.error || 'Failed to update password');
         }
-        const data = await res.json();
+        const data = await res.json() as PasswordChangeResponse;
         if (data.token) {
             this.token = data.token;
             if (browser && this.token) {
@@ -166,7 +167,7 @@ export const api = {
                 headers: { 'Authorization': `Bearer ${t}` }
             });
             if (res.ok) {
-                const data = await res.json();
+                const data = await res.json() as NewerVaultResponse;
                 return !!data.mtime;
             }
         } catch (e) {
@@ -191,9 +192,9 @@ export const api = {
             }
         });
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json() as ErrorResponse;
             throw new Error(err.error || 'Failed to delete vault');
         }
-        return res.json();
+        return res.json() as Promise<DeleteVaultResponse>;
     }
 };

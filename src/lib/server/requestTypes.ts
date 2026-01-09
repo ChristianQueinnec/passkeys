@@ -1,7 +1,7 @@
 // requests/response types
 
 // src/routes/api/csrf/
-export interface CSRFResponse {
+export interface CSRFTokenResponse {
     csrfToken: string
 }
 
@@ -42,7 +42,13 @@ export interface DeleteVaultResponse {
 }
 
 // src/routes/api/vault/
-export type LatestVaultResponse = VaultDescription;
+// TODO not satisfactory! 
+export interface LatestVaultResponse { // = VaultDescription;
+    name: string,
+    size: number,
+    mtime: Date,
+    isCiphered: boolean
+}    
 
 export interface SaveVaultRequest {
     content: string

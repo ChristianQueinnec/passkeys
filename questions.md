@@ -472,6 +472,18 @@ BinIcon, EyeIcon as Svelte components and use them where useful.
 
 Hand made
 
+## 73 OpenAPI specification
+Generate an OpenAPI specification (in JSON format) of the Passkeys
+server API.
+
+OK CLAUDE passkeys_openapi.json
+
+## 74 API Code Improvement
+
+Analyze the server API in `src/routes/api/` and propose code improvements.
+
+CLAUDE api_analysis.md
+
 
 ## ?? Change Master Vault Password (continued)
 
@@ -481,7 +493,6 @@ Hand made
 
 In Unlock, focus on the input field.
 
-Generate an OpenAPI specification (in JSON format) of the Passkeys API.
 
 ##  FUTURE
 

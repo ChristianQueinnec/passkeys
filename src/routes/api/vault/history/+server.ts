@@ -2,6 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizeFilename } from '$lib/server/sanitizer';
+import type { VaultHistoryResponse, ErrorResponse, DeleteVaultResponse } from '$lib/server/requestTypes';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);
@@ -13,7 +14,7 @@ export const GET: RequestHandler = async ({ request }) => {
         return json(vaults);
     } catch (e: any) {
         console.error('Vault history GET error:', e);
-        return json({ error: 'Internal error' }, { status: 500 });
+        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
     }
 }
 
@@ -26,21 +27,21 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
         // Sanitize filename from query parameter
         const filenameRaw = url.searchParams.get('filename');
         if (!filenameRaw) {
-            return json({ error: 'Filename required' }, { status: 400 });
+            return json({ error: 'Filename required' } as ErrorResponse, { status: 400 });
         }
 
         let filename: string;
         try {
             filename = sanitizeFilename(filenameRaw, '.vault');
         } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message }, { status: 400 });
+            return json({ error: sanitizeError.message } as ErrorResponse, { status: 400 });
         }
 
         // Delete vault
         deleteVault(user.username, filename);
-        return json({ success: true });
+        return json({ success: true } as DeleteVaultResponse, { status: 200 });
     } catch (e: any) {
         console.error('Vault history DELETE error:', e);
-        return json({ error: 'Internal error' }, { status: 500 });
+        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
     }
 }

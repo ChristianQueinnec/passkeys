@@ -1,0 +1,626 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Passkeys API",
+    "description": "A secure password manager API with end-to-end encryption. The server stores encrypted vaults and has zero knowledge of vault contents. All encryption/decryption happens client-side.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Passkeys Support"
+    },
+    "license": {
+      "name": "TBD"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5173",
+      "description": "Development server"
+    },
+    {
+      "url": "https://your-domain.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and session management"
+    },
+    {
+      "name": "Vault",
+      "description": "Encrypted vault storage and retrieval"
+    },
+    {
+      "name": "User Management",
+      "description": "User account management operations"
+    },
+    {
+      "name": "Security",
+      "description": "Security tokens and CSRF protection"
+    }
+  ],
+  "paths": {
+    "/api/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticates a user and returns a JWT token for subsequent requests",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "username": "admin",
+                "password": "securePassword123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "description": "Logs out the current user and invalidates their session",
+        "operationId": "logout",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vault": {
+      "get": {
+        "tags": ["Vault"],
+        "summary": "Get encrypted vault",
+        "description": "Retrieves the user's encrypted vault. The vault is encrypted client-side and the server has no knowledge of its contents.",
+        "operationId": "getVault",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Encrypted vault data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "Encrypted vault JSON as string"
+                },
+                "example": "U2FsdGVkX1+vupppZksvRf5pq5g5XjFRlipRkwB0K1Y96Qsv2Lm+31cmzaAILwyt..."
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Vault not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Vault"],
+        "summary": "Save encrypted vault",
+        "description": "Saves the user's encrypted vault to the server. Creates a new version with timestamp for history tracking.",
+        "operationId": "saveVault",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "csrfToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaultSaveRequest"
+              },
+              "example": {
+                "content": "U2FsdGVkX1+vupppZksvRf5pq5g5XjFRlipRkwB0K1Y96Qsv2Lm+31cmzaAILwyt..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vault saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultSaveResponse"
+                },
+                "example": {
+                  "success": true,
+                  "date": "2026-01-09T14:30:00.000Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - invalid CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vault/history": {
+      "get": {
+        "tags": ["Vault"],
+        "summary": "Get vault version history",
+        "description": "Retrieves a list of all saved vault versions with their timestamps",
+        "operationId": "getVaultHistory",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of vault versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultHistoryResponse"
+                },
+                "example": [
+                  {
+                    "filename": "vault-1704812400000.json",
+                    "date": "2026-01-09T14:30:00.000Z"
+                  },
+                  {
+                    "filename": "vault-1704726000000.json",
+                    "date": "2026-01-08T14:30:00.000Z"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Vault"],
+        "summary": "Delete vault version",
+        "description": "Deletes a specific vault version from history",
+        "operationId": "deleteVaultVersion",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "csrfToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaultDeleteRequest"
+              },
+              "example": {
+                "filename": "vault-1704726000000.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vault version deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - invalid CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Vault version not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/password": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Change user password",
+        "description": "Changes the user's authentication password. Note: This does NOT change the vault encryption key.",
+        "operationId": "changePassword",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "csrfToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChangeRequest"
+              },
+              "example": {
+                "oldPassword": "currentPassword123",
+                "newPassword": "newSecurePassword456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid old password or token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - invalid CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/csrf": {
+      "get": {
+        "tags": ["Security"],
+        "summary": "Get CSRF token",
+        "description": "Retrieves a CSRF token required for state-changing operations (POST, DELETE)",
+        "operationId": "getCsrfToken",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSRF token retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfTokenResponse"
+                },
+                "example": {
+                  "csrfToken": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "User's username",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password",
+            "minLength": 1
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT authentication token"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "VaultSaveRequest": {
+        "type": "object",
+        "required": ["content"],
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Encrypted vault data as string"
+          }
+        }
+      },
+      "VaultSaveResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of when vault was saved"
+          }
+        }
+      },
+      "VaultHistoryResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "description": "Filename of the vault version"
+            },
+            "date": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO timestamp of vault version"
+            }
+          }
+        }
+      },
+      "VaultDeleteRequest": {
+        "type": "object",
+        "required": ["filename"],
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Filename of the vault version to delete"
+          }
+        }
+      },
+      "PasswordChangeRequest": {
+        "type": "object",
+        "required": ["oldPassword", "newPassword"],
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "Current password",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "minLength": 1
+          }
+        }
+      },
+      "CsrfTokenResponse": {
+        "type": "object",
+        "properties": {
+          "csrfToken": {
+            "type": "string",
+            "description": "CSRF token to include in X-CSRF-Token header"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "message": {
+            "type": "string",
+            "description": "Detailed error description"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from /api/login endpoint"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "CSRF token obtained from /api/csrf endpoint, required for state-changing operations"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
