@@ -54,8 +54,9 @@ export function sanitizePassword(password: unknown): string {
 }
 
 /**
- * Sanitize authentication token
- * - Must be base64 encoded string
+ * Sanitize authentication token (JWT format)
+ * - Must be a JWT string with 3 parts separated by dots
+ * - Each part must be base64url encoded
  * - Reasonable length limits
  */
 export function sanitizeToken(token: unknown): string {
@@ -65,14 +66,22 @@ export function sanitizeToken(token: unknown): string {
 
     const trimmed = token.trim();
 
-    if (trimmed.length < 10 || trimmed.length > 500) {
+    if (trimmed.length < 10 || trimmed.length > 1000) {
         throw new Error('Invalid token format');
     }
 
-    // Basic base64 validation (alphanumeric + / + = )
-    const base64Regex = /^[A-Za-z0-9+/=]+$/;
-    if (!base64Regex.test(trimmed)) {
+    // JWT validation: must have exactly 3 parts separated by dots
+    const parts = trimmed.split('.');
+    if (parts.length !== 3) {
         throw new Error('Invalid token format');
+    }
+
+    // Each part must be base64url encoded (alphanumeric + - + _ )
+    const base64UrlRegex = /^[A-Za-z0-9_-]+$/;
+    for (const part of parts) {
+        if (!base64UrlRegex.test(part)) {
+            throw new Error('Invalid token format');
+        }
     }
 
     return trimmed;

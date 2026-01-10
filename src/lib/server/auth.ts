@@ -2,10 +2,11 @@ import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
 import { sanitizeToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
+import { verifyToken } from '$lib/server/jwt';
 import type { User } from '$lib/types';
 
 /**
- * Helper to validate auth token with sanitization
+ * Helper to validate JWT token and return authenticated user
  */
 export function getAuthUser(request: Request): User | null {
     const authHeader = request.headers.get('Authorization');
@@ -20,23 +21,25 @@ export function getAuthUser(request: Request): User | null {
 
     try {
         const sanitizedToken = sanitizeToken(parts[1]);
-        const decoded = Buffer.from(sanitizedToken, 'base64').toString('utf-8');
-        const [username, ...rest] = decoded.split(':');
-        const passwordHash = rest.join(':');
-
-        const user = getUser(username);
-        if (!user) {
+        
+        // Verify JWT token
+        const payload = verifyToken(sanitizedToken);
+        if (!payload) {
             return null;
         }
 
-        if (user.password === passwordHash) {
-            return user;
+        // Get user from database
+        const user = getUser(payload.username);
+        if (!user) {
+            console.warn('[AUTH] Token valid but user not found:', payload.username);
+            return null;
         }
+
+        return user;
     } catch (e: any) {
         console.error('[AUTH] Token validation error:', e.message);
         return null;
     }
-    return null;
 }
 
 /**

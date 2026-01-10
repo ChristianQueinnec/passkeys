@@ -3,6 +3,7 @@ import { updateUserPassword } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
+import { generateToken } from '$lib/server/jwt';
 import type { RequestEvent } from './$types';
 import type { PasswordChangeRequest, ErrorResponse, PasswordChangeResponse } from '$lib/server/requestTypes';
 
@@ -44,7 +45,9 @@ export async function POST({ request }: RequestEvent) {
             throw new Error('Failed to update password');
         }
 
-        const newToken = Buffer.from(`${user.username}:${updatedUser.password}`).toString('base64');
+        // Generate new JWT token (old token remains valid until expiration)
+        const newToken = generateToken(user.username);
+        
         return json({ success: true, token: newToken, username: user.username } as PasswordChangeResponse,
             { status: 200 });
     } catch (e: any) {

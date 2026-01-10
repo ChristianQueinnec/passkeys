@@ -40,11 +40,12 @@ Passkeys solves the cross-platform limitations of traditional password managers 
 
 - **End-to-End Encryption (E2EE)**: All sensitive data encrypted in browser using AES-GCM
 - **Client-Side Cryptography**: Vault key never transmitted to server
+- **JWT Authentication**: Secure token-based authentication with automatic expiration
 - **Input Sanitization**: Comprehensive validation of all API inputs to prevent injection attacks
 - **Security Timeouts**: Auto-clears decrypted data after 60 seconds of inactivity
 - **Clipboard Protection**: Copied passwords auto-cleared after 10 seconds
 - **CSRF Protection**: Token-based protection for all state-changing operations
-- **Password Hashing**: Server-side bcrypt hashing for authentication credentials
+- **Password Hashing**: Server-side scrypt hashing for authentication credentials
 - **Safe/Unsafe Device Modes**: Configurable persistence based on device trust level
 
 ### 📱 Progressive Web App

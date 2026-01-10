@@ -482,7 +482,12 @@ OK CLAUDE passkeys_openapi.json
 
 Analyze the server API in `src/routes/api/` and propose code improvements.
 
-CLAUDE api_analysis.md
+OK CLAUDE api_analysis.md
+
+Please fix the first critical issues that is Insecure Authentication
+Token Design
+
+CLAUDE JWT_*.md 
 
 
 ## ?? Change Master Vault Password (continued)
