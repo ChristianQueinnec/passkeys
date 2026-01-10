@@ -59,7 +59,7 @@ export function sanitizePassword(password: unknown): string {
  * - Each part must be base64url encoded
  * - Reasonable length limits
  */
-export function sanitizeToken(token: unknown): string {
+export function sanitizeJWTToken(token: unknown): string {
     if (typeof token !== 'string') {
         throw new Error('Token must be a string');
     }

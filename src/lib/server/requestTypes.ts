@@ -1,4 +1,4 @@
-// requests/response types
+// requests/response interfaces
 
 // src/routes/api/csrf/
 export interface CSRFTokenResponse {
@@ -30,12 +30,13 @@ export interface PasswordChangeResponse {
 
 // src/routes/api/vault/metadata/
 export interface NewerVaultResponse {
-    mtime: string | null // date
+    mtime: string | null // Date
 }
 
 // src/routes/api/vault/history/
-export type VaultHistoryResponse = VaultDescription[];
-
+export interface VaultHistoryResponse {
+    vaults: VaultDescription[]
+}
 
 export interface DeleteVaultResponse {
     success: boolean
@@ -59,7 +60,7 @@ export interface SaveVaultResponse {
     filename: string
 }
 
-export interface VaultDescription {
+export type VaultDescription = {
     name: string,
     size: number,
     mtime: Date,

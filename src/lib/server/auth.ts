@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
-import { sanitizeToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
+import { sanitizeJWTToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 import { verifyToken } from '$lib/server/jwt';
 import type { User } from '$lib/types';
@@ -20,8 +20,8 @@ export function getAuthUser(request: Request): User | null {
     }
 
     try {
-        const sanitizedToken = sanitizeToken(parts[1]);
-        
+        const sanitizedToken = sanitizeJWTToken(parts[1]);
+
         // Verify JWT token
         const payload = verifyToken(sanitizedToken);
         if (!payload) {

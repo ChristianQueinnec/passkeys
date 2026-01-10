@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
     sanitizeUsername,
     sanitizePassword,
-    sanitizeToken,
+    sanitizeJWTToken,
     sanitizeFilename,
     sanitizeVaultContent,
     sanitizeCSRFToken,
@@ -82,32 +82,49 @@ describe('Input Sanitization', () => {
         });
     });
 
-    describe('sanitizeToken', () => {
-        it('should accept valid base64 tokens', () => {
-            const token = 'dXNlcm5hbWU6cGFzc3dvcmQ=';
-            expect(sanitizeToken(token)).toBe(token);
+    describe('sanitizeToken (JWT)', () => {
+        it('should accept valid JWT tokens', () => {
+            // Valid JWT format: header.payload.signature
+            const validToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpYXQiOjE3MDQwNjcyMDAsImV4cCI6MTcwNDE1MzYwMH0.dGVzdHNpZ25hdHVyZWhlcmU';
+            expect(sanitizeJWTToken(validToken)).toBe(validToken);
         });
 
-        it('should trim whitespace', () => {
-            const token = '  dXNlcm5hbWU6cGFzc3dvcmQ=  ';
-            expect(sanitizeToken(token)).toBe('dXNlcm5hbWU6cGFzc3dvcmQ=');
+        it('should trim whitespace from tokens', () => {
+            const token = '  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.c2lnbmF0dXJl  ';
+            expect(sanitizeJWTToken(token)).toBe('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.c2lnbmF0dXJl');
         });
 
         it('should reject non-string values', () => {
-            expect(() => sanitizeToken(123)).toThrow('Token must be a string');
+            expect(() => sanitizeJWTToken(123)).toThrow('Token must be a string');
+            expect(() => sanitizeJWTToken(null)).toThrow('Token must be a string');
+            expect(() => sanitizeJWTToken(undefined)).toThrow('Token must be a string');
         });
 
         it('should reject tokens that are too short', () => {
-            expect(() => sanitizeToken('abc')).toThrow('Invalid token format');
+            expect(() => sanitizeJWTToken('abc')).toThrow('Invalid token format');
         });
 
         it('should reject tokens that are too long', () => {
-            const longToken = 'a'.repeat(501);
-            expect(() => sanitizeToken(longToken)).toThrow('Invalid token format');
+            const longToken = 'a'.repeat(1001);
+            expect(() => sanitizeJWTToken(longToken)).toThrow('Invalid token format');
         });
 
-        it('should reject non-base64 characters', () => {
-            expect(() => sanitizeToken('invalid!token@here')).toThrow('Invalid token format');
+        it('should reject tokens without 3 parts', () => {
+            expect(() => sanitizeJWTToken('onlyonepart')).toThrow('Invalid token format');
+            expect(() => sanitizeJWTToken('two.parts')).toThrow('Invalid token format');
+            expect(() => sanitizeJWTToken('too.many.parts.here')).toThrow('Invalid token format');
+        });
+
+        it('should reject tokens with invalid base64url characters', () => {
+            // JWT uses base64url encoding (no +, /, or =)  
+            expect(() => sanitizeJWTToken('header+invalid.payload/bad.signature=bad')).toThrow('Invalid token format');
+            expect(() => sanitizeJWTToken('header.payload!.signature')).toThrow('Invalid token format');
+            expect(() => sanitizeJWTToken('header.payload@.signature')).toThrow('Invalid token format');
+        });
+
+        it('should accept tokens with base64url characters (-, _)', () => {
+            const validToken = 'aB-c_D.eF-g_H.iJ-k_L';
+            expect(sanitizeJWTToken(validToken)).toBe(validToken);
         });
     });
 

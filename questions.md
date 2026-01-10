@@ -489,6 +489,8 @@ Token Design
 
 CLAUDE JWT_*.md 
 
+Fix unit tests
+
 
 ## ?? Change Master Vault Password (continued)
 
