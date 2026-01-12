@@ -1,0 +1,6 @@
+[models]
+default = "devstral-2"
+
+[agent]
+enable_parallel = false
+max_concurrent_agents = 4

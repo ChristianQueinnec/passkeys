@@ -7,7 +7,6 @@ import { settings } from "./useSettings.svelte";
 
 export function useVault(
     getEncryptionKey: () => CryptoKey,
-    getUsername: () => string,
 ) {
 
     // State

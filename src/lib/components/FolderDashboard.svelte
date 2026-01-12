@@ -9,7 +9,7 @@
     import type { PasswordEntry, FolderNode } from "$lib/types";
     import type { Vault } from "$lib/stores/useVault.svelte";
 
-    let { encryptionKey, username, onToggleView, vault, security } = $props();
+    let { onToggleView, vault, security } = $props();
 
     let folderTree = $state<FolderNode>({
         name: i18n.t("vault.root"),

@@ -34,10 +34,9 @@
     let cpSuccess = $state("");
 
     // Initialize Global Stores
-    // Pass getters because encryptionKey and username change over time
+    // Pass getter because encryptionKey changes over time
     const vault = useVault(
         () => encryptionKey as CryptoKey,
-        () => username,
     );
 
     // Security handles auto-lock and clearing data from memory
@@ -253,16 +252,12 @@
         {:else if phase === 2 && encryptionKey}
             {#if useFolderView}
                 <FolderDashboard
-                    {encryptionKey}
-                    {username}
                     {vault}
                     {security}
                     onToggleView={toggleDashboardView}
                 />
             {:else}
                 <Dashboard
-                    {encryptionKey}
-                    {username}
                     {vault}
                     {security}
                     onToggleView={toggleDashboardView}

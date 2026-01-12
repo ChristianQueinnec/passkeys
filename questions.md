@@ -472,6 +472,8 @@ BinIcon, EyeIcon as Svelte components and use them where useful.
 
 Hand made
 
+In Unlock, focus on the input field.
+
 ## 73 OpenAPI specification
 Generate an OpenAPI specification (in JSON format) of the Passkeys
 server API.
@@ -489,7 +491,13 @@ Token Design
 
 CLAUDE JWT_*.md 
 
-Fix unit tests
+Fix unit tests by hand.
+
+## random fixes
+This is the Passkeys project @README.md
+
+Mistral vibe - mainly unused code removal
+
 
 
 ## ?? Change Master Vault Password (continued)
@@ -498,7 +506,6 @@ Fix unit tests
 
 
 
-In Unlock, focus on the input field.
 
 
 ##  FUTURE
@@ -509,4 +516,15 @@ decipher only when copy to clipboard
 
 blob for vault rather than base64
 
+In the FolderDashboard, the number after the name of a folder is the
+number of password entries that directly belong to this folder. I
+would prefer it to be the total number of password entries held in the
+folder, its subfolders, its subsubfolders, etc.
 
+Submit the initial unciphered vault as a file read by the browser so
+create a new menu item to submit this local file, cipher it in the
+browser and propose to save the ciphered version onto the server.
+
+# Mistral Vibe
+
+this is the Passkeys project @README.md

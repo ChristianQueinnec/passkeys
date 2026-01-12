@@ -2,7 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizeFilename } from '$lib/server/sanitizer';
-import type { ErrorResponse, DeleteVaultResponse, VaultHistoryResponse } from '$lib/server/requestTypes';
+import type { ErrorResponse, DeleteVaultResponse } from '$lib/server/requestTypes';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);

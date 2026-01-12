@@ -10,10 +10,11 @@ Usage: $0 [-u|-v|-b|-i|-h|-t]
 Prepare the Passkeys webapp.
    -u    create a default data/users.json
    -v    create a default vault
+   -e    create a default .env
    -b    build and run the Passkeys backend
-   -i    similar to -u -v -b
+   -i    similar to -e -u -v -b
    -h    display usage
-   -t   similar to -u -v but for tests
+   -t   similar to -e -u -v but for tests
 EOF
 }
 
@@ -30,8 +31,7 @@ EOF
 
 create_test_users () {
     mkdir -p data/${USER}
-    echo "Creating user: ${USER} and its associated password: ${PASSWORD}"
-    echo "Note this login and password, you will need them!"
+    echo "Creating some users for tests"
     cat > data/users.json <<EOF
 [ {"username":"admin", "password":"password"},
   {"username":"q", "password":"password"},
@@ -115,19 +115,40 @@ create_test_vault () {
     "tags": ["test", "other"],
     "created": ${DATE},
     "modified": ${DATE}
+  },{
+    "group": "sources/git",
+    "title": "User guide",
+    "username": "you@example.org",
+    "password": "${PASSWORD}",
+    "site": "https://github.com/ChristianQueinnec/passkeys/user-guide.md",
+    "tags": ["test", "other"],
+    "created": ${DATE},
+    "modified": ${DATE}
   },
   {
     "group": "test/in",
     "title": "me as ${USER}",
     "username": "${USER}",
     "password": "${PASSWORD}",
-    "site": "https://localhost/",
+    "site": "https://localhost:3000/",
     "tags": ["test", "example"],
     "notes": "Another sample password entry",
     "created": ${DATE},
     "modified": ${DATE}
   }
 ]
+EOF
+}
+
+create_env () {
+    cat > .env <<EOF
+JWT_SECRET=$(openssl rand -hex 32)
+EOF
+}
+
+create_test_env () {
+    cat > .env <<EOF
+JWT_SECRET=jwt-secret
 EOF
 }
 
@@ -153,9 +174,12 @@ then
     exit 1
 fi
 
-while getopts "uvbith" OPT
+while getopts "euvbith" OPT
 do
     case "$OPT" in
+        e|env)
+            create_env
+            ;;
         u|user*)
             create_users
             ;;
@@ -167,6 +191,7 @@ do
             ;;
         i|init)
             banner
+            create_env
             create_users
             create_vault
             build_backend
@@ -174,6 +199,7 @@ do
         t|test)
             USER=admin
             PASSWORD=password
+            create_test_env
             create_test_users
             create_test_vault
             ;;
