@@ -502,8 +502,9 @@ Mistral vibe - mainly unused code removal
 
 What do you propose to fix @tests/e2e/vault_situations.spec.ts
 
-Mistral vibe - fixed imports in test:e2e
+Mistral vibe - fixed imports in test:e2e but still failing
 
+tests/run-vault-tests.sh e2e
 
 
 ## ?? Change Master Vault Password (continued)
@@ -515,6 +516,8 @@ Mistral vibe - fixed imports in test:e2e
 
 
 ##  FUTURE
+
+test/e2e delete vault
 
 bypass Login page if coming from authenticated nginx proxy ?
 

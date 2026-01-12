@@ -371,9 +371,6 @@ npm run test:e2e
 
 # Vault-specific tests
 npm run test:vault
-
-# With coverage
-npm run test:coverage
 ```
 
 ### Test Documentation

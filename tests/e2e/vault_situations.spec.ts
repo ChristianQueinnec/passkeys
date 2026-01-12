@@ -26,7 +26,7 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 
     console.log(`[DEBUG] Waiting for Dashboard for ${user}...`);
     // Wait for Dashboard
-    await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('div.folder-dashboard')).toBeVisible({ timeout: 10000 });
 
     // Add an entry and save to ensure server vault exists
     await page.getByTestId('new-entry-btn').click();
@@ -76,7 +76,7 @@ test.describe('Vault Situations: Safe Device', () => {
         await page.click('[data-testid="unlock-button"]');
 
         // Wait for vault to load
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Verify token is in localStorage (safe device)
         const token = await page.evaluate(() => localStorage.getItem('token'));
@@ -93,7 +93,7 @@ test.describe('Vault Situations: Safe Device', () => {
         await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
 
     test('should reload cached vault from localStorage when offline', async ({ page }) => {
@@ -105,9 +105,11 @@ test.describe('Vault Situations: Safe Device', () => {
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Wait for vault to be cached
         await page.waitForTimeout(1000);
@@ -126,7 +128,7 @@ test.describe('Vault Situations: Safe Device', () => {
         await page.click('[data-testid="unlock-button"]');
 
         // Should load from localStorage
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Should show offline indicator
         await expect(page.locator('[data-testid="offline-indicator"]')).toBeVisible();
@@ -163,8 +165,8 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
-        await page.waitForTimeout(500);
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
+        await page.waitForTimeout(1000);
 
         // Verify token is in sessionStorage, NOT localStorage
         const localToken = await page.evaluate(() => localStorage.getItem('token'));
@@ -189,7 +191,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Simulate browser restart by creating new context
         const newPage = await context.newPage();
@@ -251,7 +253,7 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         const offlineVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
         if (!offlineVault) {
             // Empty vault case - should still show dashboard
-            await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+            await expect(page.locator('.folder-dashboard')).toBeVisible();
         }
     });
 
@@ -295,7 +297,7 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Should see server entry, not cached entry
         await expect(page.getByText('Server Version Entry')).toBeVisible();
@@ -326,7 +328,7 @@ test.describe('Vault Situations: Synchronization', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
 
     test('should detect when server has newer vault version', async ({ page }) => {
@@ -437,7 +439,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Should NOT show offline indicator
         await expect(page.locator('[data-testid="offline-indicator"]')).not.toBeVisible();
@@ -461,7 +463,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Initially online
         await expect(page.locator('[data-testid="offline-indicator"]')).not.toBeVisible();
@@ -488,7 +490,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Block API
         await page.route('**/api/**', route => route.abort('failed'));
@@ -523,7 +525,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Break connection
         await page.route('**/api/vault/metadata', route => route.abort('failed'));
@@ -553,7 +555,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Add an entry to cache
         await page.getByTestId('new-entry-btn').click();
@@ -588,7 +590,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         // Should load from cache
         // Should load from cache
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
         await expect(page.getByText('Cached Entry')).toBeVisible({ timeout: 10000 });
     });
 });
@@ -629,7 +631,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.click('[data-testid="unlock-button"]');
 
         // Should fall back to server vault
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
 
     test('should handle wrong vault key gracefully', async ({ page }) => {
@@ -657,7 +659,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         // Should be able to retry with correct key
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
 
     test('should handle vault with missing encryption metadata', async ({ page }) => {
@@ -695,7 +697,7 @@ test.describe('Vault Situations: Edge Cases', () => {
 
         // Should show error or fall back to empty vault
         const errorVisible = await page.locator('text=/failed/i').isVisible().catch(() => false);
-        const vaultVisible = await page.locator('.dashboard, .folder-dashboard').isVisible().catch(() => false);
+        const vaultVisible = await page.locator('.folder-dashboard').isVisible().catch(() => false);
 
         expect(errorVisible || vaultVisible).toBe(true);
 
