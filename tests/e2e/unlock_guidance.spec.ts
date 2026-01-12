@@ -1,7 +1,11 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
-import type { User } from '$lib/types';
+import * as fs from 'fs';
+import * as path from 'path';
+
+type User = {
+    username: string;
+    password: string;
+};
 
 
 

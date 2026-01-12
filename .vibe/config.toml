@@ -4,3 +4,29 @@ default = "devstral-2"
 [agent]
 enable_parallel = false
 max_concurrent_agents = 4
+
+[[mcp_servers]]
+name = "playwright"
+transport = "stdio"
+command = "npx"
+args = [ "-y", "@playwright/mcp" ]
+
+[tools.playwright_navigate]
+permission = "ask"
+[tools.playwright_screenshot]
+permission = "always"
+[tools.playwright_click]
+permission = "ask"
+
+[[mcp_servers]]
+name = "git"
+transport = "stdio"
+command = "uvx"
+args = [ "mcp-server-git", "--repository", "." ]
+
+[tools.git_status]
+permission = "always"
+[tools.git_commit]
+permission = "ask"
+[tools.git_push]
+permission = "never"

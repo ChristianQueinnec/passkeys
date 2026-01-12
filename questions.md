@@ -498,6 +498,12 @@ This is the Passkeys project @README.md
 
 Mistral vibe - mainly unused code removal
 
+## fix tests/e2e/vault_situations.spec.ts
+
+What do you propose to fix @tests/e2e/vault_situations.spec.ts
+
+Mistral vibe - fixed imports in test:e2e
+
 
 
 ## ?? Change Master Vault Password (continued)
