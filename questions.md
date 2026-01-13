@@ -493,12 +493,12 @@ CLAUDE JWT_*.md
 
 Fix unit tests by hand.
 
-## random fixes
+## 75 random fixes
 This is the Passkeys project @README.md
 
 Mistral vibe - mainly unused code removal
 
-## fix tests/e2e/vault_situations.spec.ts
+## 76 fix tests/e2e/vault_situations.spec.ts
 
 What do you propose to fix @tests/e2e/vault_situations.spec.ts
 
@@ -508,11 +508,15 @@ tests/run-vault-tests.sh e2e
 
 CLAUDE fails - fixed by hand
 
-## ?? Change Master Vault Password (continued)
+## 77 Change Master Vault Password (continued)
 
 Check whether the task `Change Master Vault Password` is completed.
 
-Antigravity 
+Antigravity OK
+
+## 78 API shared logic refactoring
+
+Check whether the task `API shared logic refactoring`is completed.
 
 
 

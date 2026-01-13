@@ -32,7 +32,7 @@ test.describe('Vault Password Change', () => {
 
     test('should allow changing vault password and re-encrypt data', async ({ page }) => {
         // 1. Login
-        await page.fill('input[placeholder="Username"]', 'admin');
+        await page.fill('input[placeholder="Username"]', 'vault_change_test');
         await page.fill('[data-testid="password-input"]', 'password');
         await page.click('[data-testid="login-button"]');
 
