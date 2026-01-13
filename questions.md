@@ -518,6 +518,22 @@ Antigravity OK
 
 Check whether the task `API shared logic refactoring`is completed.
 
+## 79 Change FolderDashboard
+
+In the FolderDashboard, the number after the name of a folder is the
+number of password entries that directly belong to this folder. I
+would prefer it to be the total number of password entries held in the
+folder, its subfolders, its subsubfolders, etc.
+
+Antigravity
+
+## 80 upload unciphered vault
+
+Allow to submit an initial unciphered vault as a file read by the
+browser so create a new menu item to submit this local file, cipher it
+in the browser and propose to save the ciphered version onto the
+server.
+
 
 
 ##  FUTURE
@@ -530,15 +546,4 @@ decipher only when copy to clipboard
 
 blob for vault rather than base64
 
-In the FolderDashboard, the number after the name of a folder is the
-number of password entries that directly belong to this folder. I
-would prefer it to be the total number of password entries held in the
-folder, its subfolders, its subsubfolders, etc.
 
-Submit the initial unciphered vault as a file read by the browser so
-create a new menu item to submit this local file, cipher it in the
-browser and propose to save the ciphered version onto the server.
-
-# Mistral Vibe
-
-this is the Passkeys project @README.md

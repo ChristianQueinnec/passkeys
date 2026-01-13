@@ -189,6 +189,17 @@
             }
         }
     }
+    // Recursive count of all entries in a folder and its subfolders
+    function countAllEntries(node: FolderNode): number {
+        if (!node || !node.entries) return 0;
+        let count = node.entries.length;
+        if (node.children) {
+            for (const child of node.children) {
+                count += countAllEntries(child);
+            }
+        }
+        return count;
+    }
 </script>
 
 {#snippet listIconSnippet()}
@@ -243,7 +254,7 @@
                                 </span>
                                 <span class="folder-name">{node.name}</span>
                                 <span class="entry-count"
-                                    >({node.entries.length})</span
+                                    >({countAllEntries(node)})</span
                                 >
                             </button>
                         </div>
