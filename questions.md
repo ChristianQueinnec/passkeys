@@ -506,12 +506,13 @@ Mistral vibe - fixed imports in test:e2e but still failing
 
 tests/run-vault-tests.sh e2e
 
+CLAUDE fails - fixed by hand
 
 ## ?? Change Master Vault Password (continued)
 
+Check whether the task `Change Master Vault Password` is completed.
 
-
-
+Antigravity 
 
 
 

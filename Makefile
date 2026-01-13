@@ -40,13 +40,13 @@ run.container :
 run.demo :
 	./scripts/init.sh -t
 	@echo "Browse now http://localhost:3000"
-	npm run dev
+	. ./.env && npm run dev
 
 # Run tests after checking that a server runs (dev mode or container):
 run.tests :
 	scripts/init.sh -t
 	if curl --silent http://localhost:3000 > /dev/null ; then true ; else \
-	  npm run dev ; fi
+	  . ./.env && npm run dev ; fi & sleep 2
 	npm run test:unit
 	npm run test:e2e
 

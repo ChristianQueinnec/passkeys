@@ -2,19 +2,27 @@
 
 USER=${USER:-admin}
 PASSWORD=$(uuid | sed -e 's/-.*$//')
+TEST=false
+URL=http://localhost:3000
 
 usage () {
     cat <<EOF
-Usage: $0 [-u|-v|-b|-i|-h|-t]
+Usage: $0 [-u|-v|-e|-b|-i|-h|-t][-r]
 
 Prepare the Passkeys webapp.
+   -c    check if a server is available
    -u    create a default data/users.json
    -v    create a default vault
    -e    create a default .env
+   -r    run Passkeys server
    -b    build and run the Passkeys backend
-   -i    similar to -e -u -v -b
+   -i    similar to -e -u -v -b -r
    -h    display usage
    -t   similar to -e -u -v but for tests
+
+Examples:
+  $0 -t -r     start a standalone server and run all tests
+  $0 -i        start a standalone server (without docker)
 EOF
 }
 
@@ -47,6 +55,7 @@ create_vault () {
     mkdir -p data/${USER}/
     echo "Creating a sample vault"
     DATE=$(date "+%s")
+    [[ -f data/${USER}/vault-init.vault ]] || \
     cat > data/${USER}/vault-init.vault <<EOF
 [{
     "group": "",
@@ -142,14 +151,18 @@ EOF
 
 create_env () {
     cat > .env <<EOF
-JWT_SECRET=$(openssl rand -hex 32)
+#! /bin/bash
+export JWT_SECRET=$(openssl rand -hex 32)
 EOF
+    chmod a+x .env
 }
 
 create_test_env () {
     cat > .env <<EOF
-JWT_SECRET=jwt-secret
+#! /bin/bash
+export JWT_SECRET=jwt-secret
 EOF
+    chmod a+x .env
 }
 
 build_backend () {
@@ -158,7 +171,26 @@ build_backend () {
     GID=$(id -g) \
     USER=${USER} \
        docker compose up --build
-    echo "Browse now http://localhost:3000"
+    echo "Browse now ${URL}"
+}
+
+run () {
+    source .env
+    make run.demo    
+}
+
+test_run () {
+    source .env
+    make run.tests
+}
+
+check_server () {
+    if curl --silent ${URL} > /dev/null
+    then true
+    else
+        echo "No running server" >&2
+        exit 1
+    fi
 }
 
 banner () {
@@ -174,9 +206,12 @@ then
     exit 1
 fi
 
-while getopts "euvbith" OPT
+while getopts "ceuvbirth" OPT
 do
     case "$OPT" in
+        c|check)
+            check_server
+            ;;
         e|env)
             create_env
             ;;
@@ -197,11 +232,20 @@ do
             build_backend
             ;;
         t|test)
+            TEST=true
             USER=admin
             PASSWORD=password
             create_test_env
             create_test_users
             create_test_vault
+            ;;
+        r|run)
+            if $TEST
+            then
+                test_run
+            else
+                run
+            fi
             ;;
         h|help|*)
             usage

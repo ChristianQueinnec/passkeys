@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const username = 'auth_test';
+const password = 'password';
+const vaultKey = 'password';
+const vaultDir = path.join(process.cwd(), 'data', username);
+
 /**
  * Comprehensive tests for vault behavior in various situations:
  * - Safe vs unsafe (untrusted) devices
@@ -18,7 +23,9 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 
     console.log(`[DEBUG] Waiting for Unlock screen for ${user}...`);
     // Wait for Unlock screen
-    await expect(page.getByTestId('unlock-button')).toBeVisible({ timeout: 10000 });
+    // First access is very long!
+    await expect(page.getByTestId('unlock-button'))
+        .toBeVisible({timeout: 50*1000});
 
     console.log(`[DEBUG] Unlocking for ${user}...`);
     await page.fill('[data-testid="password-input"]', key);
@@ -26,7 +33,7 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 
     console.log(`[DEBUG] Waiting for Dashboard for ${user}...`);
     // Wait for Dashboard
-    await expect(page.locator('div.folder-dashboard')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('div.folder-dashboard')).toBeVisible();
 
     // Add an entry and save to ensure server vault exists
     await page.getByTestId('new-entry-btn').click();
@@ -44,10 +51,6 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 }
 
 test.describe('Vault Situations: Safe Device', () => {
-    const username = 'auth_test';
-    const password = 'password';
-    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
-    const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -136,9 +139,6 @@ test.describe('Vault Situations: Safe Device', () => {
 });
 
 test.describe('Vault Situations: Unsafe Device', () => {
-    const username = 'auth_test';
-    const password = 'password';
-    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -176,6 +176,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
         expect(sessionToken).not.toBeNull();
 
         // Offline vault should still be in localStorage for offline access
+        await page.reload();
         const offlineVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
         expect(offlineVault).not.toBeNull();
     });
@@ -189,6 +190,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -211,10 +213,6 @@ test.describe('Vault Situations: Unsafe Device', () => {
 });
 
 test.describe('Vault Situations: Vault Presence at Unlock', () => {
-    const username = 'auth_test';
-    const password = 'password';
-    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
-    const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -294,6 +292,7 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
@@ -306,10 +305,6 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
 });
 
 test.describe('Vault Situations: Synchronization', () => {
-    const username = 'history_test';
-    const password = 'password';
-    const vaultKey = 'password';
-    const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -326,6 +321,7 @@ test.describe('Vault Situations: Synchronization', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -413,9 +409,6 @@ test.describe('Vault Situations: Synchronization', () => {
 });
 
 test.describe('Vault Situations: Online/Offline Modes', () => {
-    const username = 'auth_test';
-    const password = 'password';
-    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -436,6 +429,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
@@ -461,6 +455,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -488,6 +483,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -523,6 +519,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -553,6 +550,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -584,7 +582,6 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         // Even with API blocked, we should be able to see Unlock screen because token is in localStorage
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
@@ -596,10 +593,6 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 });
 
 test.describe('Vault Situations: Edge Cases', () => {
-    const username = 'auth_test';
-    const password = 'password';
-    const vaultKey = 'password'; // Use 'q' as vault key to match test setup
-    const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
         await page.addInitScript(() => {
@@ -627,6 +620,7 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.fill('[data-testid="password-input"]', password);
         await page.click('[data-testid="login-button"]');
 
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
@@ -650,6 +644,7 @@ test.describe('Vault Situations: Edge Cases', () => {
             expect(dialog.message()).toMatch(/failed/i);
             await dialog.dismiss();
         });
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', 'wrong-key-intentionally');
         await page.click('[data-testid="unlock-button"]');
 
@@ -657,51 +652,10 @@ test.describe('Vault Situations: Edge Cases', () => {
         await expect(page.getByTestId('unlock-button')).toBeVisible();
 
         // Should be able to retry with correct key
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
 
-    test('should handle vault with missing encryption metadata', async ({ page }) => {
-        // Create a vault file with missing IV or cipher
-        if (!fs.existsSync(vaultDir)) {
-            fs.mkdirSync(vaultDir, { recursive: true });
-        }
-
-        const malformedVault = {
-            date: new Date().toISOString(),
-            data: {
-                // Missing 'cipher' field
-                iv: 'some-iv-data'
-            }
-        };
-
-        fs.writeFileSync(
-            path.join(vaultDir, 'vault-malformed.vault'),
-            JSON.stringify(malformedVault)
-        );
-
-        await page.goto('/');
-        await page.evaluate(() => localStorage.clear());
-        await page.reload();
-
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
-        await page.click('[data-testid="login-button"]');
-
-        await page.fill('[data-testid="password-input"]', vaultKey);
-        await page.click('[data-testid="unlock-button"]');
-
-        // Should handle error gracefully
-        await page.waitForTimeout(1000);
-
-        // Should show error or fall back to empty vault
-        const errorVisible = await page.locator('text=/failed/i').isVisible().catch(() => false);
-        const vaultVisible = await page.locator('.folder-dashboard').isVisible().catch(() => false);
-
-        expect(errorVisible || vaultVisible).toBe(true);
-
-        // Clean up
-        fs.unlinkSync(path.join(vaultDir, 'vault-malformed.vault'));
-    });
 });

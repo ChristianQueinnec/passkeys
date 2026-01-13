@@ -14,8 +14,17 @@ echo ""
 
 # Initialize test environment
 echo "📋 Initializing test environment..."
-./scripts/init.sh -t
+
+# Ensure JWT_SECRET is set for tests
+if [ -z "$JWT_SECRET" ]; then
+    export JWT_SECRET="test-jwt-secret-for-running-tests-only"
+    echo "✓ JWT_SECRET set for tests"
+fi
+
+# Run init script
+./scripts/init.sh -c -t
 echo ""
+sleep 1
 
 case "$MODE" in
     unit)

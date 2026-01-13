@@ -65,6 +65,7 @@
         <div class="warning sync-warning" data-testid="newer-version-alert">
             📦 {i18n.t("vault.newer_version")}
             <button class="small" onclick={onSynchronize}
+                    data-testid="reload-vault-btn"
                 >{i18n.t("vault.sync_now")}</button
             >
         </div>
