@@ -45,6 +45,7 @@ create_test_users () {
   {"username":"q", "password":"password"},
   {"username":"auth_test", "password":"password"},
   {"username":"history_test", "password":"password"},
+  {"username":"deletion_test", "password":"password"},
   {"username":"pass_change_test", "password":"password"},
   {"username":"vault_change_test", "password":"password"}
 ]

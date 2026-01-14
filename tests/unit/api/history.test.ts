@@ -137,4 +137,50 @@ describe('API History', () => {
         expect(response.status).toBe(400);
         expect(storage.deleteVault).not.toHaveBeenCalled();
     });
+
+    it('DELETE should handle storage errors', async () => {
+        const { headers } = mockAuth('testuser');
+        const url = new URL('http://localhost/api/vault/history?filename=test.vault');
+        const request = new Request(url, { method: 'DELETE', headers });
+
+        vi.mocked(storage.deleteVault).mockImplementation(() => {
+            throw new Error('Storage error');
+        });
+
+        const response = await historyHandler.DELETE({ request, url } as any);
+        expect(response.status).toBe(500);
+    });
+
+    it('DELETE should handle special characters in filename', async () => {
+        const { headers } = mockAuth('testuser');
+        const specialFilename = 'vault-2024-01-15T10-30-45.123Z.vault';
+        const url = new URL(`http://localhost/api/vault/history?filename=${encodeURIComponent(specialFilename)}`);
+        const request = new Request(url, { method: 'DELETE', headers });
+
+        const response = await historyHandler.DELETE({ request, url } as any);
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(storage.deleteVault).toHaveBeenCalledWith('testuser', specialFilename);
+    });
+
+    it('DELETE should reject filenames without .vault extension', async () => {
+        const { headers } = mockAuth('testuser');
+        const url = new URL('http://localhost/api/vault/history?filename=malicious.txt');
+        const request = new Request(url, { method: 'DELETE', headers });
+
+        const response = await historyHandler.DELETE({ request, url } as any);
+        expect(response.status).toBe(400);
+        expect(storage.deleteVault).not.toHaveBeenCalled();
+    });
+
+    it('DELETE should handle empty filename parameter', async () => {
+        const { headers } = mockAuth('testuser');
+        const url = new URL('http://localhost/api/vault/history?filename=');
+        const request = new Request(url, { method: 'DELETE', headers });
+
+        const response = await historyHandler.DELETE({ request, url } as any);
+        expect(response.status).toBe(400);
+    });
 });

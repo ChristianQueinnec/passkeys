@@ -81,4 +81,25 @@ describe('Storage', () => {
         storage.deleteVault('testuser', 'missing.vault');
         expect(fs.unlinkSync).not.toHaveBeenCalled();
     });
+
+    it('should handle deletion errors gracefully', () => {
+        vi.mocked(fs.unlinkSync).mockImplementation(() => {
+            throw new Error('Permission denied');
+        });
+        
+        expect(() => storage.deleteVault('testuser', 'test.vault')).toThrow('Permission denied');
+    });
+
+    it('should delete vault with special characters in filename', () => {
+        const specialFilename = 'vault-2024-01-15T10-30-45.123Z.vault';
+        storage.deleteVault('testuser', specialFilename);
+        expect(fs.unlinkSync).toHaveBeenCalled();
+    });
+
+    it('should handle multiple vault deletions', () => {
+        storage.deleteVault('testuser', 'vault1.vault');
+        storage.deleteVault('testuser', 'vault2.vault');
+        storage.deleteVault('testuser', 'vault3.vault');
+        expect(fs.unlinkSync).toHaveBeenCalledTimes(3);
+    });
 });

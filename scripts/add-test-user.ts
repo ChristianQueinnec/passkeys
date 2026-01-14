@@ -35,6 +35,12 @@ const addUsers = () => {
         console.log('User history_test added.');
     }
 
+    // User 'deletion_test' for Vault Deletion operations
+    if (!users.find(u => u.username === 'deletion_test')) {
+        users.push({ username: 'deletion_test', password: createHashedEntrySync('password') });
+        console.log('User deletion_test added.');
+    }
+
     if (!users.find(u => u.username === 'admin')) {
         users.push({ username: 'admin', password: createHashedEntrySync('password') });
         console.log('User admin added.');

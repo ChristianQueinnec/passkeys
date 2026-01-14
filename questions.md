@@ -543,10 +543,16 @@ Check your new `tests/e2e/import_vault.spec.ts`
 
 ## missing delete vault test
 
-Check if there is a test (unit and e2e) checking the deletion of a
-vault. If not, generate missing tests.
+Read the current README.md then check if there are tests (unit and
+e2e) checking the deletion of a vault. If not, propose to generate
+missing tests.
 
-Claude
+Kiro (Claude)
+
+Act on task 2 `Generate the missing tests directly based on the gaps I
+identified?`
+
+OK Kiro
 
 ## 81 upgrade user-guide
 
