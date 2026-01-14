@@ -1,0 +1,12 @@
+[
+  {
+    "group": "Imported",
+    "title": "Imported Entry",
+    "username": "imported_user",
+    "password": "imported_password",
+    "site": "https://imported.example.com",
+    "tags": [
+      "import"
+    ]
+  }
+]

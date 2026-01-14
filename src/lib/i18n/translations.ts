@@ -77,7 +77,10 @@ export const translations = {
         "vault.old_master_password": "Current Vault Password",
         "vault.new_master_password": "New Vault Password",
         "vault.confirm_new_master_password": "Confirm New Vault Password",
-        "vault.password_changed": "Vault password changed successfully."
+        "vault.password_changed": "Vault password changed successfully.",
+        "vault.import": "Import Vault",
+        "vault.import_success": "Vault imported successfully. Please save to persist changes.",
+        "vault.import_error": "Failed to import vault. Invalid format."
     },
     fr: {
         "app.title": "Passkeys - Coffre Sécurisé",
@@ -157,7 +160,10 @@ export const translations = {
         "vault.old_master_password": "Mot de passe actuel du coffre",
         "vault.new_master_password": "Nouveau mot de passe du coffre",
         "vault.confirm_new_master_password": "Confirmer le nouveau mot de passe",
-        "vault.password_changed": "Le mot de passe du coffre a été modifié avec succès."
+        "vault.password_changed": "Le mot de passe du coffre a été modifié avec succès.",
+        "vault.import": "Importer un coffre",
+        "vault.import_success": "Coffre importé avec succès. Veuillez enregistrer pour persister les modifications.",
+        "vault.import_error": "Échec de l'importation du coffre. Format invalide."
     }
 };
 

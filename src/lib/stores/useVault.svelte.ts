@@ -265,6 +265,44 @@ export function useVault(
         }
     }
 
+    // Import
+    function importItems(newItems: PasswordEntry[]) {
+        try {
+            const normalized = normalizeVaultItems(newItems);
+            // Append? or Replace? For now, let's assume valid JSON vault file replaces (or merges if we wanted, but replace is safer for "Import Vault" usually, or maybe merge?)
+            // The requirement says "submit an initial unciphered vault".
+            // Let's TREAT it as "loading" a new vault state.
+            // But maybe we should merge if checking for duplicates?
+            // "respecting the structure of a vault" implies it's a full vault export.
+            // We will replace current items with imported ones, but we might want to keep existing ones if meaningful?
+            // If it is "initial", maybe we replace.
+            // Let's simpler: Add them to current items. Users can delete if they want.
+            // Actually, if I import a vault, I probably want to ADD to my existing passwords.
+
+            // Let's implement MERGE logic: add unique by ID, or if ID collision, overwrite?
+            // Safer: Just add them. If IDs collide, `normalizeVaultItems` might need care? 
+            // `normalizeVaultItems` generates IDs if missing.
+            // If we import an existing vault, it has IDs.
+            // If IDs exist in current vault, we update?
+
+            // Let's concat and sort.
+
+            // However, to avoid ID conflicts if user imports same file twice, we should check IDs.
+            const currentIds = new Set(items.map(i => i.id));
+            const distinctNew = normalized.filter(i => !currentIds.has(i.id));
+
+            // If we really want to support 'submit an initial unciphered vault', user probably has empty vault or wants to populate it.
+            // Let's just append for now and sort.
+
+            items = sortPasswordEntries([...items, ...distinctNew]);
+            isDirty = true;
+            return true;
+        } catch (e) {
+            console.error("Import error", e);
+            return false;
+        }
+    }
+
     // Public API
     return {
         // State getters
@@ -333,6 +371,7 @@ export function useVault(
         closeModals,
         copyToClipboard,
         cleanup,
+        importItems,
     };
 }
 

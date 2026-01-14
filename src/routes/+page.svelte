@@ -35,9 +35,7 @@
 
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
-    const vault = useVault(
-        () => encryptionKey as CryptoKey,
-    );
+    const vault = useVault(() => encryptionKey as CryptoKey);
 
     // Security handles auto-lock and clearing data from memory
     const security = useVaultSecurity(
@@ -172,6 +170,47 @@
         // Alert user of success
         alert(i18n.t("vault.password_changed"));
     }
+
+    let fileInput = $state<HTMLInputElement>();
+
+    function triggerImport() {
+        showUserMenu = false;
+        fileInput?.click();
+    }
+
+    async function handleFileSelect(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (!input.files || input.files.length === 0) return;
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+            try {
+                const content = e.target?.result as string;
+                if (!content) return;
+
+                const json = JSON.parse(content);
+                if (Array.isArray(json)) {
+                    const success = vault.importItems(json);
+                    if (success) {
+                        alert(i18n.t("vault.import_success"));
+                    } else {
+                        alert(i18n.t("vault.import_error"));
+                    }
+                } else {
+                    alert(i18n.t("vault.import_error"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert(i18n.t("vault.import_error"));
+            } finally {
+                input.value = ""; // Reset
+            }
+        };
+
+        reader.readAsText(file);
+    }
 </script>
 
 <div class="app-container" data-phase={phase}>
@@ -215,6 +254,21 @@
                                     }}
                                     data-testid="menu-change-vault-password"
                                     >{i18n.t("vault.change_password")}</button
+                                >
+                            {/if}
+                            <input
+                                type="file"
+                                bind:this={fileInput}
+                                onchange={handleFileSelect}
+                                accept=".json"
+                                style="display: none;"
+                                data-testid="import-file-input"
+                            />
+                            {#if phase === 2}
+                                <button
+                                    onclick={triggerImport}
+                                    data-testid="menu-import"
+                                    >{i18n.t("vault.import")}</button
                                 >
                             {/if}
                             <button
