@@ -1,302 +1,273 @@
 # Passkeys User Guide
 
+**Version 0.2.0** | January 2025
+
 ## Introduction
 
-**Passkeys** is a secure, web-based password manager that brings KeePass-like functionality to any modern browser. Unlike traditional password managers that are platform-specific, Passkeys works seamlessly across MacOS, Linux, Windows, Android, and iOS through a simple web interface.
+Passkeys is a secure, cross-platform password manager accessible through any modern web browser. Unlike platform-specific tools like KeePass, Passkeys works identically on macOS, Linux, Windows, Android, and iOS.
 
-### Key Features
+### Core Features
 
-- **End-to-End Encryption**: Your vault is encrypted client-side using AES-GCM. The server never sees your vault key or decrypted data.
-- **Zero-Knowledge Architecture**: The server only stores encrypted vaults and cannot decrypt them.
-- **Offline Access**: Your encrypted vault is cached locally for use without internet connectivity.
-- **Progressive Web App**: Install Passkeys on desktop or mobile for a native-like experience.
-- **Vault History**: Keep and restore previous versions of your vault.
-- **Auto-Timeout**: Decrypted data automatically clears from memory after 60 seconds of inactivity.
-- **Clipboard Security**: Copied credentials automatically clear from clipboard after 10 seconds.
+**Security**: Client-side AES-GCM encryption ensures the server never sees your unencrypted data. Your vault key stays in your browser.
+
+**Accessibility**: Progressive Web App (PWA) works online and offline. Install it on any device for native-like experience.
+
+**Organization**: Hierarchical folder structure with tags and full-text search across all fields.
+
+**History**: Automatic versioning lets you restore previous vault states.
+
+**Auto-Security**: 60-second inactivity timeout clears decrypted data. 10-second clipboard auto-clear protects copied credentials.
 
 ### Security Model
 
-Passkeys uses a two-layer security approach:
+Passkeys uses two separate credentials:
 
-1. **Login Password**: Authenticates you to the server
-2. **Vault Key**: Decrypts your vault in the browser
+1. **Login Password**: Authenticates you to the server (stored as scrypt hash)
+2. **Vault Key**: Decrypts your vault in the browser (never transmitted)
 
-These are intentionally separate. Even if someone gains access to the server, they cannot decrypt your vault without your vault key.
+This separation ensures server compromise cannot expose vault contents.
 
 ---
 
-## Using the Webapp
+## Using the Web Application
 
 ### First Login
 
 1. Navigate to your Passkeys instance (e.g., `http://localhost:3000`)
-2. Enter your **username** and **password**
-3. Press `Enter` or click the login button
+2. Enter username and password
+3. Press Enter or click Login
 
 ### Unlocking Your Vault
 
-After successful login, you'll be prompted for your **vault key**:
+After authentication, provide your vault key:
 
 1. Enter the passphrase that encrypts your vault
-2. Toggle the eye icon to temporarily view your vault key
-3. Press `Enter` or click the unlock button
+2. Toggle eye icon to reveal/hide the key
+3. Press Enter or click Unlock
 
-**Note**: If the vault cannot be decrypted, you'll receive an error message. Ensure you're using the correct vault key.
+**First-time users**: If your vault is unencrypted, choose a new vault key. Passkeys encrypts it immediately.
 
-### First-Time Setup
+### Managing Entries
 
-If this is your first time using Passkeys:
+#### Viewing
 
-1. Your initial vault may be unencrypted (a plain JSON array)
-2. When you first unlock it, enter a new **vault key** of your choice
-3. Passkeys will immediately encrypt your vault with this key
-4. Remember this vault key - you'll need it every time you access your vault
+**Folder View**: Hierarchical tree navigation with expandable folders
+**List View**: Flat, filterable list of all entries
+**Toggle**: Switch between views using the view selector
 
-### Managing Password Entries
+#### Search and Filter
 
-#### Viewing Entries
+Type in the search box to filter entries by:
+- Title
+- Username  
+- Site URL
+- Tags
+- Notes
 
-- All password entries are displayed by title in the main view
-- Entries are organized hierarchically by group (folder structure)
-- Click on any entry to view its full details in a popup
+Search is case-insensitive and matches partial text.
 
-#### Filtering/Searching
+#### Entry Details
 
-- Use the search box to filter entries
-- Search matches against all fields: title, username, site, tags, and notes
-- Search is case-insensitive
-
-#### Entry Details Popup
-
-When you click an entry, you'll see:
-
-- **Title**: The entry name
-- **Username**: Click to copy to clipboard
-- **Password**: Displayed as asterisks; click to copy to clipboard
-- **Site URL**: Click to open in a new tab
-- **Tags**: Associated keywords
+Click any entry to view:
+- **Title**: Entry name
+- **Username**: Click to copy
+- **Password**: Masked; click to copy
+- **Site**: Click to open URL
+- **Tags**: Keywords for organization
 - **Notes**: Additional information
-- **Group**: The folder/category path
+- **Group**: Folder path
 
-#### Quick Actions
+Copied credentials auto-clear from clipboard after 10 seconds.
 
-- **Copy Username**: Click the username field to copy it
-- **Copy Password**: Click the password field to copy it (shown as `***`)
-- **Visit Site**: Click the site URL to open it in a new browser tab
-- **Auto-Clear**: Copied credentials automatically clear from your clipboard after 10 seconds
+#### Create Entry
 
-#### Creating a New Entry
-
-1. Click the **"Add Entry"** or **"+"** button
-2. Fill in the entry details:
+1. Click **Add Entry** button
+2. Fill required fields:
    - **Title** (required)
    - Username
    - Password
    - Site URL
-   - Group (for organization)
-   - Tags (space or comma-separated keywords)
+   - Group (folder path, e.g., `Work/Email`)
+   - Tags (space or comma-separated)
    - Notes
-3. Click **"Save"** to add the entry
+3. Click **Save**
 
-#### Editing an Entry
+#### Edit Entry
 
-1. Click on the entry to open it
-2. Click the **"Edit"** button
-3. Modify the fields as needed
-4. Click **"Save"** to update
+1. Click entry to open
+2. Click **Edit**
+3. Modify fields
+4. Click **Save**
 
-#### Deleting an Entry
+#### Delete Entry
 
-1. Click on the entry to open it
-2. Click the **"Delete"** button
-3. Confirm the deletion
+1. Click entry to open
+2. Click **Delete**
+3. Confirm deletion
 
 ### Saving Changes
 
-After modifying your vault (adding, editing, or deleting entries):
-
-1. A **"Save Vault"** button will appear
-2. Click it to encrypt and upload your vault to the server
-3. Your changes are now persisted and synchronized
+Modified vaults show a "Save Vault" button. Click it to encrypt and upload changes to the server.
 
 ### Vault History
 
-Passkeys maintains a history of your vault versions:
+Access previous vault versions:
 
-1. Click the **"History"** button or menu item
-2. View all previous vault versions with timestamps and file sizes
-3. **Restore**: Click a version to restore it
-4. **Delete**: Remove old versions you no longer need
+1. Click **History** button
+2. View timestamped versions with file sizes
+3. **Restore**: Revert to selected version
+4. **Delete**: Remove old versions
 
 ### Offline Mode
 
-Passkeys caches your encrypted vault in browser storage:
+Passkeys caches encrypted vaults locally:
 
-- When offline, you can still unlock and view your vault
-- A warning will indicate the vault may be out of date
-- Changes made offline cannot be saved until connectivity is restored
+- Vault accessible without connectivity
+- Offline indicator warns data may be stale  
+- Changes require online connection to save
 
 ### Security Features
 
-#### Auto-Timeout
+**Auto-Timeout**: After 60 seconds idle, decrypted vault clears from memory. Re-enter vault key to access.
 
-- After 60 seconds of inactivity, your decrypted vault is cleared from memory
-- You'll need to re-enter your vault key to access it again
-- This prevents unauthorized access if you step away from your device
+**Clipboard Protection**: Copied credentials auto-clear after 10 seconds.
 
-#### Clipboard Auto-Clear
-
-- Usernames and passwords copied to clipboard automatically clear after 10 seconds
-- Reduces risk of accidentally pasting credentials in the wrong place
-
-### Logging Out
-
-Click the **"Logout"** button to:
-- Clear your session from the server
-- Remove decrypted vault data from browser memory
-- Return to the login screen
+**Session Management**: Logout clears session tokens and decrypted data.
 
 ---
 
-## Docker Installation and Configuration
+## Docker Installation
 
 ### Prerequisites
 
-- Docker Engine (v20.10+)
-- Docker Compose (v2.0+)
+- Docker Engine 20.10+
+- Docker Compose 2.0+
 - Git
 
 ### Quick Start
 
-Clone the repository:
-
 ```bash
+# Clone repository
 git clone https://github.com/ChristianQueinnec/passkeys.git
 cd passkeys
 ```
 
-### Method 1: Using Make (Recommended)
-
-Build the container:
+### Setup Data Directory
 
 ```bash
-make create.container
-```
-
-This command:
-- Generates a timestamp tag for the image
-- Builds the Docker image with your user's UID/GID
-- Tags the image appropriately
-
-Run the container:
-
-```bash
-make run.container
-```
-
-Access Passkeys at: **http://localhost:3000**
-
-### Method 2: Using Docker Compose
-
-For a simpler deployment, use Docker Compose:
-
-```bash
-docker compose up --build -d
-```
-
-View logs:
-
-```bash
-docker logs -f passkeys
-```
-
-### Initial Configuration
-
-#### 1. Create the Data Directory
-
-```bash
+# Create data directory
 mkdir -p data
-```
 
-#### 2. Create Users File
-
-Create `data/users.json` with your credentials:
-
-```json
+# Create users file
+cat > data/users.json <<EOF
 [
   {
     "username": "admin",
-    "password": "your-secure-password"
+    "password": "your-secure-password-here"
   }
 ]
+EOF
 ```
 
-**Important**: 
-- Passwords in this file will be automatically hashed on first server start
-- Use a strong password different from your vault key
-- Add multiple users if needed
+**Note**: Passwords auto-hash on first server start. Use strong, unique passwords.
 
-#### 3. Bootstrap Your Initial Vault
-
-Create a directory for your user:
+### Bootstrap Initial Vault
 
 ```bash
+# Create user directory
 mkdir -p data/admin
-```
 
-Create an initial unencrypted vault `data/admin/vault-init.vault`:
-
-```json
+# Create initial vault
+cat > data/admin/vault-init.vault <<'EOF'
 [
   {
     "group": "Personal",
     "title": "Example Website",
-    "username": "your.email@example.com",
-    "password": "temporary-password",
+    "username": "user@example.com",
+    "password": "temp-password",
     "site": "https://example.com",
     "tags": ["personal", "web"],
-    "notes": "This is a sample entry",
-    "created": 1704384000,
-    "modified": 1704384000
-  },
-  {
-    "group": "Work/Email",
-    "title": "Company Email",
-    "username": "you@company.com",
-    "password": "another-temp-password",
-    "site": "https://mail.company.com",
-    "tags": ["work", "important"],
-    "notes": "Work email account",
-    "created": 1704384000,
-    "modified": 1704384000
+    "notes": "Sample entry",
+    "created": 1704067200,
+    "modified": 1704067200
   }
 ]
+EOF
 ```
 
-**Timestamps**: Use Unix epoch time in seconds. You can generate the current timestamp with:
-
+Generate current timestamp:
 ```bash
 date +%s
 ```
 
-#### 4. Using the Initialization Script
+### Using the Initialization Script
 
-Alternatively, use the provided initialization script:
+The `scripts/init.sh` script automates setup:
 
 ```bash
-# Create test setup (user: admin, password: password)
+# Create test setup (admin/password)
 ./scripts/init.sh -t
 
-# Create custom setup with generated password
+# Create production setup with generated password
 ./scripts/init.sh -u -v
 
-# Initialize everything and start the server
+# Full initialization and server start
 ./scripts/init.sh -i
+```
+
+**Options**:
+- `-u`: Create users.json
+- `-v`: Create sample vault
+- `-e`: Create .env file
+- `-b`: Build and run container
+- `-i`: Full initialization (equivalent to `-e -u -v -b`)
+- `-t`: Test mode (admin/password credentials)
+- `-r`: Run server
+
+**Examples**:
+```bash
+# Test environment
+./scripts/init.sh -t -r
+
+# Production initialization
+./scripts/init.sh -i
+```
+
+### Build and Run
+
+#### Method 1: Using Make (Recommended)
+
+```bash
+# Build container with proper user permissions
+make create.container
+
+# Run container
+make run.container
+```
+
+Access at: **http://localhost:3000**
+
+The Makefile handles:
+- Image tagging with timestamps
+- User ID/Group ID mapping
+- Container registry management
+
+#### Method 2: Using Docker Compose
+
+```bash
+# Build and run
+docker compose up --build -d
+
+# View logs
+docker logs -f passkeys
+
+# Stop
+docker compose down
 ```
 
 ### Docker Compose Configuration
 
-Customize your `docker-compose.yml`:
+Example `docker-compose.yml`:
 
 ```yaml
 services:
@@ -317,46 +288,93 @@ services:
       - NODE_ENV=production
 ```
 
-**Key points**:
-- The `./data` directory is mounted to `/app/data` inside the container
-- Adjust UID/GID to match your host system for proper file permissions
-- Port 3000 is exposed for web access
+**Configuration Notes**:
+- `UID/GID`: Match host system for file permissions
+- `volumes`: Mount local `data/` directory
+- `ports`: Expose port 3000 for web access
+- `restart`: Auto-restart on failure
 
 ### Directory Structure
 
 ```
 passkeys/
-├── data/                       # Mounted volume
-│   ├── users.json             # User credentials (auto-hashed)
-│   ├── admin/                 # User vault directory
-│   │   ├── vault-init.vault   # Initial/current vault
-│   │   ├── vault-20250104_123456.vault  # Historical version
-│   │   └── vault-20250103_091234.vault  # Historical version
-│   └── other-user/            # Another user's vault directory
+├── data/                          # Persistent storage
+│   ├── users.json                # User credentials (hashed)
+│   └── admin/                    # User vault directory
+│       ├── vault-init.vault      # Current vault
+│       └── vault-*.vault         # Historical versions
 ├── Dockerfile
 ├── docker-compose.yml
-└── ...
+├── Makefile
+└── scripts/
+    └── init.sh                   # Setup automation
 ```
 
-### Security Considerations
+### Environment Variables
 
-1. **File Permissions**: Ensure `data/` is readable/writable only by the container user
-2. **Backup**: Regularly backup the `data/` directory
-3. **Network**: Consider using a reverse proxy with HTTPS in production
-4. **Firewall**: Restrict access to port 3000 to trusted networks
+Create `.env` for JWT secret:
+
+```bash
+# Generate secure JWT secret
+cat > .env <<EOF
+export JWT_SECRET=$(openssl rand -hex 32)
+EOF
+chmod +x .env
+```
+
+Or use initialization script:
+```bash
+./scripts/init.sh -e
+```
+
+### Security Configuration
+
+**File Permissions**: Restrict `data/` directory:
+```bash
+chmod 700 data
+chmod 600 data/users.json
+```
+
+**Firewall**: Limit port 3000 to trusted networks
+
+**HTTPS**: Use reverse proxy (nginx, Caddy) for TLS in production
+
+**Backups**: Regularly backup `data/` directory:
+```bash
+tar -czf passkeys-backup-$(date +%F).tar.gz data/
+```
+
+### Development Mode
+
+Run without Docker:
+
+```bash
+# Install dependencies
+npm install
+
+# Initialize test data
+./scripts/init.sh -t
+
+# Start development server
+npm run dev
+```
+
+Access at: **http://localhost:3000**
+
+Hot-reload enabled for rapid development.
 
 ### Updating Passkeys
 
-Pull the latest changes:
-
 ```bash
+# Pull latest changes
 git pull origin main
+
+# Rebuild container
 make create.container
 make run.container
 ```
 
 Or with Docker Compose:
-
 ```bash
 git pull origin main
 docker compose up --build -d
@@ -364,97 +382,133 @@ docker compose up --build -d
 
 ### Troubleshooting
 
-**Container won't start:**
-- Check logs: `docker logs passkeys`
-- Verify `data/users.json` exists and is valid JSON
-- Ensure port 3000 is not already in use
-
-**Permission issues:**
-- Verify UID/GID in build args match your system
-- Check ownership: `ls -la data/`
-
-**Cannot decrypt vault:**
-- Ensure you're using the correct vault key
-- Check that vault files are not corrupted
-- Verify vault file format is correct JSON
-
-### Development Mode
-
-For development with hot-reload:
-
+**Container won't start**:
 ```bash
-npm install
-npm run dev
+# Check logs
+docker logs passkeys
+
+# Verify users.json exists and is valid
+cat data/users.json | jq .
+
+# Check port availability
+lsof -i :3000
 ```
 
-Access at: **http://localhost:3000**
+**Permission errors**:
+```bash
+# Verify ownership
+ls -la data/
+
+# Fix permissions
+sudo chown -R $(id -u):$(id -g) data/
+```
+
+**Cannot decrypt vault**:
+- Verify correct vault key
+- Check vault file format: `cat data/admin/vault-init.vault | jq .`
+- Ensure vault is valid JSON array
+
+**Build failures**:
+```bash
+# Clean Docker cache
+docker system prune -a
+
+# Rebuild from scratch
+make create.container
+```
 
 ---
 
 ## AI-Generated Development
 
-Passkeys was developed primarily through collaboration with AI agents, specifically **Antigravity** and **Claude** from Anthropic.
+Passkeys was developed primarily through collaboration with AI assistants from Anthropic (Claude and Antigravity).
 
-### Development Process
+### Development Approach
 
-The project was built iteratively through natural language conversations with AI:
+**Conversational Programming**: Features requested in natural language, documented in `questions.md`
 
-1. **Initial Specification**: The project requirements were described in `CLAUDE.md`
-2. **Iterative Development**: Features were added through conversational requests documented in `questions.md`
-3. **Code Generation**: The AI generated TypeScript/Svelte code for both frontend and backend
-4. **Testing**: Unit tests (Vitest) and E2E tests (Playwright) were AI-generated
-5. **Documentation**: This user guide and technical documentation were AI-assisted
+**Iterative Refinement**: Code generated, tested, and refined through dialog
 
-### Human Interventions
+**Comprehensive Testing**: 93+ tests (Vitest + Playwright) generated by AI
 
-While most code was AI-generated, some manual interventions were necessary:
+**Documentation First**: All docs AI-assisted, ensuring consistency
 
-- **CSS Refinements**: Simplified or adjusted styling for better visual consistency
-- **JavaScript Edge Cases**: Minor tweaks for browser-specific behaviors
-- **Configuration**: Docker and deployment configurations fine-tuned manually
+### Human Contributions
 
-### AI Development Log
+While AI generated most code, humans provided:
 
-For complete details on the AI development process, see:
+- **Requirements**: Clear project specifications in `AGENTS.md` and `CLAUDE.md`
+- **Direction**: Feature priorities and architectural decisions
+- **Refinement**: CSS adjustments and browser-specific fixes
+- **Quality Control**: Code review and testing validation
 
-- **`AGENTS.md`**: Original project specification and evolution
-- **`questions.md`**: Chronological log of feature requests and AI interactions
-- **`REFACTORING_*.md`**: Documentation of major refactoring efforts
+### Development Artifacts
 
-This approach demonstrates that complex, production-ready web applications can be effectively developed through human-AI collaboration, with AI handling the majority of implementation while humans provide direction, requirements, and quality oversight.
+Key documentation of the AI development process:
+
+- **`AGENTS.md`**: Original project specification
+- **`questions.md`**: Chronological feature request log
+- **`REFACTORING_*.md`**: Major architectural changes
+- **`TESTING_GUIDE.md`**: Test development strategy
+
+### Lessons Learned
+
+**Strengths**:
+- Rapid prototyping and implementation
+- Consistent coding patterns
+- Comprehensive documentation generation
+- Test coverage from day one
+
+**Challenges**:
+- Occasional CSS inconsistencies requiring manual fixes
+- Edge case handling in browser-specific code
+- Need for human direction and priority setting
+
+This development model demonstrates that complex, production-ready applications can be collaboratively built with AI handling implementation while humans provide vision, requirements, and quality oversight.
 
 ---
 
-## Getting Help
+## Additional Resources
 
-### Resources
+### Documentation
 
-- **GitHub Repository**: https://github.com/ChristianQueinnec/passkeys
-- **Issues**: Report bugs or request features on GitHub Issues
-- **Source Code**: All code is open-source and available for review
+- **GitHub**: https://github.com/ChristianQueinnec/passkeys
+- **Issues**: Report bugs or request features via GitHub Issues
+- **Source Code**: All code is open-source and auditable
 
-### Common Issues
+### Common Questions
 
-**Q: I forgot my vault key**  
-A: Unfortunately, the vault key cannot be recovered. This is by design for security. You'll need to create a new vault.
+**Q: I forgot my vault key**
+**A**: Vault keys cannot be recovered by design. Create a new vault or restore from backup if you exported one.
 
-**Q: Can I change my vault key?**  
-A: Yes. Unlock your vault with the old key, then save it - during the save process, you'll encrypt with a new key.
+**Q: Can I change my vault key?**
+**A**: Yes. Unlock with current key, then save vault—you'll be prompted to encrypt with a new key.
 
-**Q: How do I migrate from KeePass?**  
-A: Export your KeePass database to CSV, then use the KeePass2Passkeys converter tool included in the repository.
+**Q: How do I migrate from KeePass?**
+**A**: Export KeePass to CSV, then use the included `KeePass2Passkeys` converter tool.
 
-**Q: Is Passkeys secure?**  
-A: Passkeys uses industry-standard AES-GCM encryption. The server never sees unencrypted data. However, security also depends on choosing strong passwords and vault keys.
+**Q: Is Passkeys secure for production use?**
+**A**: Passkeys uses industry-standard AES-GCM encryption and follows security best practices. However, review the source code and deploy with HTTPS for production.
+
+**Q: Can multiple users share a vault?**
+**A**: No. Each user has separate vaults. Vaults are encrypted with personal vault keys.
+
+**Q: What happens if the server is compromised?**
+**A**: Encrypted vaults remain secure. Attackers cannot decrypt without your vault key, which never leaves your browser.
+
+### Support
+
+- **Bug Reports**: GitHub Issues
+- **Feature Requests**: GitHub Issues
+- **Questions**: Review `questions.md` for development Q&A
 
 ---
 
 ## License
 
-Passkeys is open-source software. Check the repository for license details.
+Check repository for license details.
 
 ---
 
-**Version**: 0.1.8  
-**Last Updated**: January 2025  
-**Documentation Generated**: With assistance from Claude AI
+**Passkeys** | Secure Password Management for the Modern Web  
+*Built with AI Assistance* | January 2025

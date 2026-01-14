@@ -541,7 +541,7 @@ Check your new `tests/e2e/import_vault.spec.ts`
 
 
 
-## missing delete vault test
+## 81 missing delete vault test
 
 Read the current README.md then check if there are tests (unit and
 e2e) checking the deletion of a vault. If not, propose to generate
@@ -554,7 +554,7 @@ identified?`
 
 OK Kiro
 
-## 81 upgrade user-guide
+## 82 upgrade user-guide
 
 Upgrade the MarkDown document (named `user-guide.md`) acting as a
 draft for a future user's guide to Passkeys. Adopt a concise style and
