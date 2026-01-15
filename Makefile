@@ -71,6 +71,8 @@ do.run.remote.container :
 clean :
 	-rm -f pass.*
 	-rm -f *data/queinnec/init.vault
+	-rm -f *~
+	-rm -f *.log
 
 server.htpasswd : server.password
 	htpasswd -bc server.htpasswd queinnec `cat server.password`
