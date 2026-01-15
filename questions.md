@@ -539,7 +539,7 @@ OK Antigravity
 
 Check your new `tests/e2e/import_vault.spec.ts`
 
-
+Antigravity UNFINISHED
 
 ## 81 missing delete vault test
 
@@ -571,19 +571,16 @@ repository is on `https://github.com/ChristianQueinnec/passkeys`.
 OK Claude
 
 
-##  FUTURE
-
-test/e2e delete vault    missing tests ?
+# Potential FUTURE
 
 bypass Login page if coming from authenticated nginx proxy ?
 
-decipher only when copy to clipboard
+decipher vault only when copy to clipboard
 
 blob for vault rather than base64
 
-
 Remove the hack on the server side that accepts to download an
 unciphered vault. Remove also the hint about unciphered vaults
-stored on the server since none ca
+stored on the server since none can be written by the server.
 
 

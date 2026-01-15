@@ -8,6 +8,7 @@
 
     import type { PasswordEntry, FolderNode } from "$lib/types";
     import type { Vault } from "$lib/stores/useVault.svelte";
+    import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
 
     let { onToggleView, vault, security } = $props();
 
@@ -21,7 +22,12 @@
     });
 
     let selectedFolder = $state<FolderNode | null>(null);
-    let displayedEntries = $state<PasswordEntry[]>([]);
+    let filter = $state("");
+    let displayedEntries = $derived(
+        filter
+            ? sortPasswordEntries(filterPasswordEntries(vault.items, filter))
+            : sortPasswordEntries(selectedFolder?.entries || []),
+    );
     let dragTargetNode = $state<FolderNode | null>(null);
 
     // Load vault on mount
@@ -108,7 +114,6 @@
         // We are writing to it.
         if (!selectedFolder || selectedFolder === null) {
             selectedFolder = root;
-            displayedEntries = root.entries;
         } else {
             const findNode = (
                 node: FolderNode,
@@ -124,10 +129,8 @@
             const newSelected = findNode(root, selectedFolder.fullPath);
             if (newSelected) {
                 selectedFolder = newSelected;
-                displayedEntries = newSelected.entries;
             } else {
                 selectedFolder = root;
-                displayedEntries = root.entries;
             }
         }
     }
@@ -135,7 +138,7 @@
     function toggleFolder(node: FolderNode) {
         node.isOpen = !node.isOpen;
         selectedFolder = node;
-        displayedEntries = node.entries;
+        // displayedEntries is derived now
         folderTree = folderTree;
     }
 
@@ -224,6 +227,26 @@
 
         <div class="main-content">
             <div class="folder-pane">
+                <div class="filter-container">
+                    <input
+                        type="text"
+                        placeholder={i18n.t("vault.filter_placeholder")}
+                        bind:value={filter}
+                        data-testid="filter-input"
+                    />
+                    {#if filter}
+                        <button
+                            class="reset-filter"
+                            onclick={() => (filter = "")}
+                            data-testid="reset-filter"
+                            title={i18n.language === "en"
+                                ? "Reset filter"
+                                : "Réinitialiser le filtre"}
+                        >
+                            ×
+                        </button>
+                    {/if}
+                </div>
                 <h3>{i18n.t("vault.folders")}</h3>
 
                 <div class="folder-tree">
@@ -325,7 +348,7 @@
     }
 
     .folder-pane {
-        width: 200px;
+        width: 300px;
         border-right: 1px solid #ccc;
         overflow-y: auto;
         padding: 1rem;
@@ -412,5 +435,41 @@
         font-size: 0.85rem;
         color: #666;
         font-weight: normal;
+    }
+
+    .filter-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .filter-container input {
+        width: 100%;
+        padding: 0.5rem;
+        padding-right: 2rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .reset-filter {
+        position: absolute;
+        right: 0.25rem;
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        line-height: 1;
+        box-shadow: none;
+        transition: color 0.2s;
+    }
+
+    .reset-filter:hover {
+        color: #007bff;
+        background: none;
+        box-shadow: none;
     }
 </style>

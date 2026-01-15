@@ -256,14 +256,6 @@
                                     >{i18n.t("vault.change_password")}</button
                                 >
                             {/if}
-                            <input
-                                type="file"
-                                bind:this={fileInput}
-                                onchange={handleFileSelect}
-                                accept=".json"
-                                style="display: none;"
-                                data-testid="import-file-input"
-                            />
                             {#if phase === 2}
                                 <button
                                     onclick={triggerImport}
@@ -293,6 +285,14 @@
                             >
                         </div>
                     {/if}
+                    <input
+                        type="file"
+                        bind:this={fileInput}
+                        onchange={handleFileSelect}
+                        accept=".json"
+                        style="display: none;"
+                        data-testid="import-file-input"
+                    />
                 </div>
             </div>
         {/if}

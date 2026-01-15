@@ -421,7 +421,7 @@ make create.container
 
 ## AI-Generated Development
 
-Passkeys was developed primarily through collaboration with AI assistants from Anthropic (Claude and Antigravity).
+Passkeys was developed primarily through collaboration with AI assistants from Anthropic (Claude, Antigravity and a bit of Vibe Mistral and Kiro).
 
 ### Development Approach
 

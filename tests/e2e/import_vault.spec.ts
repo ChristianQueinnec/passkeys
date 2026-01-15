@@ -7,27 +7,31 @@ test.describe('Vault Import', () => {
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
+        page.on('console', msg => console.log('BROWSER:', msg.text()));
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
             sessionStorage.clear();
         });
-        await page.reload();
     });
 
     test('should import an unciphered JSON vault', async ({ page }) => {
+        console.log("Starting test...");
         // 1. Login
         await page.fill('input[placeholder="Username"]', 'admin');
         await page.fill('input[type="password"]', 'password');
         await page.click('[data-testid="login-button"]');
+        console.log("Logged in");
 
         // 2. Unlock
         await expect(page.getByText('Unlock Vault')).toBeVisible();
         await page.fill('input[type="password"]', 'password');
         await page.click('[data-testid="unlock-button"]');
+        console.log("Unlocked");
 
         // Wait for dashboard
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible({ timeout: 15000 });
+        console.log("Dashboard visible");
 
         // 3. Prepare import file
         const importData = [
@@ -48,6 +52,7 @@ test.describe('Vault Import', () => {
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.writeFileSync(importFilePath, JSON.stringify(importData, null, 2));
+        console.log("Import file prepared at", importFilePath);
 
         // 4. Trigger Import
         await page.click('[data-testid="user-menu-btn"]');
@@ -59,13 +64,17 @@ test.describe('Vault Import', () => {
         const fileChooserPromise = page.waitForEvent('filechooser');
         await page.click('[data-testid="menu-import"]');
         const fileChooser = await fileChooserPromise;
+        console.log("File chooser opened");
+
+        const dialogPromise = page.waitForEvent('dialog');
         await fileChooser.setFiles(importFilePath);
+        console.log("Files set to chooser");
 
         // 5. Verify Import Alert
-        page.on('dialog', dialog => {
-            expect(dialog.message()).toContain('imported successfully');
-            dialog.accept();
-        });
+        const dialog = await dialogPromise;
+        console.log("Dialog appeared:", dialog.message());
+        expect(dialog.message()).toContain('imported successfully');
+        await dialog.accept();
 
         // 6. Verify entry appears
         // Force folder view or list view?
@@ -73,7 +82,7 @@ test.describe('Vault Import', () => {
         // Or "Imported Entry" in list view.
 
         // Let's search for it to be view-agnostic
-        await page.fill('input[placeholder*="Search"]', 'Imported Entry');
+        await page.fill('[data-testid="filter-input"]', 'Imported Entry');
         await expect(page.getByText('Imported Entry')).toBeVisible();
 
         // 7. Save
