@@ -4,7 +4,21 @@
 
 ## Introduction
 
-Passkeys is a secure, cross-platform password manager accessible through any modern web browser. Unlike platform-specific tools like KeePass, Passkeys works identically on macOS, Linux, Windows, Android, and iOS.
+Passkeys is a secure, cross-platform password manager accessible
+through any modern web browser. Unlike platform-specific tools like
+KeePass, Passkeys works identically on macOS, Linux, Windows, Android,
+and iOS.
+
+The original idea comes from [Manuel
+Serrano](https://www-sop.inria.fr/members/Manuel.Serrano/) who
+designed such an application in
+[Bigloo](https://www-sop.inria.fr/indes/fp/Bigloo/) around 2010. The
+idea was to decipher the passwords in the browser, the server storing
+only ciphered information while being unable to decipher them.
+
+The desire to find a project to which I can experiment Vibe Coding
+makes me revive that idea. The `Passkeys` project was born.
+
 
 ### Core Features
 
@@ -35,7 +49,8 @@ This separation ensures server compromise cannot expose vault contents.
 
 1. Navigate to your Passkeys instance (e.g., `http://localhost:3000`)
 2. Enter username and password
-3. Press Enter or click Login
+3. Toggle eye icon to reveal/hide the password
+4. Press Enter or click Login
 
 ### Unlocking Your Vault
 
@@ -45,7 +60,7 @@ After authentication, provide your vault key:
 2. Toggle eye icon to reveal/hide the key
 3. Press Enter or click Unlock
 
-**First-time users**: If your vault is unencrypted, choose a new vault key. Passkeys encrypts it immediately.
+**First-time users**: See dedicated section below
 
 ### Managing Entries
 
@@ -59,7 +74,7 @@ After authentication, provide your vault key:
 
 Type in the search box to filter entries by:
 - Title
-- Username  
+- Username
 - Site URL
 - Tags
 - Notes
@@ -72,7 +87,7 @@ Click any entry to view:
 - **Title**: Entry name
 - **Username**: Click to copy
 - **Password**: Masked; click to copy
-- **Site**: Click to open URL
+- **Site**: Click to open URL in another tab or window
 - **Tags**: Keywords for organization
 - **Notes**: Additional information
 - **Group**: Folder path
@@ -118,12 +133,17 @@ Access previous vault versions:
 3. **Restore**: Revert to selected version
 4. **Delete**: Remove old versions
 
+Unciphered vaults stored in the server are displayed accompanied with
+a warning to remind the user to remove these unciphered vaults as soon
+as possible once downloaded and ciphered in a browser and saved on the
+server.
+
 ### Offline Mode
 
 Passkeys caches encrypted vaults locally:
 
 - Vault accessible without connectivity
-- Offline indicator warns data may be stale  
+- Offline indicator warns data may be stale
 - Changes require online connection to save
 
 ### Security Features
@@ -136,7 +156,52 @@ Passkeys caches encrypted vaults locally:
 
 ---
 
-## Docker Installation
+## Easiest Installation
+
+### Prerequisites
+
+- Node.js >= 22.13
+- Git
+
+### Quick Start
+
+```bash
+# Clone repository
+git clone https://github.com/ChristianQueinnec/passkeys.git
+cd passkeys/
+npm install
+./scripts/init.sh -u -v -e
+. ./.env && npm run preview
+```
+
+This will create a user (see `data/users.json`) with your login name
+and a generated password. Read the output of the script and memorize
+the generated password to access the vault (you may change it later).
+Really memorize this information since it will be hashed on first
+server start and no longer readable.
+
+An initial vault is also created with example password entries.
+A `me` entry holds your login information.
+
+You can end your session with CTRL-c. You may restart the server
+with your previous vault preserved with
+
+```bash
+. ./.env && npm run preview
+```
+
+If coming from Keepass, transfer your passwords as follows:
+
+```bash
+# Export from Keepass your passwords in CSV
+KeePass2Passkeys/csv-to-json.ts YOUR.csv data/${USER}/vault-from-keepass.vault
+# Within Passkeys:
+#  -1- History, download vault-from-keepass.vault
+#  -2- save to server
+#  -3- History, delete vault-from-keepass.vault
+```
+
+## Docker Installation (TBD)
 
 ### Prerequisites
 
@@ -152,53 +217,22 @@ git clone https://github.com/ChristianQueinnec/passkeys.git
 cd passkeys
 ```
 
-### Setup Data Directory
+### Setup Data Directory and Bootstrap Initial Vault
 
 ```bash
-# Create data directory
-mkdir -p data
-
-# Create users file
-cat > data/users.json <<EOF
-[
-  {
-    "username": "admin",
-    "password": "your-secure-password-here"
-  }
-]
-EOF
+./scripts/init.sh -i
 ```
 
-**Note**: Passwords auto-hash on first server start. Use strong, unique passwords.
+This will create a user (see `data/users.json`) with your login name
+and a generated password. Read the output of the script and memorize
+the generated password to access the vault (you may change it later).
+Really memorize it since it will be hashed on first server start and 
+no longer readable.
 
-### Bootstrap Initial Vault
+An initial vault is also created with example password entries.
 
-```bash
-# Create user directory
-mkdir -p data/admin
-
-# Create initial vault
-cat > data/admin/vault-init.vault <<'EOF'
-[
-  {
-    "group": "Personal",
-    "title": "Example Website",
-    "username": "user@example.com",
-    "password": "temp-password",
-    "site": "https://example.com",
-    "tags": ["personal", "web"],
-    "notes": "Sample entry",
-    "created": 1704067200,
-    "modified": 1704067200
-  }
-]
-EOF
-```
-
-Generate current timestamp:
-```bash
-date +%s
-```
+Finally, the server is built as a Docker container and run. 
+Kill it with CTRL-c. 
 
 ### Using the Initialization Script
 
@@ -363,6 +397,23 @@ Access at: **http://localhost:3000**
 
 Hot-reload enabled for rapid development.
 
+### Run tests
+
+Run unit tests with
+```bash
+npm run test:unit
+```
+
+Run all e2e tests with
+```bash
+npm run test:e2e
+```
+
+Run one e2e test with, for example:
+```bash
+npx playwright test tests/e2e/vault_situations.spec.ts --workers=1
+```
+
 ### Updating Passkeys
 
 ```bash
@@ -448,14 +499,12 @@ Key documentation of the AI development process:
 
 - **`AGENTS.md`**: Original project specification
 - **`questions.md`**: Chronological feature request log
-- **`REFACTORING_*.md`**: Major architectural changes
-- **`TESTING_GUIDE.md`**: Test development strategy
+- **`ProjectNotes/*.md`**: Many other documentation artifacts
 
 ### Lessons Learned
 
 **Strengths**:
 - Rapid prototyping and implementation
-- Consistent coding patterns
 - Comprehensive documentation generation
 - Test coverage from day one
 
@@ -485,7 +534,7 @@ This development model demonstrates that complex, production-ready applications 
 **A**: Yes. Unlock with current key, then save vault—you'll be prompted to encrypt with a new key.
 
 **Q: How do I migrate from KeePass?**
-**A**: Export KeePass to CSV, then use the included `KeePass2Passkeys` converter tool.
+**A**: Export KeePass to CSV, then use the included `KeePass2Passkeys` converter tool. It will generate a JSON file you may upload in the browser.
 
 **Q: Is Passkeys secure for production use?**
 **A**: Passkeys uses industry-standard AES-GCM encryption and follows security best practices. However, review the source code and deploy with HTTPS for production.
@@ -506,9 +555,9 @@ This development model demonstrates that complex, production-ready applications 
 
 ## License
 
-Check repository for license details.
+[License GPL3](gpl-3.0.txt)
 
 ---
 
-**Passkeys** | Secure Password Management for the Modern Web  
+**Passkeys** | Secure Password Management for the Modern Web
 *Built with AI Assistance* | January 2025
