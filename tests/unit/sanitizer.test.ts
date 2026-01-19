@@ -5,8 +5,7 @@ import {
     sanitizeJWTToken,
     sanitizeFilename,
     sanitizeVaultContent,
-    sanitizeCSRFToken,
-    sanitizeString
+    sanitizeCSRFToken
 } from '../../src/lib/server/sanitizer';
 
 describe('Input Sanitization', () => {

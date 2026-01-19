@@ -587,9 +587,16 @@ into file `guide-utilisateur.md`
 
 Vibe Mistral - weird result still to be thoroughly verified
 
+## 85 Use PasswordInput
 
+When changing login password, use PasswordInput rather than
+an `input type=password` HTML element.
 
+OK Antigravity
 
+## 86 Markdown for Notes
+
+Permit markdown for the 'notes' property of Password entries.
 
 
 
@@ -608,16 +615,9 @@ stored on the server since none can be written by the server.
 
 unify logging on the server side. Use `pino` as framework.
 
-markdown for 'notes'
-
-check sanitizers
-
-insert eye icon in 'change login password' 
+Permit markdown for the 'notes' property of Password entries.
 
 Typing character in a form make previous errors or comments vanish.
-
-When changing login password, use PasswordInput rather than
-an `input type=password` HTML element.
 
 Examine the code of the server API and check for
 - Bugs: logic errors, off-by-one, null handling, race condition

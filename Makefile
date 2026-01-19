@@ -46,7 +46,7 @@ run.tests :
 		./scripts/init.sh -t ; \
 		echo "			*** $$t ***" ; \
 		npx playwright test --workers=1 $$t || exit 1 ; done
-	-kill -9 44(cat /tmp/passkeys.pid)
+	-kill -9 $$(cat /tmp/passkeys.pid)
 	-rm -f /tmp/passkeys.pid
 
 REMOTE=pk.queinnec.org

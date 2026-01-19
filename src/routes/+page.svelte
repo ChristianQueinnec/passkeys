@@ -14,6 +14,7 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
+    import PasswordInput from "$lib/components/PasswordInput.svelte";
 
     // Application State
     let username = $state("");
@@ -329,18 +330,14 @@
     <div class="change-password-form">
         <label>
             {i18n.t("auth.old_password")}:
-            <input
-                type="password"
-                bind:value={cpOldPassword}
-                data-testid="cp-old"
-            />
+            <PasswordInput bind:value={cpOldPassword} dataTestId="cp-old" />
         </label>
         <label>
             {i18n.t("auth.new_password")}:
-            <input
-                type="password"
+            <PasswordInput
                 bind:value={cpNewPassword}
-                data-testid="cp-new"
+                dataTestId="cp-new"
+                autocomplete="new-password"
             />
         </label>
         {#if cpError}
@@ -477,11 +474,6 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-    }
-    .change-password-form input {
-        padding: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
     }
     .change-password-form .actions {
         display: flex;

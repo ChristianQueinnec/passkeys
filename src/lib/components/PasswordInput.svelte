@@ -1,24 +1,25 @@
 <script lang="ts">
- import type { HTMLInputAttributes } from "svelte/elements";
- import { onMount } from 'svelte';
- import EyeOpenIcon from '../icons/EyeOpenIcon.svelte';
- import EyeClosedIcon from '../icons/EyeClosedIcon.svelte';
+  import type { HTMLInputAttributes } from "svelte/elements";
+  import { onMount } from "svelte";
+  import EyeOpenIcon from "../icons/EyeOpenIcon.svelte";
+  import EyeClosedIcon from "../icons/EyeClosedIcon.svelte";
 
- export let value: string = "";
- export let placeholder: string = "Password";
+  export let value: string = "";
+  export let placeholder: string = "Password";
   export let id: string = "vault-password";
   export let autocomplete: HTMLInputAttributes["autocomplete"] =
-      "current-password";
- export let autofocus: boolean = false;
+    "current-password";
+  export let autofocus: boolean = false;
+  export let dataTestId: string = "password-input";
 
- let showPassword = false;
- let passwordinput : HTMLElement | null;
+  let showPassword = false;
+  let passwordinput: HTMLElement | null;
 
- onMount(() => {
-     if (autofocus && passwordinput) {
-         passwordinput.focus();
-     }
- });
+  onMount(() => {
+    if (autofocus && passwordinput) {
+      passwordinput.focus();
+    }
+  });
 
   function togglePasswordVisibility() {
     showPassword = !showPassword;
@@ -26,8 +27,8 @@
 </script>
 
 <div class="password-input-wrapper">
-    <input
-     bind:this={passwordinput}
+  <input
+    bind:this={passwordinput}
     type={showPassword ? "text" : "password"}
     bind:value
     {placeholder}
@@ -35,19 +36,19 @@
     required
     {autocomplete}
     class="password-input"
-    data-testid="password-input"
+    data-testid={dataTestId}
   />
-    <button
-        type="button"
-        class="toggle-password"
-        on:click={togglePasswordVisibility}
-        aria-label={showPassword ? "Hide password" : "Show password"}
-        tabindex="-1"
-    >
-        {#if showPassword}
-            <EyeOpenIcon/>
-        {:else}
-            <EyeClosedIcon/>
+  <button
+    type="button"
+    class="toggle-password"
+    on:click={togglePasswordVisibility}
+    aria-label={showPassword ? "Hide password" : "Show password"}
+    tabindex="-1"
+  >
+    {#if showPassword}
+      <EyeOpenIcon />
+    {:else}
+      <EyeClosedIcon />
     {/if}
   </button>
 </div>
@@ -87,7 +88,7 @@
     transition: color 0.2s;
   }
 
-  .toggle-password  {
+  .toggle-password {
     display: block;
   }
 

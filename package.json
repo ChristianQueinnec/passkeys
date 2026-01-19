@@ -1,7 +1,7 @@
 {
 	"name": "passkeys",
 	"private": true,
-	"version": "0.1.16",
+	"version": "0.1.17",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --port 3000",
@@ -35,5 +35,5 @@
 	"dependencies": {
 		"@playwright/mcp": "^0.0.55"
 	},
-    "license": "GPL3"
+	"license": "GPL3"
 }
