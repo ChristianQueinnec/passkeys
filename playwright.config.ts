@@ -12,6 +12,7 @@ export default defineConfig({
         env: {
             // Ensure JWT_SECRET is available for tests
             JWT_SECRET: process.env.JWT_SECRET || 'test-jwt-secret-for-e2e-tests-only-do-not-use-in-production',
+            RATE_LIMIT_TEST_MODE: 'true',
         },
     },
     use: {

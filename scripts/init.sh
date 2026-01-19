@@ -5,6 +5,12 @@ PASSWORD=$(uuid | sed -e 's/-.*$//')
 TEST=false
 URL=http://localhost:3000
 
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
 usage () {
     cat <<EOF
 Usage: $0 [-u|-v|-e|-b|-i|-h|-t][-r]
@@ -28,13 +34,20 @@ EOF
 
 create_users () {
     mkdir -p data/
-    echo "Creating one user: ${USER} and its associated password: ${PASSWORD}"
-    echo "Note this login and password, you will need them!"
+    echo "		*** Welcome to Passkeys ***"
+    echo -e "Here are your login information:"
+    echo
+    echo -e "       login:       ${GREEN}${USER}${NC}"
+    echo -e "       password:    ${GREEN}${PASSWORD}${NC}"
+    echo
+    echo -e "	${RED}Memorize this login and password, you will need them!${NC}"
+    echo 
     cat > data/users.json <<EOF
 [ { "username": "${USER}",
     "password": "${PASSWORD}" }
 ]
 EOF
+    chmod 600 data/users.json
 }
 
 create_test_users () {
@@ -50,6 +63,7 @@ create_test_users () {
   {"username":"vault_change_test", "password":"password"}
 ]
 EOF
+    chmod 600 data/users.json
 }
 
 create_vault () {
@@ -71,10 +85,10 @@ create_vault () {
   },
   {
     "group": "test/in",
-    "title": "me as ${USER}",
+    "title": "me",
     "username": "${USER}",
     "password": "${PASSWORD}",
-    "site": "https://localhost/",
+    "site": "https://localhost:3000/",
     "tags": ["test", "example"],
     "notes": "Another sample password entry",
     "created": ${DATE},
@@ -82,6 +96,7 @@ create_vault () {
   }
 ]
 EOF
+    chmod 700 data
 }
 
 remove_test_vaults () {
@@ -148,6 +163,7 @@ create_test_vault () {
   }
 ]
 EOF
+    chmod 700 data
 }
 
 create_env () {
@@ -155,7 +171,7 @@ create_env () {
 #! /bin/bash
 export JWT_SECRET=$(openssl rand -hex 32)
 EOF
-    chmod a+x .env
+    chmod 711 .env
 }
 
 create_test_env () {
@@ -163,11 +179,12 @@ create_test_env () {
 #! /bin/bash
 export JWT_SECRET=jwt-secret
 EOF
-    chmod a+x .env
+    chmod 711 .env
 }
 
-build_backend () {
+build_and_run_backend () {
     echo "Building and running the Passkeys backend"
+    source ./.env && \
     UID=$(id -u) \
     GID=$(id -g) \
     USER=${USER} \
@@ -176,12 +193,12 @@ build_backend () {
 }
 
 run () {
-    source .env
-    make run.demo    
+    source ./.env
+    make run.demo
 }
 
 test_run () {
-    source .env
+    source ./.env
     make run.tests
 }
 
@@ -192,13 +209,6 @@ check_server () {
         echo "No running server" >&2
         exit 1
     fi
-}
-
-banner () {
-    cat <<EOF
-***************** Welcome to Passkeys
-* Let me create some files before running the backend of Passkeys
-EOF
 }
 
 if [ $# = 0 ]
@@ -223,14 +233,14 @@ do
             create_vault
             ;;
         b|build)
-            build_backend
+            build_and_run_backend
             ;;
         i|init)
-            banner
             create_env
             create_users
             create_vault
-            build_backend
+            build_and_run_backend
+            run
             ;;
         t|test)
             TEST=true

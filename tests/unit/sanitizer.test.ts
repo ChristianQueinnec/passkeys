@@ -233,34 +233,4 @@ describe('Input Sanitization', () => {
             expect(() => sanitizeCSRFToken('invalid_token_with_special!chars')).toThrow('Invalid CSRF token format');
         });
     });
-
-    describe('sanitizeString', () => {
-        it('should sanitize strings with custom length limits', () => {
-            expect(sanitizeString('test', 1, 10)).toBe('test');
-        });
-
-        it('should trim whitespace', () => {
-            expect(sanitizeString('  test  ', 1, 10)).toBe('test');
-        });
-
-        it('should reject non-string values', () => {
-            expect(() => sanitizeString(123)).toThrow('Field must be a string');
-        });
-
-        it('should respect minimum length', () => {
-            expect(() => sanitizeString('ab', 3, 10)).toThrow('Field must be between 3 and 10 characters');
-        });
-
-        it('should respect maximum length', () => {
-            expect(() => sanitizeString('abcdefghijk', 1, 10)).toThrow('Field must be between 1 and 10 characters');
-        });
-
-        it('should reject null bytes', () => {
-            expect(() => sanitizeString('test\0value')).toThrow('Field contains invalid characters');
-        });
-
-        it('should use custom field name in errors', () => {
-            expect(() => sanitizeString(123, 0, 10, 'Username')).toThrow('Username must be a string');
-        });
-    });
 });

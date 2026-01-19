@@ -4,6 +4,7 @@ test.describe('Clipboard Reset', () => {
     test.setTimeout(60000); // Increase timeout for waiting
 
     test.beforeEach(async ({ page, context }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

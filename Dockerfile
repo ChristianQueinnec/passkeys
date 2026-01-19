@@ -13,7 +13,7 @@ FROM node:24-bullseye AS runner
 
 ARG UID=1001
 ARG GID=1001
-ARG USER=passkeys
+ARG USER=admin
 
 # Create a group and user with the specified GID and UID
 RUN groupadd -g ${UID} ${USER} && \
@@ -23,6 +23,8 @@ WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/package.json .
+
+RUN echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
 
 # Create data directory for volume mount
 RUN mkdir -p data && \

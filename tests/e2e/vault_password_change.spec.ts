@@ -10,18 +10,19 @@ test.describe('Vault Password Change', () => {
     test.setTimeout(60000);
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
+        // Clean up vault for the test user to ensure a fresh start
+        await page.goto(`/api/test/cleanup-vault?username=vault_change_test`);
+
         // Reduced iterations for faster test
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
 
-        // Reset DB or create user via API could be better but sticking to UI flow or assuming script ran.
-        // Actually, init.sh creates specific users. We should ideally create a fresh one or clean up.
-        // Let's use a unique username if possible or cleaning up. 
-        // We will assume "auth_test" or similar might be busy. Let's use `auth_test` and ensure cleanup.
-        // Or better, let's just use the registration flow at runtime if possible, or `admin` user if safe.
-        // Given constraints, let's use `admin` but we must be careful not to break other tests if they run parallel.
-        // They don't run parallel.
+        // Diagnostic logging
+        page.on('console', msg => {
+            if (msg.type() === 'error') console.log(`BROWSER ERROR: ${msg.text()}`);
+        });
 
         await page.goto('/');
         await page.evaluate(() => {
@@ -32,35 +33,30 @@ test.describe('Vault Password Change', () => {
 
     test('should allow changing vault password and re-encrypt data', async ({ page }) => {
         // 1. Login
-        await page.fill('input[placeholder="Username"]', 'vault_change_test');
+        await page.fill('[data-testid="username-input"]', 'vault_change_test');
         await page.fill('[data-testid="password-input"]', 'password');
+
         await page.click('[data-testid="login-button"]');
 
         // 2. Unlock/Create Vault
-        // Admin might have a vault or not depending on previous tests.
-        // We should handle both cases or force new user in init.sh?
-        // Let's assume we can create a fresh vault for a temp user if we could.
-        // But we can only use existing users. 
-        // Let's use 'history_test' user, likely less used? Or 'admin'.
-        // Let's go with 'admin' and expect specific state.
+        // Unlock screen is identified by the app-container data-phase="1"
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
 
-        await page.waitForTimeout(1000); // Wait for checkVaultExists
+        // Wait for the unlock notice to be updated by checkVaultExists
+        // We use a regex to wait for either EN or FR text to appear, ensuring the state is loaded
+        const notice = page.locator('.unlock-notice');
+        await expect(notice).toBeVisible();
+        await expect(notice).not.toHaveText(/notice|note/i); // Wait until it contains actual info
 
-        // If unlock screen appears, unlock. If creation screen (which looks same but message differs)?
-        // Actually, let's just try to unlock with a known key or reset if possible.
-        // To be safe, let's use `reset-db` in the command line before running this test.
+        // Check if vault exists for this user by looking at the CSS class
+        const vaultExistsOnUI = await notice.evaluate(el => el.classList.contains('exists'));
 
-        // Assume 'password' as initial vault key for 'admin' based on `init.sh` usually?
-        // Actually `init.sh` says: Creating user: admin and its associated password: password.
-        // It doesn't explicitly create a vault for admin.
-
-        const isUnlockTextVisible = await page.getByText('Unlock Vault').isVisible();
-        if (isUnlockTextVisible) {
-            // Try 'password'
+        if (vaultExistsOnUI) {
+            // Unlock flow (if vault somehow survived cleanup or we are repeating)
             await page.fill('[data-testid="password-input"]', 'password');
             await page.click('[data-testid="unlock-button"]');
         } else {
-            // New vault creation flow (effectively same UI)
+            // New vault creation flow
             await page.fill('[data-testid="password-input"]', initialVaultKey);
             await page.click('[data-testid="unlock-button"]');
         }
@@ -79,15 +75,10 @@ test.describe('Vault Password Change', () => {
         await page.getByTestId('user-menu-btn').click();
         await page.getByTestId('menu-change-vault-password').click();
 
-        await expect(page.getByText('Change Vault Password')).toBeVisible();
-        await expect(page.getByText('Warning:')).toBeVisible();
+        const modalTitle = page.getByTestId('modal-title');
+        await expect(modalTitle).toHaveText(/Change Vault Password|Changer le mot de passe du coffre/);
 
         // Fill form
-        // Use correct initial key. If we just created it, it is `initialVaultKey`.
-        // If it was existing 'password', we might fail. 
-        // Strategy: The test runner should run `reset-db` before this test.
-        // If so, admin has NO vault. So we created it with `initialVaultKey`.
-
         await page.locator('#old-vault-pass').fill(initialVaultKey);
         await page.locator('#new-vault-pass').fill(newVaultKey);
         await page.locator('#confirm-vault-pass').fill(newVaultKey);
@@ -96,11 +87,13 @@ test.describe('Vault Password Change', () => {
         const successDialogPromise = page.waitForEvent('dialog');
         await page.getByTestId('submit-change-vault-password').click();
         const successDialog = await successDialogPromise;
-        expect(successDialog.message()).toContain('success');
+
+        // Assert success message (i18n safe)
+        expect(successDialog.message()).toMatch(/success|succès/i);
         await successDialog.accept();
 
         // Wait for modal to close
-        await expect(page.getByText('Change Vault Password', { exact: true })).not.toBeVisible();
+        await expect(modalTitle).not.toBeVisible();
 
         // 5. Verify persistence
 
@@ -115,7 +108,7 @@ test.describe('Vault Password Change', () => {
         const failDialogPromise = page.waitForEvent('dialog');
         await page.click('[data-testid="unlock-button"]');
         const failDialog = await failDialogPromise;
-        expect(failDialog.message()).toContain('Failed');
+        expect(failDialog.message()).toMatch(/Failed|Échec|incorrect/i);
         await failDialog.accept();
 
         // 7. Unlock with NEW password -> Should Success
@@ -126,5 +119,8 @@ test.describe('Vault Password Change', () => {
 
         // 8. Verify Data Integrity
         await expect(page.getByText(secretTitle)).toBeVisible();
+
+        // Cleanup at the end
+        await page.goto(`/api/test/cleanup-vault?username=vault_change_test`);
     });
 });

@@ -3,6 +3,14 @@ import * as loginHandler from '../../../src/routes/api/login/+server';
 import * as users from '$lib/server/users';
 import * as cryptoUtils from '$lib/server/crypto-utils';
 import * as jwt from '$lib/server/jwt';
+import * as rateLimiter from '$lib/server/rate-limiter';
+
+vi.mock('$lib/server/rate-limiter', () => ({
+    isBlocked: vi.fn().mockReturnValue(false),
+    recordFailure: vi.fn(),
+    recordSuccess: vi.fn(),
+    getDelay: vi.fn().mockReturnValue(0),
+}));
 
 vi.mock('$lib/server/users', () => ({
     getUser: vi.fn(),
@@ -31,7 +39,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test' }), // Missing password
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -44,7 +55,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ password: 'test' }), // Missing username
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -54,13 +68,16 @@ describe('API Login', () => {
     it('should return 401 if user not found', async () => {
         vi.mocked(users.getUser).mockReturnValue(undefined);
         vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(false);
-        
+
         const request = new Request('http://localhost', {
             method: 'POST',
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'unknown', password: 'password123' }),
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(401);
@@ -68,9 +85,9 @@ describe('API Login', () => {
     });
 
     it('should return 401 if password invalid', async () => {
-        vi.mocked(users.getUser).mockReturnValue({ 
-            username: 'test', 
-            password: 'salt123:hash456' 
+        vi.mocked(users.getUser).mockReturnValue({
+            username: 'test',
+            password: 'salt123:hash456'
         } as any);
         vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(false);
 
@@ -79,7 +96,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'wrongpass123' }),
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(401);
@@ -88,10 +108,10 @@ describe('API Login', () => {
 
     it('should return JWT token on success', async () => {
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.signature';
-        
-        vi.mocked(users.getUser).mockReturnValue({ 
-            username: 'test', 
-            password: 'salt123:hash456' 
+
+        vi.mocked(users.getUser).mockReturnValue({
+            username: 'test',
+            password: 'salt123:hash456'
         } as any);
         vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(true);
         vi.mocked(jwt.generateToken).mockReturnValue(mockToken);
@@ -101,7 +121,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'correctpass123' }),
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(200);
@@ -119,8 +142,11 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'nonexistent', password: 'password123' }),
         });
-        
-        await loginHandler.POST({ request } as any);
+
+        await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
 
         // Should still call verifyPassword even though user doesn't exist
         expect(cryptoUtils.verifyPassword).toHaveBeenCalled();
@@ -132,7 +158,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'short' }),
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -145,7 +174,10 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test/../admin', password: 'password123' }),
         });
-        const response = await loginHandler.POST({ request } as any);
+        const response = await loginHandler.POST({
+            request,
+            getClientAddress: () => '127.0.0.1'
+        } as any);
         const data = await response.json();
 
         expect(response.status).toBe(400);

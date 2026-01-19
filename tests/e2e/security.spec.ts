@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Security Inactivity Timeout', () => {
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -51,7 +52,7 @@ test.describe('Security Inactivity Timeout', () => {
         await page.clock.install();
 
         // Trigger a reset so the new timer uses the mocked clock
-        await page.mouse.move(50, 50);
+        await page.locator('body').click();
 
         // 3. Fast forward time by 61 seconds (timeout is 60s)
         await page.clock.fastForward(61000);
@@ -61,8 +62,8 @@ test.describe('Security Inactivity Timeout', () => {
         await expect(page.locator('[data-testid="vault-item"]')).toHaveCount(0);
 
         // 5. Simulate interaction (mouse move)
-        await page.mouse.move(100, 100);
-        await page.mouse.move(200, 200); // Move a bit to ensure event triggers
+        await page.locator('body').click();
+        await page.locator('body').click(); // Move a bit to ensure event triggers
 
         // 6. Verify items are restored
         await expect(page.locator('[data-testid="vault-item"]').first()).toBeVisible();

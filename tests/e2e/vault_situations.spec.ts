@@ -25,7 +25,7 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
     // Wait for Unlock screen
     // First access is very long!
     await expect(page.getByTestId('unlock-button'))
-        .toBeVisible({timeout: 50*1000});
+        .toBeVisible({ timeout: 50 * 1000 });
 
     console.log(`[DEBUG] Unlocking for ${user}...`);
     await page.fill('[data-testid="password-input"]', key);
@@ -53,6 +53,7 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
 test.describe('Vault Situations: Safe Device', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -111,7 +112,7 @@ test.describe('Vault Situations: Safe Device', () => {
         await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
-        
+
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
         // Wait for vault to be cached
@@ -141,6 +142,7 @@ test.describe('Vault Situations: Safe Device', () => {
 test.describe('Vault Situations: Unsafe Device', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -215,6 +217,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
 test.describe('Vault Situations: Vault Presence at Unlock', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -307,6 +310,7 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
 test.describe('Vault Situations: Synchronization', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -411,6 +415,7 @@ test.describe('Vault Situations: Synchronization', () => {
 test.describe('Vault Situations: Online/Offline Modes', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -595,6 +600,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 test.describe('Vault Situations: Edge Cases', () => {
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

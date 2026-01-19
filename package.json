@@ -1,19 +1,18 @@
 {
 	"name": "passkeys",
 	"private": true,
-	"version": "0.1.13",
+	"version": "0.1.16",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --port 3000",
 		"build": "vite build",
-		"preview": "vite preview",
+		"preview": "vite preview --port 3000",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
 		"reset-db": "scripts/init.sh -t",
 		"test:e2e": "npm run reset-db && npx playwright test tests/e2e --workers=1",
-		"test:vault": "npm run reset-db && tests/run-vault-tests.sh all",
 		"tests": "make run.tests",
 		"build:container": "docker compose build",
 		"demo": "make run.demo"
@@ -35,5 +34,6 @@
 	},
 	"dependencies": {
 		"@playwright/mcp": "^0.0.55"
-	}
+	},
+    "license": "GPL3"
 }

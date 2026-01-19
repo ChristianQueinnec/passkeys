@@ -4,6 +4,7 @@ import * as path from 'path';
 
 test.describe('Sync and Offline Recovery', () => {
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

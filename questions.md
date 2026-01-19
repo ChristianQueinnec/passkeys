@@ -570,6 +570,29 @@ repository is on `https://github.com/ChristianQueinnec/passkeys`.
 
 OK Claude
 
+## 83 Rate limiting
+
+Propose a plan to limit failed validation attempts per IP.
+
+Antigravity
+
+Fix unit tests
+
+Fix tests e2e
+
+## 84 French translation
+
+translate `user-guide.md` into French, store the translated content
+into file `guide-utilisateur.md`
+
+Vibe Mistral - weird result still to be thoroughly verified
+
+
+
+
+
+
+
 
 # Potential FUTURE
 
@@ -582,5 +605,32 @@ blob for vault rather than base64
 Remove the hack on the server side that accepts to download an
 unciphered vault. Remove also the hint about unciphered vaults
 stored on the server since none can be written by the server.
+
+unify logging on the server side. Use `pino` as framework.
+
+markdown for 'notes'
+
+check sanitizers
+
+insert eye icon in 'change login password' 
+
+Typing character in a form make previous errors or comments vanish.
+
+When changing login password, use PasswordInput rather than
+an `input type=password` HTML element.
+
+Examine the code of the server API and check for
+- Bugs: logic errors, off-by-one, null handling, race condition
+- Security: injection risk, auth issues, data exposure
+- Performance: N+1 queries, unnecessary loops, memory leaks
+- Maintainability: Namgin, complexity, duplication
+- Edge cases: what inputs would break the webapp
+For each issue:
+- Severity: Critical / High / Medium / Low
+- Location: file, line number
+- What's wrong
+- proposed fix
+Be harsh!
+
 
 

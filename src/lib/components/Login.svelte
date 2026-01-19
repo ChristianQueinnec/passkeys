@@ -36,6 +36,7 @@
       type="text"
       placeholder={i18n.t("auth.username")}
       bind:value={username}
+      data-testid="username-input"
     />
     <PasswordInput
       placeholder={i18n.t("auth.password")}

@@ -4,6 +4,7 @@ import path from 'path';
 
 test.describe('Vault Import', () => {
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

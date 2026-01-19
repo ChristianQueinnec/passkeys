@@ -31,7 +31,10 @@ export const api = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        if (!res.ok) throw new Error('Login failed');
+        if (!res.ok) {
+            const err = await res.json() as ErrorResponse;
+            throw new Error(err.error || 'Login failed');
+        }
         const data = await res.json() as LoginResponse;
         this.token = data.token;
         this.username = data.username;

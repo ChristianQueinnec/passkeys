@@ -74,11 +74,10 @@ export function useVaultSecurity(
     $effect(() => {
         if (!browser) return;
 
+        // Refresh display for these events. Ignore mousemove and scroll
         const events = [
-            "mousemove",
             "keydown",
             "click",
-            "scroll",
             "touchstart",
         ];
         events.forEach((event) =>

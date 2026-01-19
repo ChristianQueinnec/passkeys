@@ -7,7 +7,7 @@
  * Sanitize username input
  * - Allow alphanumeric, underscore, hyphen, dot
  * - Max length 50 characters
- * - Min length 3 characters
+ * - Min length 1 character
  */
 export function sanitizeUsername(username: unknown): string {
     if (typeof username !== 'string') {
@@ -23,11 +23,6 @@ export function sanitizeUsername(username: unknown): string {
     // Allow alphanumeric, underscore, hyphen, and dot, @ to allow emails
     const usernameRegex = /^[a-zA-Z0-9._@-]+$/;
     if (!usernameRegex.test(trimmed)) {
-        throw new Error('Username contains invalid characters');
-    }
-
-    // Prevent path traversal attempts
-    if (trimmed.includes('..')) {
         throw new Error('Username contains invalid characters');
     }
 
@@ -145,13 +140,16 @@ export function sanitizeVaultContent(content: unknown): string {
     }
 
     // Validate that it's valid JSON
+    let vault;
     try {
-        JSON.parse(content);
+        vault = JSON.parse(content);
     } catch (e) {
         throw new Error('Vault content must be valid JSON');
     }
-
-    return content;
+    if ( vault /*&& vault.iv && vault.content*/ ) {
+        return content;
+    }
+    throw new Error('Vault content is incorrect JSON');
 }
 
 /**
@@ -175,38 +173,6 @@ export function sanitizeCSRFToken(token: unknown): string {
     const csrfRegex = /^[a-zA-Z0-9-]+$/;
     if (!csrfRegex.test(trimmed)) {
         throw new Error('Invalid CSRF token format');
-    }
-
-    return trimmed;
-}
-
-/**
- * General purpose string sanitizer
- * - Trims whitespace
- * - Enforces length limits
- * - Prevents null bytes
- */
-export function sanitizeString(
-    value: unknown,
-    minLength = 0,
-    maxLength = 10000,
-    fieldName = 'Field'
-): string {
-    if (typeof value !== 'string') {
-        throw new Error(`${fieldName} must be a string`);
-    }
-
-    const trimmed = value.trim();
-
-    if (trimmed.length < minLength || trimmed.length > maxLength) {
-        throw new Error(
-            `${fieldName} must be between ${minLength} and ${maxLength} characters`
-        );
-    }
-
-    // Prevent null bytes
-    if (trimmed.includes('\0')) {
-        throw new Error(`${fieldName} contains invalid characters`);
     }
 
     return trimmed;

@@ -8,6 +8,7 @@ test.describe('Vault Deletion', () => {
     const vaultKey = 'password';
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -16,7 +17,7 @@ test.describe('Vault Deletion', () => {
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
         await page.reload();
-        
+
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '0');
         await expect(page.getByTestId('login-button')).toBeVisible();
 
@@ -24,13 +25,13 @@ test.describe('Vault Deletion', () => {
         await page.getByPlaceholder('Password').fill(testPassword);
         await page.waitForTimeout(500);
         await page.getByTestId('login-button').click();
-        
+
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        
+
         await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill(vaultKey);
         await page.getByTestId('unlock-button').click();
-        
+
         await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
         await expect(page.locator('.dashboard, .folder-dashboard')).toBeVisible();
     });
@@ -163,7 +164,7 @@ test.describe('Vault Deletion', () => {
         await expect(page.getByTestId('modal-title')).toHaveText(/Vault History|Historique du coffre/);
 
         const rows = page.locator('table tbody tr');
-        
+
         // Delete all vaults except the current one (if there are multiple)
         let rowCount = await rows.count();
         while (rowCount > 1) {
@@ -207,14 +208,14 @@ test.describe('Vault Deletion', () => {
         await expect(page.locator('table tbody tr')).not.toHaveCount(0);
         const rows = page.locator('table tbody tr');
         const countBeforeDeletion = await rows.count();
-        
+
         page.once('dialog', dialog => dialog.accept());
         await rows.nth(1).getByTestId('history-delete-btn').click(); // Delete older version
         await page.waitForTimeout(300);
-        
+
         const countAfterDeletion = await rows.count();
         expect(countAfterDeletion).toBe(countBeforeDeletion - 1);
-        
+
         await page.getByRole('button', { name: '×' }).click();
 
         // Reload the page
@@ -247,7 +248,7 @@ test.describe('Vault Deletion', () => {
         // Open history
         await page.getByTestId('history-btn').click();
         await expect(page.locator('table tbody tr')).not.toHaveCount(0);
-        
+
         const rows = page.locator('table tbody tr');
         const initialCount = await rows.count();
 

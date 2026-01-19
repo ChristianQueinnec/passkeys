@@ -25,6 +25,7 @@ test.describe('Unlock Guidance Message', () => {
     });
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

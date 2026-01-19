@@ -7,6 +7,7 @@ test.describe('Unciphered Vault Detection', () => {
     const vaultDir = path.join(process.cwd(), 'data', username);
 
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
@@ -39,7 +40,7 @@ test.describe('Unciphered Vault Detection', () => {
         await page.click('button[data-testid="history-btn"]');
 
         // Wait for modal
-        await expect(page.getByText('Vault History')).toBeVisible();
+        await expect(page.getByTestId('modal-title')).toHaveText(/Vault History|Historique du coffre/);
 
         // Check for warning icon (at least one)
         await expect(page.locator('span.warning-icon').first()).toBeVisible();

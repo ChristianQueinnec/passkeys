@@ -4,6 +4,7 @@ test.describe('Drag and Drop', () => {
     test.setTimeout(120000);
 
     test.beforeEach(async ({ page, context }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });

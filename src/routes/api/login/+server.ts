@@ -3,11 +3,19 @@ import { getUser } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
 import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
+import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/requestTypes';
 
-export async function POST({ request }: RequestEvent) {
+export async function POST(event: RequestEvent) {
+    const { request, getClientAddress } = event;
+    const ip = getClientAddress();
+
+    if (isBlocked(ip)) {
+        return json({ error: 'Too many failed attempts. Please try again later.' } as ErrorResponse, { status: 429 });
+    }
+
     try {
         const body = await sanitizeRequestBody(request);
         const { username, password } = body as LoginRequest;
@@ -31,7 +39,7 @@ export async function POST({ request }: RequestEvent) {
 
         // Authenticate user
         const user: User | undefined = getUser(sanitizedUsername);
-        
+
         // Verify password - do this even if user not found to prevent timing attacks
         let isValid = false;
         if (user) {
@@ -45,10 +53,15 @@ export async function POST({ request }: RequestEvent) {
         // Return same error message regardless of whether user exists or password is wrong
         // This prevents username enumeration attacks
         if (!isValid) {
-            // Add small constant delay to prevent timing attacks
-            await new Promise(resolve => setTimeout(resolve, 100));
+            recordFailure(ip);
+            const delay = getDelay(ip);
+            // Add incremental delay to prevent brute force
+            await new Promise(resolve => setTimeout(resolve, Math.max(100, delay)));
             return json({ error: 'Invalid credentials' } as ErrorResponse, { status: 401 });
         }
+
+        // Reset rate limiter on successful login
+        recordSuccess(ip);
 
         // Generate JWT token
         const token = generateToken(sanitizedUsername);

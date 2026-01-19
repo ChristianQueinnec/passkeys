@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
     test.beforeEach(async ({ page }) => {
+        await page.goto('/api/test/reset-rate-limit');
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
