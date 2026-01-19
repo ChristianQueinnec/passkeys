@@ -2,6 +2,8 @@
     import Modal from "$lib/components/Modal.svelte";
     import type { PasswordEntry } from "$lib/types";
     import { i18n } from "$lib/stores/useI18n.svelte";
+    import snarkdown from "snarkdown";
+    import DOMPurify from "dompurify";
 
     let {
         isOpen,
@@ -18,6 +20,10 @@
         onDelete: (item: PasswordEntry) => void;
         onCopy: (text: string) => void;
     } = $props();
+
+    const renderedNotes = $derived(
+        item?.notes ? DOMPurify.sanitize(snarkdown(item.notes)) : "",
+    );
 </script>
 
 <Modal {isOpen} {onClose} title={item?.title}>
@@ -50,9 +56,11 @@
                 <span>{item.tags?.join(", ")}</span>
                 <span></span>
             </div>
-            <div class="field">
+            <div class="field notes-field">
                 <strong>{i18n.t("common.notes")}:</strong>
-                <pre>{item.notes}</pre>
+                <div class="markdown-notes">
+                    {@html renderedNotes}
+                </div>
             </div>
 
             <div class="actions">
@@ -79,6 +87,54 @@
         align-items: center;
         gap: 0.5rem;
         margin-top: 0.25rem;
+    }
+    .field.notes-field {
+        display: block;
+        margin-top: 1.5rem;
+    }
+    .markdown-notes {
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .markdown-notes :global(p) {
+        margin: 0.5rem 0;
+    }
+    .markdown-notes :global(p:first-child) {
+        margin-top: 0;
+    }
+    .markdown-notes :global(p:last-child) {
+        margin-bottom: 0;
+    }
+    .markdown-notes :global(h1),
+    .markdown-notes :global(h2),
+    .markdown-notes :global(h3) {
+        margin: 1rem 0 0.5rem 0;
+        font-weight: bold;
+    }
+    .markdown-notes :global(ul),
+    .markdown-notes :global(ol) {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+    }
+    .markdown-notes :global(code) {
+        background: #eee;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+    .markdown-notes :global(pre) {
+        background: #eee;
+        padding: 0.5rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin: 0.5rem 0;
     }
     strong {
         font-weight: bold;

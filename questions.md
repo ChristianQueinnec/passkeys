@@ -598,6 +598,18 @@ OK Antigravity
 
 Permit markdown for the 'notes' property of Password entries.
 
+Antigravity unfinished, tests not generated.
+
+The `Passkeys` project is described in the `README.md` file.
+The 'notes' property of Password entries now support Markdown.
+Generate e2e test to check that implementation.
+
+Claude + small hand made fixes
+
+## 87 hide previous errors
+
+Typing character in a form make previous errors or comments vanish.
+
 
 
 
@@ -615,9 +627,7 @@ stored on the server since none can be written by the server.
 
 unify logging on the server side. Use `pino` as framework.
 
-Permit markdown for the 'notes' property of Password entries.
-
-Typing character in a form make previous errors or comments vanish.
+__TESTING__ in client-settings ?
 
 Examine the code of the server API and check for
 - Bugs: logic errors, off-by-one, null handling, race condition

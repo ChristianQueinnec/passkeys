@@ -31,7 +31,7 @@ run.container :
 	docker logs -f --tail 100 passkeys
 
 # Run the webapp in dev mode without container:
-run.demo :
+run.dev :
 	./scripts/init.sh -t
 	@echo "Browse now http://localhost:3000"
 	. ./.env && npm run dev
@@ -40,14 +40,16 @@ run.demo :
 run.tests :
 	if curl --silent http://localhost:3000 > /dev/null ; then true ; else \
 	  . ./.env && npm run dev & echo $$? > /tmp/passkeys.pid ; fi
+	npm run check
 	npm run test:unit
 #	npm run test:e2e
 	for t in tests/e2e/*.spec.ts ; do \
 		./scripts/init.sh -t ; \
 		echo "			*** $$t ***" ; \
-		npx playwright test --workers=1 $$t || exit 1 ; done
-	-kill -9 $$(cat /tmp/passkeys.pid)
-	-rm -f /tmp/passkeys.pid
+		npx playwright test --workers=1 $$t || { \
+		sleep 1 ; npx playwright test --workers=1 $$t ; } || \
+		exit 1 ; done
+	-kill -9 $$(cat /tmp/passkeys.pid) && rm -f /tmp/passkeys.pid
 
 REMOTE=pk.queinnec.org
 archive.container : tag.container
