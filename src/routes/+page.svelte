@@ -34,6 +34,16 @@
     let cpError = $state("");
     let cpSuccess = $state("");
 
+    // Auto-clear error when user starts typing in password fields
+    // This provides immediate feedback that they're addressing the issue
+    $effect(() => {
+        cpOldPassword; // Create dependency
+        cpNewPassword; // Create dependency
+        if (cpError) {
+            cpError = "";
+        }
+    });
+
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
     const vault = useVault(() => encryptionKey as CryptoKey);
@@ -91,30 +101,27 @@
     }
 
     async function handleUnlock(masterPassword: string) {
-        try {
-            // Derive key (PBKDF2) using externalized salt and iterations
-            const salt = new TextEncoder().encode(
-                settings.current.masterPasswordSalt,
-            );
-            const iterations =
-                browser && (window as any).__TESTING__
-                    ? settings.current.pbkdf2IterationsTest
-                    : settings.current.pbkdf2Iterations;
+        // Derive key (PBKDF2) using externalized salt and iterations
+        const salt = new TextEncoder().encode(
+            settings.current.masterPasswordSalt,
+        );
+        const iterations =
+            browser && (window as any).__TESTING__
+                ? settings.current.pbkdf2IterationsTest
+                : settings.current.pbkdf2Iterations;
 
-            encryptionKey = await pbkdf2(masterPassword, salt, iterations);
-            // Load vault once key is derived
-            const success = await vault.loadVault();
+        encryptionKey = await pbkdf2(masterPassword, salt, iterations);
+        // Load vault once key is derived
+        const success = await vault.loadVault();
 
-            if (success) {
-                // Upate vaultExists status after successful load just in case
-                vaultExists = true;
-                phase = 2; // Move to Dashboard
-            }
-            await tick();
-        } catch (e) {
-            alert("Failed to derive key");
-            console.error(e);
+        if (success) {
+            // Upate vaultExists status after successful load just in case
+            vaultExists = true;
+            phase = 2; // Move to Dashboard
+        } else {
+            throw new Error(i18n.t("auth.unlock_failed"));
         }
+        await tick();
     }
 
     function handleLogout() {
@@ -341,10 +348,10 @@
             />
         </label>
         {#if cpError}
-            <p class="error">{cpError}</p>
+            <p class="error" role="alert" aria-live="polite">{cpError}</p>
         {/if}
         {#if cpSuccess}
-            <p class="success">{cpSuccess}</p>
+            <p class="success" role="status" aria-live="polite">{cpSuccess}</p>
         {/if}
         <div class="actions">
             <button onclick={handleChangePassword} data-testid="cp-submit"

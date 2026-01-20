@@ -26,6 +26,17 @@
     let error = $state("");
     let isProcessing = $state(false);
 
+    // Auto-clear error when user starts typing in any password field
+    // This provides immediate feedback that they're addressing the issue
+    $effect(() => {
+        oldPassword; // Create dependency
+        newPassword; // Create dependency
+        confirmPassword; // Create dependency
+        if (error) {
+            error = "";
+        }
+    });
+
     async function handleSubmit() {
         error = "";
 
@@ -132,7 +143,7 @@
         </div>
 
         {#if error}
-            <p class="error">{error}</p>
+            <p class="error" role="alert" aria-live="polite">{error}</p>
         {/if}
 
         <div class="actions">

@@ -10,6 +10,16 @@
 
   let { onLogin } = $props();
 
+  // Auto-clear error when user starts typing in either field
+  // This provides immediate feedback that they're addressing the issue
+  $effect(() => {
+    username; // Create dependency on username
+    password; // Create dependency on password
+    if (error) {
+      error = "";
+    }
+  });
+
   async function handleLogin() {
     try {
       await api.login(username, password, trustDevice);
@@ -24,7 +34,7 @@
   <h2>{i18n.t("auth.login")}</h2>
 
   {#if error}
-    <p class="error">{error}</p>
+    <p class="error" role="alert" aria-live="polite">{error}</p>
   {/if}
   <form
     onsubmit={(e) => {

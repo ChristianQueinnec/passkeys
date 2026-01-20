@@ -6,6 +6,7 @@
     let password = $state("");
     let showPassword = $state(false);
     let loading = $state(false);
+    let error = $state("");
 
     let { vaultExists, onUnlock } = $props();
     const notice = $derived(
@@ -14,10 +15,22 @@
             : i18n.t("auth.unlock_no_vault"),
     );
 
+    // Auto-clear error when user starts typing
+    // This provides immediate feedback that they're addressing the issue
+    $effect(() => {
+        password; // Create dependency
+        if (error) {
+            error = "";
+        }
+    });
+
     async function handleUnlock() {
         loading = true;
+        error = ""; // Clear any previous error
         try {
             await onUnlock(password);
+        } catch (e: any) {
+            error = e.message || i18n.t("auth.unlock_failed");
         } finally {
             loading = false;
         }
@@ -32,6 +45,10 @@
     <div class="unlock-notice" class:exists={vaultExists}>
         {notice}
     </div>
+
+    {#if error}
+        <p class="error" role="alert" aria-live="polite">{error}</p>
+    {/if}
 
     <form
         onsubmit={(e) => {

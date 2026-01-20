@@ -606,10 +606,15 @@ Generate e2e test to check that implementation.
 
 Claude + small hand made fixes
 
-## 87 hide previous errors
+## 87 Error clearing
 
-Typing character in a form make previous errors or comments vanish.
+Typing character in an input field while in an erroneous state should make
+visible previous errors or comments vanish. Propose a plan to fix this.
 
+CLAUDE
+
+Proceed with phase 1 of the implementation plan
+Proceed with phase 2 of the implementation plan
 
 
 
