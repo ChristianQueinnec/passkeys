@@ -614,6 +614,9 @@ visible previous errors or comments vanish. Propose a plan to fix this.
 CLAUDE
 
 Proceed with phase 1 of the implementation plan
+
+CLAUDE ERROR_*.md PHASE1_*.md 
+
 Proceed with phase 2 of the implementation plan
 
 
