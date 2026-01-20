@@ -25,7 +25,7 @@ test.describe('Vault Import', () => {
         console.log("Logged in");
 
         // 2. Unlock
-        await expect(page.getByText('Unlock Vault')).toBeVisible();
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('input[type="password"]', 'password');
         await page.click('[data-testid="unlock-button"]');
         console.log("Unlocked");
