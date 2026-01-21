@@ -36,6 +36,7 @@
 	"dependencies": {
 		"@playwright/mcp": "^0.0.55",
 		"dompurify": "^3.3.1",
+		"proper-lockfile": "^4.1.2",
 		"snarkdown": "^2.0.0"
 	},
 	"license": "GPL3"

@@ -1,6 +1,7 @@
 import { browser } from "$app/environment";
 import fs from 'node:fs';
 import path from 'node:path';
+import lockfile from 'proper-lockfile';
 
 const STATS_FILE = path.join(process.cwd(), 'data', 'rate-limiter-stats.json');
 
@@ -34,11 +35,14 @@ function readStats(): Record<string, IpStats> {
 
 function writeStats(stats: Record<string, IpStats>) {
     if (browser) return;
+    const release = await lockfile.lock(USERS_FILE);
     try {
         ensureDataDir();
         fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
     } catch (e) {
         // Silently ignore
+    } finally {
+        release();
     }
 }
 

@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 import type { User } from '$lib/types';
+import lockfile from 'proper-lockfile';
 
 const USERS_FILE = path.join(process.cwd(), 'data/users.json');
 
@@ -23,6 +24,7 @@ export const getUsers = (): User[] => {
     }
 
     if (modified) {
+        // Hope that this is atomic!
         fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     }
 
@@ -35,14 +37,19 @@ export const getUser = (username: string): User | undefined => {
 };
 
 export const updateUserPassword = (username: string, newPassword: string): User => {
-    const users = getUsers();
-    const userIndex = users.findIndex(u => u.username === username);
+    const release = await lockfile.lock(USERS_FILE);
+    try {
+        const users = getUsers();
+        const userIndex = users.findIndex(u => u.username === username);
 
-    if (userIndex === -1) {
-        throw new Error(`User ${username} not found`);
+        if (userIndex === -1) {
+            throw new Error(`User not found`);
+        }
+
+        users[userIndex].password = createHashedEntrySync(newPassword);
+        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+        return users[userIndex];
+    } finally {
+        await release();
     }
-
-    users[userIndex].password = createHashedEntrySync(newPassword);
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    return users[userIndex];
 };

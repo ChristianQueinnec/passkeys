@@ -2,6 +2,11 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 
 export const GET: RequestHandler = async ({ url }) => {
+    // Add environment check at top of each test endpoint
+    if (process.env.NODE_ENV === 'production') {
+        return json({ error: 'Not found' }, { status: 404 });
+    }
+
     const username = url.searchParams.get('username');
     if (!username) {
         return json({ error: 'Missing username' }, { status: 400 });
@@ -19,6 +24,11 @@ export const GET: RequestHandler = async ({ url }) => {
 };
 
 export const POST: RequestHandler = async ({ url }) => {
+    // Add environment check at top of each test endpoint
+    if (process.env.NODE_ENV === 'production') {
+        return json({ error: 'Not found' }, { status: 404 });
+    }
+
     const username = url.searchParams.get('username');
     if (!username) {
         return json({ error: 'Missing username' }, { status: 400 });

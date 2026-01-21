@@ -619,6 +619,31 @@ CLAUDE ERROR_*.md PHASE1_*.md
 
 Proceed with phase 2 of the implementation plan
 
+## 88 Code Review
+
+Examine the code of the server API (in `src/routes/api`) and check for
+- Bugs: logic errors, off-by-one, null handling, race condition
+- Security: injection risk, auth issues, data exposure
+- Performance: N+1 queries, unnecessary loops, memory leaks
+- Maintainability: Namgin, complexity, duplication
+- Edge cases: what inputs would break the webapp
+For each issue:
+- Severity: Critical / High / Medium / Low
+- Location: file, line number
+- What's wrong
+- proposed fix 
+Be harsh but do not edit any files.
+
+Kiro/claude 
+
+Can you write this report `API Security & Code Analysis Report` in the `APIsecurityReport.md` file
+
+Kiro/claude
+
+Check the fixes I have done
+
+Kiro/claude
+
 
 
 # Potential FUTURE
@@ -637,18 +662,6 @@ unify logging on the server side. Use `pino` as framework.
 
 __TESTING__ in client-settings ?
 
-Examine the code of the server API and check for
-- Bugs: logic errors, off-by-one, null handling, race condition
-- Security: injection risk, auth issues, data exposure
-- Performance: N+1 queries, unnecessary loops, memory leaks
-- Maintainability: Namgin, complexity, duplication
-- Edge cases: what inputs would break the webapp
-For each issue:
-- Severity: Critical / High / Medium / Low
-- Location: file, line number
-- What's wrong
-- proposed fix
-Be harsh!
+Propose a plan to use atomic file write to avoid race condition.
 
-
-
+change fs to node:fs and others like path too!

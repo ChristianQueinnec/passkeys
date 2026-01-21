@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { sanitizeUsername } from '$lib/server/sanitizer';
+import lockfile from 'proper-lockfile';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
@@ -8,7 +10,9 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 export const getUserDir = (username: string) => {
-    const userDir = path.join(DATA_DIR, username);
+    // Throw error if not sanitizable:
+    let sanitizedUsername = sanitizeUsername(username);
+    const userDir = path.join(DATA_DIR, sanitizedUsername);
     if (!fs.existsSync(userDir)) {
         fs.mkdirSync(userDir, { recursive: true });
     }
@@ -43,11 +47,16 @@ export const listVaults = (username: string) => {
 };
 
 export const saveVault = (username: string, content: string): string => {
-    const userDir = getUserDir(username);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `${timestamp}.vault`;
-    fs.writeFileSync(path.join(userDir, filename), content);
-    return filename;
+    const release = await lockfile.lock(USERS_FILE);
+    try {
+        const userDir = getUserDir(username);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `${timestamp}.vault`;
+        fs.writeFileSync(path.join(userDir, filename), content);
+        return filename;
+    } finally {
+        await release();
+    }
 };
 
 export const getVault = (username: string, filename: string) => {

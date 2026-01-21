@@ -5,6 +5,11 @@
 
 import crypto from 'crypto';
 
+if ( process.env.NODE_ENV === 'production' &&
+     ! process.env.JWT_SECRET ) {
+    throw new Error("Missing JWT_SECRET");
+}
+
 // JWT Secret - In production, this MUST be set via environment variable
 const JWT_SECRET = process.env.JWT_SECRET || (() => {
     const secret = crypto.randomBytes(32).toString('hex');
