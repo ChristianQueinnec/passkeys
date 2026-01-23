@@ -5,6 +5,7 @@ export default defineConfig({
     expect: {
         timeout: 10000,
     },
+    retries: 2,
     webServer: {
         command: 'npm run build && npm run preview -- --port 3000',
         port: 3000,

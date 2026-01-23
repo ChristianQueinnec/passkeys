@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { sanitizeUsername } from '$lib/server/sanitizer';
 import lockfile from 'proper-lockfile';
 
@@ -46,16 +46,18 @@ export const listVaults = (username: string) => {
         .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 };
 
-export const saveVault = (username: string, content: string): string => {
-    const release = await lockfile.lock(USERS_FILE);
+export const saveVault = async (username: string, content: string): Promise<string> => {
+    let release;
     try {
         const userDir = getUserDir(username);
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `${timestamp}.vault`;
-        fs.writeFileSync(path.join(userDir, filename), content);
+        const filePath = path.join(userDir, filename);
+        release = await lockfile.lock(filePath, { realpath: false });
+        fs.writeFileSync(filePath, content);
         return filename;
     } finally {
-        await release();
+        if ( release ) await release();
     }
 };
 

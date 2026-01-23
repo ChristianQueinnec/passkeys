@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import crypto from 'crypto';
 import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 import type { User } from '$lib/types';
@@ -36,7 +36,7 @@ export const getUser = (username: string): User | undefined => {
     return users.find(u => u.username === username);
 };
 
-export const updateUserPassword = (username: string, newPassword: string): User => {
+export const updateUserPassword = async (username: string, newPassword: string): Promise<User> => {
     const release = await lockfile.lock(USERS_FILE);
     try {
         const users = getUsers();

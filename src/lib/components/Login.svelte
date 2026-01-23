@@ -3,6 +3,8 @@
   import PasswordInput from "./PasswordInput.svelte";
   import { i18n } from "$lib/stores/useI18n.svelte";
 
+  import { untrack } from "svelte";
+
   let username = $state("");
   let password = $state("");
   let trustDevice = $state(false);
@@ -11,13 +13,17 @@
   let { onLogin } = $props();
 
   // Auto-clear error when user starts typing in either field
-  // This provides immediate feedback that they're addressing the issue
   $effect(() => {
-    username; // Create dependency on username
-    password; // Create dependency on password
-    if (error) {
-      error = "";
-    }
+    // Create dependencies on username and password
+    username;
+    password;
+
+    // Use untrack for error to avoid clearing it immediately when it's set
+    untrack(() => {
+      if (error) {
+        error = "";
+      }
+    });
   });
 
   async function handleLogin() {

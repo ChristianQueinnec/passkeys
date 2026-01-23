@@ -1,16 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
-import { updateUserPassword, getUsers } from '$lib/server/users';
+import { updateUserPassword } from '$lib/server/users';
 import type { User } from '$lib/types';
+import lockfile from 'proper-lockfile';
 
 vi.mock('fs');
+vi.mock('proper-lockfile', () => ({
+    default: {
+        lock: vi.fn().mockResolvedValue(() => Promise.resolve()),
+    }
+}));
 
 describe('updateUserPassword', () => {
     beforeEach(() => {
         vi.resetAllMocks();
+        vi.mocked(lockfile.lock).mockResolvedValue(() => Promise.resolve());
     });
 
-    it('should update password with hashed value', () => {
+    it('should update password with hashed value', async () => {
         const mockUsers: User[] = [
             { username: 'testuser', password: 'old:hash' }
         ];
@@ -18,7 +25,7 @@ describe('updateUserPassword', () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(mockUsers));
 
-        updateUserPassword('testuser', 'newPassword');
+        await updateUserPassword('testuser', 'newPassword');
 
         expect(fs.writeFileSync).toHaveBeenCalled();
         const callArgs = vi.mocked(fs.writeFileSync).mock.calls[0];
@@ -33,10 +40,10 @@ describe('updateUserPassword', () => {
         expect(hash).toBeDefined();
     });
 
-    it('should throw error if user not found', () => {
+    it('should throw error if user not found', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readFileSync).mockReturnValue('[]');
 
-        expect(() => updateUserPassword('unknown', 'pass')).toThrow('User unknown not found');
+        await expect(updateUserPassword('unknown', 'pass')).rejects.toThrow('User not found');
     });
 });

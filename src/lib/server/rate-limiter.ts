@@ -11,6 +11,9 @@ function ensureDataDir() {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
+    if (!fs.existsSync(STATS_FILE)) {
+        fs.writeFileSync(STATS_FILE, '{}', 'utf8');
+    }
 }
 
 interface IpStats {
@@ -33,9 +36,10 @@ function readStats(): Record<string, IpStats> {
     return {};
 }
 
-function writeStats(stats: Record<string, IpStats>) {
+async function writeStats(stats: Record<string, IpStats>) {
     if (browser) return;
-    const release = await lockfile.lock(USERS_FILE);
+    ensureDataDir();
+    const release = await lockfile.lock(STATS_FILE);
     try {
         ensureDataDir();
         fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
@@ -71,11 +75,11 @@ function getStats(ip: string): IpStats {
     return allStats[normalizedIp];
 }
 
-function saveStats(ip: string, stats: IpStats) {
+async function saveStats(ip: string, stats: IpStats) {
     const normalizedIp = normalizeIp(ip);
     const allStats = readStats();
     allStats[normalizedIp] = stats;
-    writeStats(allStats);
+    await writeStats(allStats);
 }
 
 /**
@@ -108,7 +112,7 @@ export function getDelay(ip: string): number {
 /**
  * Records a failed login attempt for an IP.
  */
-export function recordFailure(ip: string) {
+export async function recordFailure(ip: string) {
     if (browser) return;
     const stats = getStats(ip);
     stats.failures++;
@@ -117,26 +121,26 @@ export function recordFailure(ip: string) {
     if (stats.failures >= MAX_FAILURES) {
         stats.blockedUntil = Date.now() + BLOCK_DURATION;
     }
-    saveStats(ip, stats);
+    await saveStats(ip, stats);
 }
 
 /**
  * Resets the rate limiter for an IP (on success).
  */
-export function recordSuccess(ip: string) {
+export async function recordSuccess(ip: string) {
     if (browser) return;
     const normalizedIp = normalizeIp(ip);
     const allStats = readStats();
     if (allStats[normalizedIp]) {
         delete allStats[normalizedIp];
-        writeStats(allStats);
+        await writeStats(allStats);
     }
 }
 
 /**
  * Clears all rate limiting stats.
  */
-export function clearAll() {
+export async function clearAll() {
     if (browser) return;
-    writeStats({});
+    await writeStats({});
 }

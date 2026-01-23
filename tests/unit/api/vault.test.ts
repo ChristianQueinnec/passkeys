@@ -130,7 +130,7 @@ describe('API Vault', () => {
             headers,
             body: JSON.stringify({ content: '{"data":"enc"}' })
         });
-        vi.mocked(storage.saveVault).mockReturnValue('new.vault');
+        vi.mocked(storage.saveVault).mockReturnValue(Promise.resolve('new.vault'));
 
         const response = await vaultHandler.POST({ request } as any);
         const data = await response.json();

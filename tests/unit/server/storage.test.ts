@@ -2,8 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as storage from '$lib/server/storage';
 import fs from 'fs';
 import path from 'path';
+import lockfile from 'proper-lockfile';
 
 vi.mock('fs');
+vi.mock('proper-lockfile', () => ({
+    default: {
+        lock: vi.fn(),
+    }
+}));
 vi.mock('path', async () => {
     const actual = await vi.importActual('path');
     return {
@@ -18,6 +24,7 @@ describe('Storage', () => {
         // Mock default behaviors
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
+        vi.mocked(lockfile.lock).mockResolvedValue(() => Promise.resolve());
     });
 
     it('should create user directory if it does not exist', () => {
@@ -36,14 +43,23 @@ describe('Storage', () => {
             return {} as any;
         });
 
+        // Mock openSync/readSync/closeSync for isCiphered check
+        vi.mocked(fs.openSync).mockReturnValue(1);
+        vi.mocked(fs.readSync).mockImplementation((fd, buffer: any) => {
+            if (buffer instanceof Buffer || buffer instanceof Uint8Array) {
+                buffer[0] = '['.charCodeAt(0); // Unciphered
+            }
+            return 1;
+        });
+
         const vaults = storage.listVaults('testuser');
         expect(vaults).toHaveLength(2);
         expect(vaults[0].name).toBe('new.vault');
         expect(vaults[1].name).toBe('old.vault');
     });
 
-    it('should save a vault', () => {
-        const filename = storage.saveVault('testuser', 'content');
+    it('should save a vault', async () => {
+        const filename = await storage.saveVault('testuser', 'content');
         expect(fs.writeFileSync).toHaveBeenCalled();
         expect(filename).toMatch(/\.vault$/);
     });
@@ -86,7 +102,7 @@ describe('Storage', () => {
         vi.mocked(fs.unlinkSync).mockImplementation(() => {
             throw new Error('Permission denied');
         });
-        
+
         expect(() => storage.deleteVault('testuser', 'test.vault')).toThrow('Permission denied');
     });
 

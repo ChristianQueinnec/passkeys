@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
         }
 
         // Save vault
-        const filename = saveVault(user.username, sanitizedContent);
+        const filename = await saveVault(user.username, sanitizedContent);
         return json({ success: true, filename } as SaveVaultResponse, { status: 200 });
     } catch (e: any) {
         console.error('[API] Vault POST error:', e.message);

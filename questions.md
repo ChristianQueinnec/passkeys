@@ -625,7 +625,7 @@ Examine the code of the server API (in `src/routes/api`) and check for
 - Bugs: logic errors, off-by-one, null handling, race condition
 - Security: injection risk, auth issues, data exposure
 - Performance: N+1 queries, unnecessary loops, memory leaks
-- Maintainability: Namgin, complexity, duplication
+- Maintainability: Naming, complexity, duplication
 - Edge cases: what inputs would break the webapp
 For each issue:
 - Severity: Critical / High / Medium / Low
@@ -636,9 +636,10 @@ Be harsh but do not edit any files.
 
 Kiro/claude 
 
-Can you write this report `API Security & Code Analysis Report` in the `APIsecurityReport.md` file
+Can you write this report `API Security & Code Analysis Report` 
+in the `APIsecurityReport.md` file
 
-Kiro/claude
+Kiro/claude APIsecurityReport.md
 
 Check the fixes I have done
 
@@ -662,6 +663,8 @@ unify logging on the server side. Use `pino` as framework.
 
 __TESTING__ in client-settings ?
 
-Propose a plan to use atomic file write to avoid race condition.
+change fs to node:fs and others like path or crypto too!
 
-change fs to node:fs and others like path too!
+change the language buttons into a menu, the title of which is
+the current language.
+

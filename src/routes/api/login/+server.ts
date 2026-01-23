@@ -53,7 +53,7 @@ export async function POST(event: RequestEvent) {
         // Return same error message regardless of whether user exists or password is wrong
         // This prevents username enumeration attacks
         if (!isValid) {
-            recordFailure(ip);
+            await recordFailure(ip);
             const delay = getDelay(ip);
             // Add incremental delay to prevent brute force
             await new Promise(resolve => setTimeout(resolve, Math.max(100, delay)));
@@ -61,7 +61,7 @@ export async function POST(event: RequestEvent) {
         }
 
         // Reset rate limiter on successful login
-        recordSuccess(ip);
+        await recordSuccess(ip);
 
         // Generate JWT token
         const token = generateToken(sanitizedUsername);
