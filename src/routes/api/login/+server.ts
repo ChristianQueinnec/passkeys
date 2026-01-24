@@ -7,6 +7,7 @@ import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/r
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/requestTypes';
+import logger from '$lib/server/logger';
 
 export async function POST(event: RequestEvent) {
     const { request, getClientAddress } = event;
@@ -69,7 +70,7 @@ export async function POST(event: RequestEvent) {
         return json({ token, username: sanitizedUsername } as LoginResponse,
             { status: 200 });
     } catch (e: any) {
-        console.error('[API] Login error:', e.message);
+        logger.error({ error: e.message, ip }, 'Login error');
         return json({ error: e.message || 'Internal Error' } as ErrorResponse, { status: 500 });
     }
 }

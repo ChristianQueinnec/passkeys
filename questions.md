@@ -664,6 +664,12 @@ Fix the `test.describe initialization` problem
 
 Antigravity 
 
+## 91 Unify Server Logging with Pino
+
+unify logging on the server side. Use `pino` as framework.
+
+Antigravity
+
 
 # Potential FUTURE
 
@@ -676,8 +682,6 @@ blob for vault rather than base64
 Remove the hack on the server side that accepts to download an
 unciphered vault. Remove also the hint about unciphered vaults
 stored on the server since none can be written by the server.
-
-unify logging on the server side. Use `pino` as framework.
 
 __TESTING__ in client-settings ?
 

@@ -1,9 +1,5 @@
-/**
- * JWT Token Management
- * Provides secure token generation and verification with proper expiration
- */
-
 import crypto from 'node:crypto';
+import logger from '$lib/server/logger';
 
 if (process.env.NODE_ENV === 'production' &&
     !process.env.JWT_SECRET) {
@@ -13,7 +9,7 @@ if (process.env.NODE_ENV === 'production' &&
 // JWT Secret - In production, this MUST be set via environment variable
 const JWT_SECRET = process.env.JWT_SECRET || (() => {
     const secret = crypto.randomBytes(32).toString('hex');
-    console.warn('[JWT] Using generated JWT_SECRET. Set JWT_SECRET environment variable for production!');
+    logger.warn('Using generated JWT_SECRET. Set JWT_SECRET environment variable for production!');
     return secret;
 })();
 
@@ -100,7 +96,7 @@ export function verifyToken(token: string): TokenPayload | null {
         );
 
         if (signature !== expectedSignature) {
-            console.warn('[JWT] Invalid signature');
+            logger.warn('Invalid JWT signature');
             return null;
         }
 
@@ -110,19 +106,19 @@ export function verifyToken(token: string): TokenPayload | null {
         // Check expiration
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp < now) {
-            console.warn('[JWT] Token expired');
+            logger.warn({ username: payload.username }, 'Token expired');
             return null;
         }
 
         // Validate required fields
         if (!payload.username || !payload.iat || !payload.exp) {
-            console.warn('[JWT] Invalid payload structure');
+            logger.warn('Invalid JWT payload structure');
             return null;
         }
 
         return payload;
-    } catch (error) {
-        console.error('[JWT] Token verification error:', error);
+    } catch (error: any) {
+        logger.error({ error: error.message }, 'Token verification error');
         return null;
     }
 }

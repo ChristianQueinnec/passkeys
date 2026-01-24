@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 import type { User } from '$lib/types';
 import lockfile from 'proper-lockfile';
+import logger from '$lib/server/logger';
 
 const USERS_FILE = path.join(process.cwd(), 'data/users.json');
 
@@ -19,7 +20,7 @@ export const getUsers = (): User[] => {
         if (user.password && !user.password.includes(':')) {
             user.password = createHashedEntrySync(user.password)
             modified = true;
-            console.log(`Migrated password for user ${user.username}`);
+            logger.info({ username: user.username }, 'Migrated password for user');
         }
     }
 

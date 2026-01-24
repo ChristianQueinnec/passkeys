@@ -4,6 +4,7 @@ import { sanitizeJWTToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 import { verifyToken } from '$lib/server/jwt';
 import type { User } from '$lib/types';
+import logger from '$lib/server/logger';
 
 /**
  * Helper to validate JWT token and return authenticated user
@@ -31,13 +32,13 @@ export function getAuthUser(request: Request): User | null {
         // Get user from database
         const user = getUser(payload.username);
         if (!user) {
-            console.warn('[AUTH] Token valid but user not found:', payload.username);
+            logger.warn({ username: payload.username }, 'Token valid but user not found');
             return null;
         }
 
         return user;
     } catch (e: any) {
-        console.error('[AUTH] Token validation error:', e.message);
+        logger.error({ error: e.message }, 'Token validation error');
         return null;
     }
 }
