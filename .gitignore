@@ -34,3 +34,4 @@ test-results/
 *.password
 server.htpasswd
 *.log
+pk.queinnec.org

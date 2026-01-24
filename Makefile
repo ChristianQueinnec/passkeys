@@ -15,7 +15,7 @@ create.container :
 tag.container : 
 	docker tag passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
-	docker tag passkeys:$$(cat passkeys.id) \
+	docker tag passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
 	docker tag passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys

@@ -650,8 +650,19 @@ Kiro/claude
 change the language buttons into a menu, the title of which is
 the current language. This will make easy adding new languages.
 
+Antigravity OK
+
+## 90 check importations
+
+Check that importation such as `import from 'fs'` is rewritten into
+`import from 'node:fs'` and similarly for other libraries such as 
+`path` or `crypto`
+
 Antigravity
 
+Fix the `test.describe initialization` problem
+
+Antigravity 
 
 
 # Potential FUTURE
@@ -669,7 +680,4 @@ stored on the server since none can be written by the server.
 unify logging on the server side. Use `pino` as framework.
 
 __TESTING__ in client-settings ?
-
-change fs to node:fs and others like path or crypto too!
-
 

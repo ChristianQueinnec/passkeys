@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 // In-memory store for CSRF tokens (in production, use Redis or database)
 const csrfTokens = new Map<string, { token: string; expiresAt: number }>();
@@ -33,16 +33,16 @@ export function generateCSRFToken(sessionId: string): string {
  */
 export function validateCSRFToken(sessionId: string, token: string): boolean {
     const stored = csrfTokens.get(sessionId);
-    
+
     if (!stored) {
         return false;
     }
-    
+
     if (stored.expiresAt < Date.now()) {
         csrfTokens.delete(sessionId);
         return false;
     }
-    
+
     return stored.token === token;
 }
 
@@ -61,7 +61,7 @@ export function getSessionIdFromRequest(request: Request): string | null {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return null;
     }
-    
+
     // Use the token itself as session ID (or extract username from it)
     const token = authHeader.substring(7);
     return token;

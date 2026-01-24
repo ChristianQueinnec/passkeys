@@ -18,7 +18,7 @@
 		"demo": "make run.demo"
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.57.0",
+		"@playwright/test": "1.58.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/adapter-node": "^5.4.0",
 		"@sveltejs/kit": "^2.49.1",
@@ -32,13 +32,18 @@
 		"vite": "^7.2.6",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vite-plugin-pwa": "^1.2.0",
-		"vitest": "^4.0.15"
+		"vitest": "^4.0.15",
+		"@playwright/mcp": "^0.0.55"
 	},
 	"dependencies": {
-		"@playwright/mcp": "^0.0.55",
 		"dompurify": "^3.3.1",
 		"proper-lockfile": "^4.1.2",
 		"snarkdown": "^2.0.0"
+	},
+	"overrides": {
+		"playwright": "1.58.0",
+		"playwright-core": "1.58.0",
+		"@playwright/test": "1.58.0"
 	},
 	"license": "GPL3"
 }

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 import type { User } from '$lib/types';
 import lockfile from 'proper-lockfile';

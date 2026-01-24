@@ -3,10 +3,10 @@
  * Provides secure token generation and verification with proper expiration
  */
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
-if ( process.env.NODE_ENV === 'production' &&
-     ! process.env.JWT_SECRET ) {
+if (process.env.NODE_ENV === 'production' &&
+    !process.env.JWT_SECRET) {
     throw new Error("Missing JWT_SECRET");
 }
 
@@ -60,22 +60,22 @@ function createSignature(data: string, secret: string): string {
  */
 export function generateToken(username: string): string {
     const now = Math.floor(Date.now() / 1000);
-    
+
     const header = {
         alg: 'HS256',
         typ: 'JWT'
     };
-    
+
     const payload: TokenPayload = {
         username,
         iat: now,
         exp: now + TOKEN_EXPIRY_SECONDS
     };
-    
+
     const encodedHeader = base64UrlEncode(JSON.stringify(header));
     const encodedPayload = base64UrlEncode(JSON.stringify(payload));
     const signature = createSignature(`${encodedHeader}.${encodedPayload}`, JWT_SECRET);
-    
+
     return `${encodedHeader}.${encodedPayload}.${signature}`;
 }
 
@@ -86,40 +86,40 @@ export function generateToken(username: string): string {
 export function verifyToken(token: string): TokenPayload | null {
     try {
         const parts = token.split('.');
-        
+
         if (parts.length !== 3) {
             return null;
         }
-        
+
         const [encodedHeader, encodedPayload, signature] = parts;
-        
+
         // Verify signature
         const expectedSignature = createSignature(
             `${encodedHeader}.${encodedPayload}`,
             JWT_SECRET
         );
-        
+
         if (signature !== expectedSignature) {
             console.warn('[JWT] Invalid signature');
             return null;
         }
-        
+
         // Decode and validate payload
         const payload = JSON.parse(base64UrlDecode(encodedPayload)) as TokenPayload;
-        
+
         // Check expiration
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp < now) {
             console.warn('[JWT] Token expired');
             return null;
         }
-        
+
         // Validate required fields
         if (!payload.username || !payload.iat || !payload.exp) {
             console.warn('[JWT] Invalid payload structure');
             return null;
         }
-        
+
         return payload;
     } catch (error) {
         console.error('[JWT] Token verification error:', error);
@@ -136,7 +136,7 @@ export function getTokenExpiresIn(token: string): number | null {
     if (!payload) {
         return null;
     }
-    
+
     const now = Math.floor(Date.now() / 1000);
     return Math.max(0, payload.exp - now);
 }
@@ -149,7 +149,7 @@ export function isTokenExpiringSoon(token: string): boolean {
     if (expiresIn === null) {
         return true;
     }
-    
+
     return expiresIn < 60 * 60; // Less than 1 hour remaining
 }
 
@@ -163,7 +163,7 @@ export function peekUsername(token: string): string | null {
         if (parts.length !== 3) {
             return null;
         }
-        
+
         const payload = JSON.parse(base64UrlDecode(parts[1]));
         return payload.username || null;
     } catch {

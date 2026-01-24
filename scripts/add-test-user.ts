@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import { createHashedEntrySync } from '../src/lib/server/crypto-utils';
 import type { User } from '../src/lib/types';
 

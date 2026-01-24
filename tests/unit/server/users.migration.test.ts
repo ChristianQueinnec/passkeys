@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import fs from 'fs';
+import fs from 'node:fs';
 import { getUsers } from '$lib/server/users';
 import type { User } from '$lib/types';
 

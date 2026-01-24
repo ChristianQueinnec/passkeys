@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 test.describe('Vault Password Change', () => {
     const username = 'test_pw_change';
