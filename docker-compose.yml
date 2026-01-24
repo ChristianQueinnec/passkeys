@@ -4,6 +4,10 @@ networks:
     name: snipnet
 # docker network create --subnet 172.55.0.0/16 snipnet
 
+secrets:
+  jwt_secret:
+    file: ./jwt_secret.password
+
 services:
   passkeys:
     image: registry.queinnec.org:5000/passkeys:${PASSKEYS}
@@ -16,4 +20,9 @@ services:
       - "3000"
     volumes:
       - ./realdata:/app/data
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+    secrets:
+      - jwt_secret
     restart: unless-stopped

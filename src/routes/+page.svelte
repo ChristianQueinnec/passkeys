@@ -16,6 +16,8 @@
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import PasswordInput from "$lib/components/PasswordInput.svelte";
 
+    import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
+
     // Application State
     let username = $state("");
     let encryptionKey = $state<CryptoKey | null>(null);
@@ -225,16 +227,7 @@
     <div class="header">
         <div class="header-left">
             <h1 data-testid="app-title">{i18n.t("app.title")}</h1>
-            <div class="lang-switcher">
-                <button
-                    class:active={i18n.language === "en"}
-                    onclick={() => i18n.setLanguage("en")}>EN</button
-                >
-                <button
-                    class:active={i18n.language === "fr"}
-                    onclick={() => i18n.setLanguage("fr")}>FR</button
-                >
-            </div>
+            <LanguageSwitcher />
         </div>
         {#if phase > 0}
             <div class="user-info">
@@ -391,30 +384,6 @@
         display: flex;
         align-items: center;
         gap: 1.5rem;
-    }
-    .lang-switcher {
-        display: flex;
-        gap: 0.5rem;
-        background: #444;
-        padding: 0.2rem;
-        border-radius: 4px;
-    }
-    .lang-switcher button {
-        background: none;
-        border: none;
-        color: #999;
-        font-size: 0.75rem;
-        padding: 0.2rem 0.5rem;
-        cursor: pointer;
-        border-radius: 2px;
-        font-weight: bold;
-    }
-    .lang-switcher button:hover {
-        color: #fff;
-    }
-    .lang-switcher button.active {
-        background: #666;
-        color: #fff;
     }
     main {
         flex: 1;

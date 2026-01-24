@@ -5,9 +5,13 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN export JWT_SECRET=building ; \
+    export NODE_ENV=production ; \
+    npm run build
 #RUN npm prune --omit=dev
-RUN NODE_ENV=production npm ci --omit=dev
+RUN export JWT_SECRET=building ; \
+    export NODE_ENV=production ; \
+    npm ci --omit=dev
 
 FROM node:24-bullseye AS runner
 
@@ -36,4 +40,6 @@ USER ${USER}
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "build"]
+COPY docker-entrypoint.sh /app/
+
+CMD ["/app/docker-entrypoint.sh"]

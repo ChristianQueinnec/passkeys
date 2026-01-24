@@ -11,26 +11,26 @@ test.describe('Internationalization', () => {
     });
 
     test('should switch language between EN and FR', async ({ page }) => {
-        // Switch to English explicitly
-        await page.getByRole('button', { name: 'EN' }).click();
-        await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Secure Vault');
+        // Dropdown is initially EN
+        await expect(page.getByTestId('lang-switcher-btn')).toContainText('EN');
 
         // Switch to French
-        await page.getByRole('button', { name: 'FR' }).click();
+        await page.getByTestId('lang-switcher-btn').click();
+        await page.getByRole('option', { name: 'FR' }).click();
         await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Coffre Sécurisé');
+        await expect(page.getByTestId('lang-switcher-btn')).toContainText('FR');
 
-        // Buttons should have active class
-        await expect(page.getByRole('button', { name: 'FR' })).toHaveClass(/active/);
-        await expect(page.getByRole('button', { name: 'EN' })).not.toHaveClass(/active/);
+        // Switch back to English
+        await page.getByTestId('lang-switcher-btn').click();
+        await page.getByRole('option', { name: 'EN' }).click();
+        await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Secure Vault');
+        await expect(page.getByTestId('lang-switcher-btn')).toContainText('EN');
     });
 
     test('should persist language choice after reload', async ({ page }) => {
-        // Switch to English first to be sure
-        await page.getByRole('button', { name: 'EN' }).click();
-        await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Secure Vault');
-
-        // Ensure we are in French
-        await page.getByRole('button', { name: 'FR' }).click();
+        // Switch to French
+        await page.getByTestId('lang-switcher-btn').click();
+        await page.getByRole('option', { name: 'FR' }).click();
         await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Coffre Sécurisé');
 
         // Reload
@@ -39,6 +39,6 @@ test.describe('Internationalization', () => {
 
         // Should still be in French
         await expect(page.getByTestId('app-title')).toHaveText('Passkeys - Coffre Sécurisé');
-        await expect(page.getByRole('button', { name: 'FR' })).toHaveClass(/active/);
+        await expect(page.getByTestId('lang-switcher-btn')).toContainText('FR');
     });
 });

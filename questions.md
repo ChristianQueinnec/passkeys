@@ -645,6 +645,13 @@ Check the fixes I have done
 
 Kiro/claude
 
+## 89 Refactor Language Switcher into Dropdown
+
+change the language buttons into a menu, the title of which is
+the current language. This will make easy adding new languages.
+
+Antigravity
+
 
 
 # Potential FUTURE
@@ -665,6 +672,4 @@ __TESTING__ in client-settings ?
 
 change fs to node:fs and others like path or crypto too!
 
-change the language buttons into a menu, the title of which is
-the current language.
 
