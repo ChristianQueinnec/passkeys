@@ -57,6 +57,7 @@ archive.container : tag.container
 	docker push registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
 	docker push registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
 	docker push registry.queinnec.org:5000/passkeys
+	@echo "Maybe     m run.remote.container"
 # Don't forget to be authenticated:
 #    docker login registry.queinnec.org:5000 username: codegradx
 
@@ -74,8 +75,8 @@ clean :
 	-rm -f *~
 	-rm -f *.log
 
-server.htpasswd : server.password
-	htpasswd -bc server.htpasswd queinnec `cat server.password`
+server.htpasswd : 
+	htpasswd -c server.htpasswd queinnec 
 
 pass.json : pass.csv
 	cd KeePass2Passkeys/ && make work

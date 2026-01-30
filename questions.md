@@ -586,6 +586,10 @@ translate `user-guide.md` into French, store the translated content
 into file `guide-utilisateur.md`
 
 Vibe Mistral - weird result still to be thoroughly verified
+```
+To continue this session, run: vibe --continue
+Or: vibe --resume c163cc75
+```
 
 ## 85 Use PasswordInput
 
@@ -668,7 +672,38 @@ Antigravity
 
 unify logging on the server side. Use `pino` as framework.
 
+Antigravity ok
+
+## 92 improvements
+
+List possible improvements on the server code.
+
 Antigravity
+
+## 93 Zod validation
+
+Propose an implementation for Zod validation
+
+Antigravity - Don't like it: revert `git reset --hard  52c216484ac1a695d2`
+
+## 94 confirm password
+
+When changing login password, need to confirm the new password
+as done when modifying vault password. What do you propose ?
+
+Claude
+
+fix tests/e2e/auth.spec.ts
+
+
+
+
+
+## Code sharing in server API
+
+Do you see possible code sharing in server API.
+
+
 
 
 # Potential FUTURE
@@ -685,3 +720,9 @@ stored on the server since none can be written by the server.
 
 __TESTING__ in client-settings ?
 
+On the login page, if the device was considered safe once, then
+pre-check the 'safe device' check mark and adapt the comment nearby.
+
+At logout, clear active timeout tasks.
+
+Factorize code when modifying login password and vault password.

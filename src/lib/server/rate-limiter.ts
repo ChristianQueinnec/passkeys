@@ -62,9 +62,32 @@ function normalizeIp(ip: string): string {
 }
 
 const MAX_FAILURES = 5;
-const BLOCK_DURATION = process.env.RATE_LIMIT_TEST_MODE === 'true' ? 5000 : 15 * 60 * 1000; // 5s in test, 15m in prod
-const MIN_DELAY = process.env.RATE_LIMIT_TEST_MODE === 'true' ? 100 : 1000; // 0.1s in test, 1s in prod
-const MAX_DELAY = process.env.RATE_LIMIT_TEST_MODE === 'true' ? 1000 : 60000; // 1s in test, 60s in prod
+// Configuration with defaults
+let isTestMode = process.env.RATE_LIMIT_TEST_MODE === 'true';
+
+const CONSTANTS = {
+    PROD: {
+        BLOCK_DURATION: 15 * 60 * 1000, // 15m
+        MIN_DELAY: 1000,                // 1s
+        MAX_DELAY: 60000,               // 60s
+    },
+    TEST: {
+        BLOCK_DURATION: 5000,           // 5s
+        MIN_DELAY: 100,                 // 0.1s
+        MAX_DELAY: 1000,                // 1s
+    }
+};
+
+function getConfig() {
+    return isTestMode ? CONSTANTS.TEST : CONSTANTS.PROD;
+}
+
+export function setTestMode(enabled: boolean) {
+    isTestMode = enabled;
+}
+
+
+
 
 function getStats(ip: string): IpStats {
     const allStats = readStats();
@@ -102,10 +125,12 @@ export function getDelay(ip: string): number {
     const stats = getStats(ip);
     const failureCount = stats.failures;
 
-    if (failureCount === 0) return 0;
-    if (failureCount >= MAX_FAILURES) return MAX_DELAY;
+    const config = getConfig();
 
-    const delay = MIN_DELAY + (MAX_DELAY - MIN_DELAY) * ((failureCount - 1) / (MAX_FAILURES - 1));
+    if (failureCount === 0) return 0;
+    if (failureCount >= MAX_FAILURES) return config.MAX_DELAY;
+
+    const delay = config.MIN_DELAY + (config.MAX_DELAY - config.MIN_DELAY) * ((failureCount - 1) / (MAX_FAILURES - 1));
     return Math.floor(delay);
 }
 
@@ -119,7 +144,7 @@ export async function recordFailure(ip: string) {
     stats.lastAttempt = Date.now();
 
     if (stats.failures >= MAX_FAILURES) {
-        stats.blockedUntil = Date.now() + BLOCK_DURATION;
+        stats.blockedUntil = Date.now() + getConfig().BLOCK_DURATION;
     }
     await saveStats(ip, stats);
 }
