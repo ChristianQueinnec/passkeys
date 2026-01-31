@@ -4,6 +4,7 @@ export interface ClientSettings {
     pollForUpdatesInterval: number;
     pollForUpdatesIntervalTest: number;
     inactivityTimeout: number;
+    inactivityTimeoutTest: number;
     clipboardTimeout: number;
     masterPasswordSalt: string;
     pbkdf2Iterations: number;
@@ -14,6 +15,7 @@ const defaultSettings: ClientSettings = {
     pollForUpdatesInterval: 60000,
     pollForUpdatesIntervalTest: 1000,
     inactivityTimeout: 60000,
+    inactivityTimeoutTest: 1000,
     clipboardTimeout: 10000,
     masterPasswordSalt: "mvp_salt_fixed",
     pbkdf2Iterations: 100000,

@@ -2,8 +2,8 @@ import { json } from '@sveltejs/kit';
 import { clearAll, setTestMode } from '$lib/server/rate-limiter';
 
 export async function GET() {
-    if (process.env.NODE_ENV !== 'development') {
-        return json({ success: false, method: 'GET', message: 'This endpoint is only available in development' });
+    if (process.env.NODE_ENV !== 'development' && process.env.RATE_LIMIT_TEST_MODE !== 'true') {
+        return json({ success: false, method: 'GET', message: 'This endpoint is only available in development or test mode' });
     }
     await clearAll();
     setTestMode(true);
@@ -11,8 +11,8 @@ export async function GET() {
 }
 
 export async function POST() {
-    if (process.env.NODE_ENV !== 'development') {
-        return json({ success: false, method: 'POST', message: 'This endpoint is only available in development' });
+    if (process.env.NODE_ENV !== 'development' && process.env.RATE_LIMIT_TEST_MODE !== 'true') {
+        return json({ success: false, method: 'POST', message: 'This endpoint is only available in development or test mode' });
     }
     await clearAll();
     setTestMode(true);

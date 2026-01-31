@@ -62,6 +62,7 @@
             // Optional callback when memory is cleared.
             // Child components listen to security.isMemoryCleared to update UI
         },
+        () => phase === 2,
     );
 
     useVaultSync(vault, () => phase === 2);
@@ -131,6 +132,7 @@
     }
 
     function handleLogout() {
+        security.stopTimer();
         api.logout();
         username = "";
         encryptionKey = null;
@@ -165,19 +167,19 @@
     async function handleChangePassword() {
         try {
             cpError = "";
-            
+
             // Validate passwords match
             if (cpNewPassword !== cpConfirmPassword) {
                 cpError = i18n.t("auth.passwords_no_match");
                 return;
             }
-            
+
             // Validate new password is not empty
             if (cpNewPassword.length < 1) {
                 cpError = i18n.t("auth.password_empty");
                 return;
             }
-            
+
             await api.changePassword(cpOldPassword, cpNewPassword);
             cpSuccess = i18n.t("auth.password_updated");
             setTimeout(() => {

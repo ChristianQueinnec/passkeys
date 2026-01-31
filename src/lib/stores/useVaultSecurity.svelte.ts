@@ -11,6 +11,7 @@ export function useVaultSecurity(
     vault: Vault,
     getEncryptionKey: () => CryptoKey,
     additionalClearCallback?: () => void,
+    isActive?: () => boolean,
 ) {
 
     let isMemoryCleared = $state(false);
@@ -18,6 +19,10 @@ export function useVaultSecurity(
     let restorePromise: Promise<void> | null = null;
 
     function resetTimer() {
+        if (isActive && !isActive()) {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            return;
+        }
         if (isMemoryCleared) {
             restoreSensitiveData();
         }
@@ -25,7 +30,7 @@ export function useVaultSecurity(
 
         inactivityTimer = setTimeout(async () => {
             await clearSensitiveData();
-        }, settings.current.inactivityTimeout);
+        }, (browser && (window as any).__TESTING__) ? settings.current.inactivityTimeoutTest : settings.current.inactivityTimeout);
     }
 
     async function clearSensitiveData() {
@@ -73,6 +78,7 @@ export function useVaultSecurity(
     // Auto-setup event listeners
     $effect(() => {
         if (!browser) return;
+        if (isActive) isActive(); // Track dependency on isActive state
 
         // Refresh display for these events. Ignore mousemove and scroll
         const events = [
@@ -100,5 +106,8 @@ export function useVaultSecurity(
         },
         //resetTimer,
         restoreSensitiveData,
+        stopTimer: () => {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+        }
     };
 }
