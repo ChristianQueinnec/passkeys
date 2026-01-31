@@ -50,6 +50,7 @@ run.tests :
 		sleep 1 ; npx playwright test --workers=1 $$t ; } || \
 		exit 1 ; done
 	-kill -9 $$(cat /tmp/passkeys.pid) && rm -f /tmp/passkeys.pid
+	@echo; echo "******* End of all tests "; echo
 
 REMOTE=pk.queinnec.org
 archive.container : tag.container

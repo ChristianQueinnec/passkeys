@@ -2,6 +2,7 @@
     import Modal from "./Modal.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
     import PasswordInput from "./PasswordInput.svelte";
+    import ConfirmedPasswordInput from "./ConfirmedPasswordInput.svelte";
     import { pbkdf2, decrypt } from "$lib/crypto";
     import { settings } from "$lib/stores/useSettings.svelte";
     import { browser } from "$app/environment";
@@ -40,8 +41,7 @@
     async function handleSubmit() {
         error = "";
 
-        if (newPassword !== confirmPassword) {
-            error = "New passwords do not match";
+        if (error) {
             return;
         }
 
@@ -109,38 +109,15 @@
             {i18n.t("vault.change_password_warning")}
         </div>
 
-        <div class="field">
-            <label for="old-vault-pass"
-                >{i18n.t("vault.old_master_password")}:</label
-            >
-            <PasswordInput
-                bind:value={oldPassword}
-                placeholder={i18n.t("vault.old_master_password")}
-                id="old-vault-pass"
-            />
-        </div>
-
-        <div class="field">
-            <label for="new-vault-pass"
-                >{i18n.t("vault.new_master_password")}:</label
-            >
-            <PasswordInput
-                bind:value={newPassword}
-                placeholder={i18n.t("vault.new_master_password")}
-                id="new-vault-pass"
-            />
-        </div>
-
-        <div class="field">
-            <label for="confirm-vault-pass"
-                >{i18n.t("vault.confirm_new_master_password")}:</label
-            >
-            <PasswordInput
-                bind:value={confirmPassword}
-                placeholder={i18n.t("vault.confirm_new_master_password")}
-                id="confirm-vault-pass"
-            />
-        </div>
+        <ConfirmedPasswordInput
+            bind:oldPassword
+            bind:newPassword
+            bind:confirmPassword
+            bind:errorMessage={error}
+            oldPasswordId="old-vault-pass"
+            newPasswordId="new-vault-pass"
+            confirmPasswordId="confirm-vault-pass"
+        />
 
         {#if error}
             <p class="error" role="alert" aria-live="polite">{error}</p>
@@ -178,12 +155,6 @@
         border-radius: 4px;
         font-size: 0.9rem;
         line-height: 1.4;
-    }
-
-    .field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
     }
 
     .actions {

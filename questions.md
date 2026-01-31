@@ -695,8 +695,27 @@ Claude
 
 fix tests/e2e/auth.spec.ts
 
+## 95 Clear Timeout Tasks on Logout 
 
+At logout, clear active timeout tasks.
 
+Antigravity ok
+
+## 96 ConfirmedPasswordInput
+
+Create a new component (named `ConfirmedPasswordInput`) for password
+modification. It requires the old password, the new one, in double
+exemplar, in order to confirm it, the component checks that the two
+new passwords are the same and report accordingly.
+
+Antigravity
+
+## 97 Offline PWA functionality
+
+The Passkeys webapp is a PWA that should be able to work without Internet,
+generate tests to check that aspect.
+
+Claude
 
 
 ## Code sharing in server API
@@ -723,6 +742,3 @@ __TESTING__ in client-settings ?
 On the login page, if the device was considered safe once, then
 pre-check the 'safe device' check mark and adapt the comment nearby.
 
-At logout, clear active timeout tasks.
-
-Factorize code when modifying login password and vault password.

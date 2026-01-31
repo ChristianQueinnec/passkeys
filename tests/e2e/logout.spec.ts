@@ -30,7 +30,7 @@ test.describe('Logout Security', () => {
 
     test('should clear inactivity timer on logout', async ({ page }) => {
         // 1. Wait a bit to ensure potential timers are running
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(500);
 
         // 2. Logout
         await page.locator('.user-btn').click();

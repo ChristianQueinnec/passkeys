@@ -15,6 +15,7 @@
     import { settings } from "$lib/stores/useSettings.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import PasswordInput from "$lib/components/PasswordInput.svelte";
+    import ConfirmedPasswordInput from "$lib/components/ConfirmedPasswordInput.svelte";
 
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
 
@@ -346,26 +347,15 @@
     title={i18n.t("auth.change_password")}
 >
     <div class="change-password-form">
-        <label>
-            {i18n.t("auth.old_password")}:
-            <PasswordInput bind:value={cpOldPassword} dataTestId="cp-old" />
-        </label>
-        <label>
-            {i18n.t("auth.new_password")}:
-            <PasswordInput
-                bind:value={cpNewPassword}
-                dataTestId="cp-new"
-                autocomplete="new-password"
-            />
-        </label>
-        <label>
-            {i18n.t("auth.confirm_new_password")}:
-            <PasswordInput
-                bind:value={cpConfirmPassword}
-                dataTestId="cp-confirm"
-                autocomplete="new-password"
-            />
-        </label>
+        <ConfirmedPasswordInput
+            bind:oldPassword={cpOldPassword}
+            bind:newPassword={cpNewPassword}
+            bind:confirmPassword={cpConfirmPassword}
+            bind:errorMessage={cpError}
+            oldPasswordTestId="cp-old"
+            newPasswordTestId="cp-new"
+            confirmPasswordTestId="cp-confirm"
+        />
         {#if cpError}
             <p class="error" role="alert" aria-live="polite">{cpError}</p>
         {/if}
@@ -471,11 +461,6 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
-    }
-    .change-password-form label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
     }
     .change-password-form .actions {
         display: flex;
