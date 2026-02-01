@@ -7,6 +7,10 @@ export const api = {
     token: browser ? (window.localStorage.getItem('token') || window.sessionStorage.getItem('token')) : null,
     username: browser ? (window.localStorage.getItem('username') || window.sessionStorage.getItem('username')) : null,
     csrfToken: null as string | null,
+    get storage() {
+        if (!browser) return null;
+        return window.localStorage.getItem('token') ? window.localStorage : window.sessionStorage;
+    },
 
     async getCSRFToken() {
         if (!this.token) return null;

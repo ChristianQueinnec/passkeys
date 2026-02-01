@@ -22,30 +22,51 @@ export function useVaultSync(
         if (!api.token) return;
         try {
             const metadata = await api.getLatestVaultMetadata();
+            console.log("Polling success, server mtime:", metadata.mtime, "local lastSavedDate:", vault.lastSavedDate);
             vault.setOfflineMode(false);
             if (metadata.mtime && vault.lastSavedDate) {
                 const serverTime = new Date(metadata.mtime).getTime();
                 const localTime = new Date(vault.lastSavedDate).getTime();
+                console.log("Comparing times:", serverTime, localTime);
                 if (serverTime > localTime + 1000) {
+                    console.log("Newer version available!");
                     vault.setNewerVersionAvailable(true);
                 }
             }
         } catch (e) {
-            console.log("Polling failed (server unreachable?)");
+            console.log("Polling failed (server unreachable?)", e);
             vault.setOfflineMode(true);
         }
     }
 
-    // Auto-start polling
+    // Auto-start polling and handle offline events
     $effect(() => {
+        const handleOffline = () => vault.setOfflineMode(true);
+        const handleOnline = () => {
+            vault.setOfflineMode(false);
+            pollForUpdates(); // Trigger immediate update when back online
+        };
+
+        if (browser) {
+            window.addEventListener('offline', handleOffline);
+            window.addEventListener('online', handleOnline);
+            // Initial check
+            if (!navigator.onLine) handleOffline();
+        }
+
         if (isActiveGetter()) {
             startPolling();
         } else {
             if (pollTimer) clearInterval(pollTimer);
             pollTimer = null;
         }
+
         return () => {
             if (pollTimer) clearInterval(pollTimer);
+            if (browser) {
+                window.removeEventListener('offline', handleOffline);
+                window.removeEventListener('online', handleOnline);
+            }
         };
     });
 

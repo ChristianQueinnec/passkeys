@@ -717,8 +717,20 @@ generate tests to check that aspect.
 
 Claude
 
+fix pwa tests
 
-## Code sharing in server API
+Antigravity
+
+
+
+
+
+## 98 Safe Device
+
+On the login page, if the device was considered safe once, then
+pre-check the 'safe device' check mark and adapt the comment nearby.
+
+## 99 Code sharing in server API
 
 Do you see possible code sharing in server API.
 
@@ -739,6 +751,4 @@ stored on the server since none can be written by the server.
 
 __TESTING__ in client-settings ?
 
-On the login page, if the device was considered safe once, then
-pre-check the 'safe device' check mark and adapt the comment nearby.
 

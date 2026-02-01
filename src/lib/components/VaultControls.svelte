@@ -46,7 +46,6 @@
             <button
                 class="save-btn"
                 onclick={onSave}
-                disabled={offlineMode}
                 data-testid="save-vault-btn">{i18n.t("vault.save")}</button
             >
         {/if}
@@ -55,17 +54,19 @@
         >
     </div>
 
-    {#if offlineMode}
-        <div class="warning" data-testid="offline-indicator">
-            ⚠️ {i18n.t("vault.offline_mode")}
+    {#if offlineMode && isDirty}
+        <div class="warning sync-warning" data-testid="sync-pending">
+            🔄 {i18n.t("vault.sync_pending") || "Sync pending"}
         </div>
     {/if}
 
     {#if newerVersionAvailable}
         <div class="warning sync-warning" data-testid="newer-version-alert">
             📦 {i18n.t("vault.newer_version")}
-            <button class="small" onclick={onSynchronize}
-                    data-testid="reload-vault-btn"
+            <button
+                class="small"
+                onclick={onSynchronize}
+                data-testid="reload-vault-btn"
                 >{i18n.t("vault.sync_now")}</button
             >
         </div>

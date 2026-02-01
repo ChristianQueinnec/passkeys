@@ -39,6 +39,7 @@
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.username || "")}
+                    data-testid="copy-username-btn"
                     >{i18n.t("common.copy")}</button
                 >
             </div>
@@ -48,6 +49,7 @@
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.password || "")}
+                    data-testid="copy-password-btn"
                     >{i18n.t("common.copy")}</button
                 >
             </div>

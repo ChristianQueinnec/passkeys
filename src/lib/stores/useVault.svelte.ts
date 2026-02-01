@@ -42,7 +42,7 @@ export function useVault(
             if (vaultContent) {
                 offlineMode = false;
                 if (!Array.isArray(vaultContent)) {
-                    localStorage.setItem(
+                    api.storage?.setItem(
                         "offline_vault",
                         JSON.stringify(vaultContent),
                     );
@@ -54,7 +54,8 @@ export function useVault(
             }
         } catch (e) {
             console.log("Failed to load vault from server", e);
-            const offline = localStorage.getItem("offline_vault");
+            const offline = api.storage?.getItem("offline_vault") ||
+                (browser ? window.localStorage.getItem("offline_vault") : null);
             if (offline) {
                 vaultContent = JSON.parse(offline);
                 offlineMode = true;
@@ -124,17 +125,21 @@ export function useVault(
         };
 
         try {
-            if (both) {
+            if (both && !offlineMode) {
                 await api.saveVault(JSON.stringify(payload));
                 lastSavedDate = payload.date;
                 isDirty = false;
-                offlineMode = false;
+            } else if (both && offlineMode) {
+                // If we are offline but trying to save "both", just save locally and keep dirty
+                console.log("Offline: saving vault locally only.");
             }
 
             encryptedVaultData = payload.data;
-            localStorage.setItem("offline_vault", JSON.stringify(payload));
+            api.storage?.setItem("offline_vault", JSON.stringify(payload));
         } catch (e) {
-            alert("Failed to save vault to server. Please check connection.");
+            if (!offlineMode) {
+                alert("Failed to save vault to server. Please check connection.");
+            }
         }
     }
 

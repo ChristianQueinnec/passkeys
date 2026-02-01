@@ -9,7 +9,11 @@
         <div class="modal-content" onclick={(e) => e.stopPropagation()}>
             <div class="modal-header">
                 <h2 data-testid="modal-title">{title}</h2>
-                <button class="close" onclick={onClose}>&times;</button>
+                <button
+                    class="close"
+                    onclick={onClose}
+                    data-testid="modal-close">&times;</button
+                >
             </div>
             <div class="modal-body">
                 {@render children()}

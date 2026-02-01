@@ -20,7 +20,7 @@
     <FolderIcon />
 {/snippet}
 
-<div class="dashboard">
+<div class="dashboard" data-testid="list-view">
     <div class="sidebar">
         <VaultControls
             {onToggleView}

@@ -317,7 +317,11 @@
             </div>
         {/if}
     </div>
-
+    {#if vault.offlineMode}
+        <div class="offline-banner" data-testid="offline-indicator">
+            ⚠️ {i18n.t("vault.offline_mode")}
+        </div>
+    {/if}
     <main>
         {#if phase === 0}
             <Login onLogin={handleLogin} />
@@ -404,6 +408,14 @@
     main {
         flex: 1;
         overflow: hidden;
+    }
+    .offline-banner {
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.5rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid #ffeeba;
+        font-size: 0.9rem;
     }
 
     /* User Menu */

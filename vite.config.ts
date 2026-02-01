@@ -9,8 +9,38 @@ export default defineConfig({
 
 		VitePWA({
 			registerType: 'autoUpdate',
+			injectRegister: 'auto',
 			devOptions: { enabled: true },
-
+			includeAssets: ['favicon.svg', 'robots.txt', 'favicon.ico'],
+			workbox: {
+				globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
+				runtimeCaching: [
+					{
+						urlPattern: ({ request }) => request.mode === 'navigate',
+						handler: 'StaleWhileRevalidate',
+						options: {
+							cacheName: 'pages-cache',
+							expiration: { maxEntries: 50 },
+							cacheableResponse: { statuses: [0, 200] }
+						}
+					},
+					{
+						urlPattern: ({ request }) => ['style', 'script', 'worker', 'image', 'font'].includes(request.destination),
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'assets-cache',
+							expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 }
+						}
+					},
+					{
+						urlPattern: ({ url }) => url.pathname.endsWith('.json'),
+						handler: 'StaleWhileRevalidate',
+						options: {
+							cacheName: 'data-cache'
+						}
+					}
+				]
+			},
 			manifest: {
 				name: 'Passkeys',
 				short_name: 'Passkeys',

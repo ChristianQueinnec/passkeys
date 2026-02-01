@@ -209,7 +209,7 @@
     <ListIcon />
 {/snippet}
 
-<div class="folder-dashboard">
+<div class="folder-dashboard" data-testid="folder-view">
     <div class="sidebar">
         <VaultControls
             {onToggleView}
@@ -263,6 +263,7 @@
                                 ondragover={handleDragOver}
                                 ondragenter={() => handleDragEnter(node)}
                                 ondrop={(e) => handleDrop(e, node)}
+                                data-testid="folder"
                             >
                                 <span class="folder-icon">
                                     {#if node.children.length > 0}
@@ -293,7 +294,7 @@
             </div>
 
             <div class="entries-pane">
-                <h3>
+                <h3 data-testid="current-folder">
                     {selectedFolder
                         ? selectedFolder.fullPath || i18n.t("vault.root")
                         : i18n.t("vault.entries")}
