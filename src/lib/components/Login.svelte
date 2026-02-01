@@ -2,15 +2,24 @@
   import { api } from "$lib/api";
   import PasswordInput from "./PasswordInput.svelte";
   import { i18n } from "$lib/stores/useI18n.svelte";
-
+  import { onMount } from "svelte";
   import { untrack } from "svelte";
 
   let username = $state("");
   let password = $state("");
   let trustDevice = $state(false);
   let error = $state("");
+  let isRememberedPreference = $state(false);
 
   let { onLogin } = $props();
+
+  onMount(() => {
+    const savedPreference = localStorage.getItem("passkeys_device_preference");
+    if (savedPreference) {
+      trustDevice = savedPreference === "safe";
+      isRememberedPreference = true;
+    }
+  });
 
   // Auto-clear error when user starts typing in either field
   $effect(() => {
@@ -32,6 +41,16 @@
       onLogin(username);
     } catch (e: any) {
       error = e.message;
+    } finally {
+      // clear immediately the password
+      password = "";
+    }
+    if (trustDevice) {
+      localStorage.setItem("passkeys_device_preference", "safe");
+    } else if (isRememberedPreference) {
+      localStorage.setItem("passkeys_device_preference", "unsafe");
+    } else {
+      localStorage.removeItem("passkeys_device_preference");
     }
   }
 </script>
@@ -64,7 +83,17 @@
         bind:checked={trustDevice}
         data-testid="trust-device-checkbox"
       />
-      {i18n.t("auth.trust_device")}
+      {#if isRememberedPreference}
+        {#if trustDevice}
+          {i18n.t("auth.safe_device_note")}
+        {:else}
+          {i18n.t("auth.unsafe_device_note")}
+        {/if}
+      {:else if trustDevice}
+        {i18n.t("auth.trust_device_note")}
+      {:else}
+        {i18n.t("auth.untrust_device_note")}
+      {/if}
     </label>
     <button type="submit" data-testid="login-button"
       >{i18n.t("auth.login")}</button

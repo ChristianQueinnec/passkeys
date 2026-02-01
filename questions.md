@@ -719,16 +719,24 @@ Claude
 
 fix pwa tests
 
-Antigravity
-
-
-
-
+Antigravity UNFINISHED
 
 ## 98 Safe Device
 
 On the login page, if the device was considered safe once, then
 pre-check the 'safe device' check mark and adapt the comment nearby.
+Propose a plan.
+
+CLAUDE test unfinished
+
+
+
+## 99 Ch
+
+Make sure the login password is forgotten after successful login.
+
+CLAUDE?
+
 
 ## 99 Code sharing in server API
 
@@ -743,6 +751,9 @@ bypass Login page if coming from authenticated nginx proxy ?
 
 decipher vault only when copy to clipboard
 
+ask for a small part of the vault password to re-unlock it once
+authenticated.
+
 blob for vault rather than base64
 
 Remove the hack on the server side that accepts to download an
@@ -751,4 +762,6 @@ stored on the server since none can be written by the server.
 
 __TESTING__ in client-settings ?
 
+hide better the vault password
+Make sure the login password is forgotten after successful login.
 
