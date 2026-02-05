@@ -14,6 +14,7 @@ export default defineConfig({
 			includeAssets: ['favicon.svg', 'robots.txt', 'favicon.ico'],
 			workbox: {
 				globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
+				navigateFallback: null,
 				runtimeCaching: [
 					{
 						urlPattern: ({ request }) => request.mode === 'navigate',

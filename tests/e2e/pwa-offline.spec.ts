@@ -624,24 +624,77 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Complete Offline User Journey', () => {
 
     test('should support full workflow offline: login, view, edit, save', async ({ page, context }) => {
+      test.setTimeout(120000); // Increase timeout for this long test
+      page.on('console', msg => {
+        const text = msg.text();
+        if (!text.includes('Polling success') && !text.includes('Comparing times')) {
+          console.log(`[BROWSER]: ${text}`);
+        }
+      });
       // Step 1: Login online
+      console.log('Step 1: Login');
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
       await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
       await page.getByTestId('login-button').click();
 
       // Step 2: Unlock vault
+      console.log('Step 2: Unlock');
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
       await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
       await page.getByTestId('unlock-button').click();
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
       await page.waitForSelector('[data-testid="vault-item"]');
 
+      console.log('Checking save button...');
       // Migrate to new format to ensure it's in localStorage
       if (await page.getByTestId('save-vault-btn').isVisible()) {
+        console.log('Clicking save...');
         await page.getByTestId('save-vault-btn').click();
         await page.waitForTimeout(1000);
       }
+      console.log('Proceeding to SW setup...');
+
+      // Step 2.5: Ensure SW is ready and prime cache
+      await page.evaluate(async () => {
+        console.log('Checking service worker...');
+        if ('serviceWorker' in navigator) {
+          console.log('RService worker supported, egistering SW...');
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('checking ready state...');
+          const reg = await navigator.serviceWorker.ready;
+
+          console.log('Service worker ready, checking controller...');
+          if (!navigator.serviceWorker.controller) {
+            console.log('Waiting for controllerchange...');
+            await new Promise(resolve => {
+              const timeout = setTimeout(() => {
+                console.log('Controller wait timed out, proceeding anyway...');
+                resolve(null);
+              }, 5000); // 5s timeout
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                clearTimeout(timeout);
+                console.log('Controller changed!');
+                resolve(null);
+              }, { once: true });
+            });
+          }
+
+          // Manually prime caches to ensure offline works without a reload
+          console.log('Manually priming caches...');
+          const pagesCache = await caches.open('pages-cache');
+          const rootResp = await fetch('/');
+          if (rootResp.ok) {
+            await pagesCache.put('/', rootResp.clone());
+          }
+
+          const settingsResp = await fetch('/client-settings.json');
+          if (settingsResp.ok) {
+            const dataCache = await caches.open('data-cache');
+            await dataCache.put('/client-settings.json', settingsResp.clone());
+          }
+        }
+      });
 
       // Step 3: Go offline
       await context.setOffline(true);

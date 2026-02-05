@@ -42,8 +42,8 @@
     } catch (e: any) {
       error = e.message;
     } finally {
-      // clear immediately the password
-      password = "";
+      // clear rapidly the password
+      setTimeout(() => (password = ""), 1000);
     }
     if (trustDevice) {
       localStorage.setItem("passkeys_device_preference", "safe");

@@ -727,7 +727,9 @@ On the login page, if the device was considered safe once, then
 pre-check the 'safe device' check mark and adapt the comment nearby.
 Propose a plan.
 
-CLAUDE test unfinished
+CLAUDE test UNFINISHED, Antigravity OK
+
+
 
 
 
