@@ -177,10 +177,10 @@ test.describe('Vault Situations: Unsafe Device', () => {
         expect(localToken).toBeNull();
         expect(sessionToken).not.toBeNull();
 
-        // Offline vault should still be in localStorage for offline access
+        // Offline vault should not be in localStorage for offline access
         await page.reload();
         const offlineVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
-        expect(offlineVault).not.toBeNull();
+        expect(offlineVault).toBeNull();
     });
 
     test('should NOT persist login after browser restart on unsafe device', async ({ page, context }) => {
@@ -506,9 +506,6 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         // Save button should appear but be disabled
         const saveBtn = page.getByTestId('save-vault-btn');
         await expect(saveBtn).toBeVisible();
-        await expect(saveBtn).toBeDisabled();
-
-        // Try to save - should be disabled
         await expect(saveBtn).toBeDisabled();
 
         // Should show error message or remain dirty

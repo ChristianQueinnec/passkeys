@@ -56,7 +56,7 @@
 
     {#if offlineMode && isDirty}
         <div class="warning sync-warning" data-testid="sync-pending">
-            🔄 {i18n.t("vault.sync_pending") || "Sync pending"}
+            🔄 {i18n.t("vault.sync_pending")}
         </div>
     {/if}
 
