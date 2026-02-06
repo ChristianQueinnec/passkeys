@@ -14,6 +14,7 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
+    import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
     import PasswordInput from "$lib/components/PasswordInput.svelte";
     import ConfirmedPasswordInput from "$lib/components/ConfirmedPasswordInput.svelte";
 
@@ -30,26 +31,6 @@
     let showUserMenu = $state(false);
     let showChangePasswordModal = $state(false);
     let showChangeVaultPasswordModal = $state(false);
-
-    // Change Password State
-    let cpOldPassword = $state("");
-    let cpNewPassword = $state("");
-    let cpConfirmPassword = $state("");
-    let cpError = $state("");
-    let cpSuccess = $state("");
-
-    // Auto-clear error when user starts typing in password fields
-    // This provides immediate feedback that they're addressing the issue
-    $effect(() => {
-        cpOldPassword; // Create dependency
-        cpNewPassword; // Create dependency
-        cpConfirmPassword; // Create dependency
-        untrack(() => {
-            if (cpError) {
-                cpError = "";
-            }
-        });
-    });
 
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
@@ -153,11 +134,6 @@
     function changeLoginPassword() {
         showChangePasswordModal = true;
         showUserMenu = false;
-        cpOldPassword = "";
-        cpNewPassword = "";
-        cpConfirmPassword = "";
-        cpError = "";
-        cpSuccess = "";
     }
 
     async function handleSynchronize() {
@@ -165,31 +141,7 @@
         await vault.synchronizeVault();
     }
 
-    async function handleChangePassword() {
-        try {
-            cpError = "";
 
-            // Validate passwords match
-            if (cpNewPassword !== cpConfirmPassword) {
-                cpError = i18n.t("auth.passwords_no_match");
-                return;
-            }
-
-            // Validate new password is not empty
-            if (cpNewPassword.length < 1) {
-                cpError = i18n.t("auth.password_empty");
-                return;
-            }
-
-            await api.changePassword(cpOldPassword, cpNewPassword);
-            cpSuccess = i18n.t("auth.password_updated");
-            setTimeout(() => {
-                showChangePasswordModal = false;
-            }, 3000);
-        } catch (e: any) {
-            cpError = e.message;
-        }
-    }
     async function handleVaultPasswordChange(newKey: CryptoKey) {
         encryptionKey = newKey;
         await tick();
@@ -345,34 +297,10 @@
     </main>
 </div>
 
-<Modal
+<ChangeLoginPasswordModal
     isOpen={showChangePasswordModal}
     onClose={() => (showChangePasswordModal = false)}
-    title={i18n.t("auth.change_password")}
->
-    <div class="change-password-form">
-        <ConfirmedPasswordInput
-            bind:oldPassword={cpOldPassword}
-            bind:newPassword={cpNewPassword}
-            bind:confirmPassword={cpConfirmPassword}
-            bind:errorMessage={cpError}
-            oldPasswordTestId="cp-old"
-            newPasswordTestId="cp-new"
-            confirmPasswordTestId="cp-confirm"
-        />
-        {#if cpError}
-            <p class="error" role="alert" aria-live="polite">{cpError}</p>
-        {/if}
-        {#if cpSuccess}
-            <p class="success" role="status" aria-live="polite">{cpSuccess}</p>
-        {/if}
-        <div class="actions">
-            <button onclick={handleChangePassword} data-testid="cp-submit"
-                >{i18n.t("auth.update_password")}</button
-            >
-        </div>
-    </div>
-</Modal>
+/>
 
 <ChangeVaultPasswordModal
     isOpen={showChangeVaultPasswordModal}
@@ -468,21 +396,5 @@
         box-shadow: none;
     }
 
-    /* Change Password Form */
-    .change-password-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .change-password-form .actions {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 1rem;
-    }
-    .error {
-        color: red;
-    }
-    .success {
-        color: green;
-    }
+
 </style>

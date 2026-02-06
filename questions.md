@@ -748,6 +748,8 @@ Refactor the `Modal` to change login password that is, create a new
 component `ChangeLoginPasswordModal` similarly to the
 `ChangeVaultPasswordModal` component.
 
+Devstral address issue 101 of `questions.md`
+
 
 
 # FUTURE
