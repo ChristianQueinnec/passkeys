@@ -780,3 +780,6 @@ stored on the server since none can be written by the server.
 incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password
+
+
+i18n not fully done for error messages.

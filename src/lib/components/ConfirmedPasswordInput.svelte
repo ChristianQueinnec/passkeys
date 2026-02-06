@@ -28,23 +28,13 @@
 
     $effect(() => {
         if (!newPassword || !confirmPassword) {
-            if (
-                errorMessage &&
-                (errorMessage === i18n.t("auth.passwords_no_match") ||
-                    errorMessage === "Passwords do not match")
-            ) {
-                errorMessage = "";
-            }
+            errorMessage = i18n.t("auth.passwords_no_match");
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            errorMessage =
-                i18n.t("auth.passwords_no_match") || "Passwords do not match";
-        } else if (
-            errorMessage === i18n.t("auth.passwords_no_match") ||
-            errorMessage === "Passwords do not match"
-        ) {
+            errorMessage = i18n.t("auth.passwords_no_match");
+        } else {
             errorMessage = "";
         }
     });

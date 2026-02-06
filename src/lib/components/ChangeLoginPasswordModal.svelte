@@ -3,6 +3,7 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
     import ConfirmedPasswordInput from "./ConfirmedPasswordInput.svelte";
     import { api } from "$lib/api";
+ import { untrack } from "svelte";
 
     let {
         isOpen,
@@ -24,9 +25,8 @@
         oldPassword; // Create dependency
         newPassword; // Create dependency
         confirmPassword; // Create dependency
-        if (error) {
-            error = "";
-        }
+        success;
+        error = "";
     });
 
     async function handleSubmit() {

@@ -2,8 +2,7 @@
   import { api } from "$lib/api";
   import PasswordInput from "./PasswordInput.svelte";
   import { i18n } from "$lib/stores/useI18n.svelte";
-  import { onMount, tick } from "svelte";
-  import { untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
 
   let username = $state("");
   let password = $state("");
@@ -33,13 +32,7 @@
      password;
      isRememberedPreference;
      trustDevice;
-     
-     // Use untrack for error to avoid clearing it immediately when it's set
-     untrack(() => {
-         if (error) {
-             error = "";
-         }
-     });
+     error;
  });
 
  async function handleLogin() {
@@ -49,9 +42,10 @@
          onLogin(username);
      } catch (e: any) {
          error = e.message;
+         await tick();
      } finally {
          // clear rapidly the password
-         setTimeout(() => (password = ""), 0);
+         password = "";
      }
      if (trustDevice) {
          localStorage.setItem("passkeys_device_preference", "safe");

@@ -130,31 +130,17 @@ test.describe('Authentication', () => {
         
         // Small wait for state to settle
         await page.waitForTimeout(300);
-        
+
         //Click submit
         await submitButton.click();
         
         // Wait a bit longer for the error to render
         await page.waitForTimeout(1000);
-        
-        // Take screenshot for debugging
-        await page.screenshot({ path: 'test-before-error-check.png', fullPage: true });
 
-        // Check if error appears
-        const errorElement = page.locator('.change-password-form .error');
-        const errorCount = await errorElement.count();
+        const errorElement = await page.locator('.error');
+        await expect(errorElement)
+            .toContainText(/passwords do not match|Les mots de passe ne correspondent pas/i);
         
-        if (errorCount === 0) {
-            // No error element found, let's check the whole page
-            const pageContent = await page.content();
-            console.log('Page HTML:', pageContent);
-            await page.screenshot({ path: 'test-error-not-found.png', fullPage: true });
-            throw new Error('Error element not found in DOM');
-        }
-        
-        await expect(errorElement).toBeVisible({ timeout: 5000 });
-        await expect(errorElement).toContainText(/passwords do not match|Les mots de passe ne correspondent pas/i);
-
         // Clear field to trigger auto-clear
         await newInput.fill('');
         await page.waitForTimeout(300);
@@ -169,9 +155,8 @@ test.describe('Authentication', () => {
         await submitButton.click();
         await page.waitForTimeout(1000);
 
-        const emptyErrorElement = page.locator('.change-password-form .error');
-        await expect(emptyErrorElement).toBeVisible({ timeout: 5000 });
-        await expect(emptyErrorElement).toContainText(/new password cannot be empty|Le nouveau mot de passe ne peut pas être vide/i);
+        await expect(errorElement).toBeVisible({ timeout: 5000 });
+        await expect(errorElement).toContainText(/new password cannot be empty|Le nouveau mot de passe ne peut pas être vide/i);
     });
 
     test('should clear login password after successful login', async ({ page }) => {
