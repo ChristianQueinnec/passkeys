@@ -719,7 +719,7 @@ Claude
 
 fix pwa tests
 
-Antigravity UNFINISHED
+Antigravity UNFINISHED OK
 
 ## 98 Safe Device
 
@@ -729,15 +729,22 @@ Propose a plan.
 
 CLAUDE test UNFINISHED, Antigravity OK
 
+## 99 Check password disappearance
+
+Check that the login password is forgotten after successful login.
+
+devstral-2 ok
+
+## 100 Fix printing Svelte5 proxies
+
+Can you suggest how to fix these warnings: 
+Your `console.log` contained `$state` proxies. Consider using `$inspect(...)` or `$state.snapshot(...)` instead
+
+Devstral-2
 
 
 
-
-## 99 Ch
-
-Make sure the login password is forgotten after successful login.
-
-CLAUDE?
+# FUTURE
 
 
 ## 99 Code sharing in server API
@@ -762,8 +769,6 @@ Remove the hack on the server side that accepts to download an
 unciphered vault. Remove also the hint about unciphered vaults
 stored on the server since none can be written by the server.
 
-__TESTING__ in client-settings ?
+incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password
-Make sure the login password is forgotten after successful login.
-

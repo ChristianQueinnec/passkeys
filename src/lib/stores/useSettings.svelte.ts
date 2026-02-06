@@ -33,7 +33,7 @@ function createSettingsStore() {
                 const data = await res.json();
                 current = { ...defaultSettings, ...data };
                 loaded = true;
-                console.log('Client settings loaded:', current);
+                console.log('Client settings loaded:', $state.snapshot(current));
             }
         } catch (e) {
             console.error('Failed to load client settings, using defaults:', e);

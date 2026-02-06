@@ -173,4 +173,33 @@ test.describe('Authentication', () => {
         await expect(emptyErrorElement).toBeVisible({ timeout: 5000 });
         await expect(emptyErrorElement).toContainText(/new password cannot be empty|Le nouveau mot de passe ne peut pas être vide/i);
     });
+
+    test('should clear login password after successful login', async ({ page }) => {
+        await page.getByPlaceholder('Username').fill('auth_test');
+        await page.getByPlaceholder('Password').fill('password');
+        
+        // Verify password field has value before login
+        const passwordValueBefore = await page.evaluate(() => {
+            const passwordInput = document.querySelector('input[type="password"]') as HTMLInputElement;
+            return passwordInput.value;
+        });
+        expect(passwordValueBefore).toBe('password');
+        
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Enter');
+
+        // Wait for successful login
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1', { timeout: 10000 });
+        await expect(page.getByTestId('unlock-button')).toBeVisible();
+
+        // Wait for password clearing (1 second timeout in the code)
+        await page.waitForTimeout(1100);
+
+        // Verify password field is cleared after successful login
+        const passwordValueAfter = await page.evaluate(() => {
+            const passwordInput = document.querySelector('input[type="password"]') as HTMLInputElement;
+            return passwordInput.value;
+        });
+        expect(passwordValueAfter).toBe('');
+    });
 });

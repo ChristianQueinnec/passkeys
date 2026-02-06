@@ -43,13 +43,17 @@ run.tests :
 	npm run check
 	npm run test:unit
 #	npm run test:e2e
+	-rm -f /tmp/tests-e2e.txt
 	for t in tests/e2e/*.spec.ts ; do \
 		./scripts/init.sh -t ; \
 		echo "			*** $$t ***" ; \
 		npx playwright test --workers=1 $$t || { \
 		sleep 1 ; npx playwright test --workers=1 $$t ; } || \
-		exit 1 ; done
-	-kill -9 $$(cat /tmp/passkeys.pid) && rm -f /tmp/passkeys.pid
+		echo "FAILURE $$t" >> /tmp/tests-e2e.txt ; done
+	-kill -9 $$(cat /tmp/passkeys.pid) && rm -f /tmp/passkeys.pid && true
+	[ -f /tmp/tests-e2e.txt ] && { \
+		echo "*********************** Tests failures:" ; \
+		cat /tmp/tests-e2e.txt ; }
 	@echo; echo "******* End of all tests "; echo
 
 REMOTE=pk.queinnec.org

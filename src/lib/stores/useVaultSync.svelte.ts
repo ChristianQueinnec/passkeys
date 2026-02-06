@@ -22,12 +22,12 @@ export function useVaultSync(
         if (!api.token) return;
         try {
             const metadata = await api.getLatestVaultMetadata();
-            console.log("Polling success, server mtime:", metadata.mtime, "local lastSavedDate:", vault.lastSavedDate);
+            console.log("Polling success, server mtime:", metadata.mtime, "local lastSavedDate:", $state.snapshot(vault.lastSavedDate));
             vault.setOfflineMode(false);
             if (metadata.mtime && vault.lastSavedDate) {
                 const serverTime = new Date(metadata.mtime).getTime();
                 const localTime = new Date(vault.lastSavedDate).getTime();
-                console.log("Comparing times:", serverTime, localTime);
+                console.log("Comparing times:", serverTime, localTime, "serverTime > localTime:", serverTime > localTime);
                 if (serverTime > localTime + 1000) {
                     console.log("Newer version available!");
                     vault.setNewerVersionAvailable(true);

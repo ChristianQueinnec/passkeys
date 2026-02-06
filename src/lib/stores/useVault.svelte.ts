@@ -49,6 +49,8 @@ export function useVault(
                 }
                 console.log(
                     `Vault loaded from server in ${Date.now() - start}ms`,
+                    `items:`, $state.snapshot(items),
+                    `isDirty:`, $state.snapshot(isDirty),
                 );
                 newerVersionAvailable = false;
             }

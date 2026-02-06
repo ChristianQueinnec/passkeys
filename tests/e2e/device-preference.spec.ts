@@ -11,7 +11,7 @@ test.describe('Safe Device Preference Memory', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/api/test/reset-rate-limit');
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    //page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     // await page.goto('/api/test/reset-rate-limit');
     await page.addInitScript(() => {
       (window as any).__TESTING__ = true;
