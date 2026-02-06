@@ -42,24 +42,25 @@
      });
  });
 
-  async function handleLogin() {
-    try {
-      await api.login(username, password, trustDevice);
-      onLogin(username);
-    } catch (e: any) {
-      error = e.message;
-    } finally {
-      // clear rapidly the password
-      setTimeout(() => (password = ""), 1000);
-    }
-    if (trustDevice) {
-      localStorage.setItem("passkeys_device_preference", "safe");
-    } else if (isRememberedPreference) {
-      localStorage.setItem("passkeys_device_preference", "unsafe");
-    } else {
-      localStorage.removeItem("passkeys_device_preference");
-    }
-  }
+ async function handleLogin() {
+     try {
+         await api.login(username, password, trustDevice);
+         password = '';
+         onLogin(username);
+     } catch (e: any) {
+         error = e.message;
+     } finally {
+         // clear rapidly the password
+         setTimeout(() => (password = ""), 0);
+     }
+     if (trustDevice) {
+         localStorage.setItem("passkeys_device_preference", "safe");
+     } else if (isRememberedPreference) {
+         localStorage.setItem("passkeys_device_preference", "unsafe");
+     } else {
+         localStorage.removeItem("passkeys_device_preference");
+     }
+ }
 </script>
 
 <div class="card">

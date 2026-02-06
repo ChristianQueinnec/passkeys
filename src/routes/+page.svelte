@@ -100,7 +100,7 @@
         }
     });
 
-    async function handleLogin(newUsername: string, newPassword?: string) {
+    async function handleLogin(newUsername: string) {
         username = newUsername;
         vaultExists = false; // Force reset
         await checkVaultExists();
@@ -150,7 +150,7 @@
         showUserMenu = !showUserMenu;
     }
 
-    function openChangePassword() {
+    function changeLoginPassword() {
         showChangePasswordModal = true;
         showUserMenu = false;
         cpOldPassword = "";
@@ -264,7 +264,7 @@
                     {#if showUserMenu}
                         <div class="dropdown-menu">
                             <button
-                                onclick={openChangePassword}
+                                onclick={changeLoginPassword}
                                 data-testid="menu-change-password"
                                 >{i18n.t("auth.change_password")}</button
                             >

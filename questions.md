@@ -742,6 +742,12 @@ Your `console.log` contained `$state` proxies. Consider using `$inspect(...)` or
 
 Devstral-2
 
+## 101 Refactor Change Login Password
+
+Refactor the `Modal` to change login password that is, create a new
+component `ChangeLoginPasswordModal` similarly to the
+`ChangeVaultPasswordModal` component.
+
 
 
 # FUTURE

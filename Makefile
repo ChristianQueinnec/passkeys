@@ -50,11 +50,13 @@ run.tests :
 		npx playwright test --workers=1 $$t || { \
 		sleep 1 ; npx playwright test --workers=1 $$t ; } || \
 		echo "FAILURE $$t" >> /tmp/tests-e2e.txt ; done
-	-kill -9 $$(cat /tmp/passkeys.pid) && rm -f /tmp/passkeys.pid && true
-	[ -f /tmp/tests-e2e.txt ] && { \
+	@echo; if [ -f /tmp/tests-e2e.txt ] ; then \
 		echo "*********************** Tests failures:" ; \
-		cat /tmp/tests-e2e.txt ; }
-	@echo; echo "******* End of all tests "; echo
+		cat /tmp/tests-e2e.txt ; else \
+		echo "******* Successful end of all tests "; fi ; echo 
+	-[ -f /tmp/passkeys.pid ] && \
+	  	kill -9 $$(cat /tmp/passkeys.pid) && \
+		rm -f /tmp/passkeys.pid
 
 REMOTE=pk.queinnec.org
 archive.container : tag.container
