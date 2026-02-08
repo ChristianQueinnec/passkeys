@@ -253,8 +253,7 @@ test.describe('Vault Deletion', () => {
         const initialCount = await rows.count();
 
         // Verify the filename contains a timestamp pattern
-        const firstRowText = await rows.first().textContent();
-        expect(firstRowText).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}/); // ISO date pattern
+        await expect(rows.first()).toHaveText(/\d{1,2}\/\d{1,2}\/\d{4}/); // ISO date pattern
 
         // Delete it
         page.once('dialog', dialog => dialog.accept());

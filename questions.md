@@ -748,9 +748,17 @@ Refactor the `Modal` to change login password that is, create a new
 component `ChangeLoginPasswordModal` similarly to the
 `ChangeVaultPasswordModal` component.
 
-Devstral address issue 101 of `questions.md`
+Devstral: address issue 101 of `questions.md`
 
+## 102 Use retrying assertions
 
+Some tests are currently failing due to the use of non-retrying
+Playwright assertions (like isChecked() and textContent()) which can
+fail if hydration hasn't completed. Prefer retrying assertions like
+toBeChecked() and toHaveText(). Check the files of `tests/e2e/` 
+and list the files to fix.
+
+devstral: address issue 102 of `questions.md`
 
 # FUTURE
 
@@ -781,11 +789,5 @@ incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password
 
-
 i18n not fully done for error messages.
 
-
-Some tests are currently failing due to the use of non-retrying
-Playwright assertions (like isChecked() and textContent()) which can
-fail if hydration hasn't completed. Prefer retrying assertions like
-toBeChecked() and toHaveText().

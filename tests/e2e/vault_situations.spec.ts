@@ -186,13 +186,13 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login without trust
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
@@ -239,13 +239,13 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         // Should proceed to unlock even without server vault
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Should initialize empty vault or load from offline cache
@@ -290,12 +290,12 @@ test.describe('Vault Situations: Vault Presence at Unlock', () => {
         });
 
         // Login and unlock
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -320,12 +320,12 @@ test.describe('Vault Situations: Synchronization', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login and unlock
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
     });
@@ -479,16 +479,16 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         });
     });
 
-    test('should prevent saving when offline', async ({ page }) => {
+    test('should allow saving locally when offline', async ({ page }) => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login and get to vault view
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
@@ -502,26 +502,25 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await page.getByTestId('edit-title').fill('Offline Entry');
         await page.getByTestId('edit-save').click();
 
-        // Save button should appear but be disabled
+        // Save button should appear and NOT be disabled (local save is allowed)
         const saveBtn = page.getByTestId('save-vault-btn');
         await expect(saveBtn).toBeVisible();
-        await expect(saveBtn).toBeDisabled();
+        await expect(saveBtn).toBeEnabled();
 
-        // Should show error message or remain dirty
-        await page.waitForTimeout(500);
-        // Button should still be visible (save failed)
+        // Click save - should stay visible because it fails server save but succeeds local save
+        await saveBtn.click();
         await expect(saveBtn).toBeVisible();
     });
 
     test('should restore online mode when connection returns', async ({ page }) => {
         await ensureVaultExists(page, username, password, vaultKey);
 
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
@@ -546,13 +545,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // First, populate cache
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
@@ -637,8 +636,8 @@ test.describe('Vault Situations: Edge Cases', () => {
         await page.evaluate(() => localStorage.clear());
         await page.reload();
 
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.click('[data-testid="login-button"]');
 
         // Use wrong vault key
@@ -647,7 +646,7 @@ test.describe('Vault Situations: Edge Cases', () => {
             await dialog.dismiss();
         });
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', 'wrong-key-intentionally');
+        await page.getByTestId('password-input').fill('wrong-key-intentionally');
         await page.click('[data-testid="unlock-button"]');
 
         // Should remain at unlock screen

@@ -200,11 +200,11 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       // Login and load vault online
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
-      await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('login-button').click();
 
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
 
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
@@ -560,12 +560,12 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     test('should persist vault on safe device after reload', async ({ page }) => {
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
-      await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('trust-device-checkbox').check();
       await page.getByTestId('login-button').click();
 
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
       await page.waitForSelector('[data-testid="vault-item"]', { timeout: 10000 });
@@ -594,12 +594,12 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       await page.reload();
 
       await page.getByTestId('username-input').fill('admin');
-      await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       // DO NOT check trust device
       await page.getByTestId('login-button').click();
 
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
       await page.waitForSelector('[data-testid="vault-item"]', { timeout: 10000 });
@@ -631,17 +631,16 @@ test.describe('PWA Offline Functionality (E2E)', () => {
           console.log(`[BROWSER]: ${text}`);
         }
       });
-      // Step 1: Login online
       console.log('Step 1: Login');
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
-      await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('login-button').click();
 
       // Step 2: Unlock vault
       console.log('Step 2: Unlock');
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
       await page.waitForSelector('[data-testid="vault-item"]');
@@ -732,7 +731,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       // Actually, let's keep it offline but use domcontentloaded
       await page.reload({ waitUntil: 'domcontentloaded' });
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+      await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
 
       // Entry should still be there
@@ -752,11 +751,11 @@ test.describe('PWA Offline Functionality (E2E)', () => {
 async function loginAndUnlockVault(page: Page) {
   await page.goto('/');
   await page.getByTestId('username-input').fill('admin');
-  await page.getByPlaceholder(/Password|Mot de passe/).fill('password');
+  await page.getByTestId('password-input').fill('password');
   await page.getByTestId('login-button').click();
 
   await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-  await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+  await page.getByTestId('password-input').fill('password');
   await page.getByTestId('unlock-button').click();
 
   await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
