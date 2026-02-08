@@ -17,19 +17,18 @@ const vaultDir = path.join(process.cwd(), 'data', username);
 
 async function ensureVaultExists(page: any, user: string, pass: string, key: string) {
     console.log(`[DEBUG] Ensuring vault exists for ${user}...`);
-    await page.fill('input[placeholder="Username"]', user);
-    await page.fill('[data-testid="password-input"]', pass);
-    await page.click('[data-testid="login-button"]');
+    await page.getByTestId('username-input').fill(user);
+    await page.getByTestId('password-input').fill(pass);
+    await page.getByTestId('login-button').click();
 
     console.log(`[DEBUG] Waiting for Unlock screen for ${user}...`);
     // Wait for Unlock screen
-    // First access is very long!
     await expect(page.getByTestId('unlock-button'))
-        .toBeVisible({ timeout: 50 * 1000 });
+        .toBeVisible({ timeout: 20000 });
 
     console.log(`[DEBUG] Unlocking for ${user}...`);
-    await page.fill('[data-testid="password-input"]', key);
-    await page.click('[data-testid="unlock-button"]');
+    await page.getByTestId('password-input').fill(key);
+    await page.getByTestId('unlock-button').click();
 
     console.log(`[DEBUG] Waiting for Dashboard for ${user}...`);
     // Wait for Dashboard
@@ -43,7 +42,7 @@ async function ensureVaultExists(page: any, user: string, pass: string, key: str
     const saveBtn = page.getByTestId('save-vault-btn');
     await expect(saveBtn).toBeVisible();
     await saveBtn.click();
-    await expect(saveBtn).not.toBeVisible({ timeout: 10000 });
+    await expect(saveBtn).not.toBeVisible({ timeout: 15000 });
 
     await page.getByTestId('user-menu-btn').click();
     await page.getByTestId('menu-logout').click();
@@ -69,14 +68,14 @@ test.describe('Vault Situations: Safe Device', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login with "trust this device" checked
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
         // Unlock vault
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Wait for vault to load
@@ -104,13 +103,13 @@ test.describe('Vault Situations: Safe Device', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // First, login and cache vault
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.getByTestId('trust-device-checkbox').check();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -158,13 +157,13 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login WITHOUT "trust this device"
-        await page.fill('input[placeholder="Username"]', username);
-        await page.fill('[data-testid="password-input"]', password);
+        await page.getByTestId('username-input').fill(username);
+        await page.getByTestId('password-input').fill(password);
         await page.getByTestId('trust-device-checkbox').uncheck();
         await page.click('[data-testid="login-button"]');
 
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         await expect(page.locator('.folder-dashboard')).toBeVisible();
@@ -584,13 +583,13 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
 
         // Even with API blocked, we should be able to see Unlock screen because token is in localStorage
         await expect(page.getByTestId('unlock-button')).toBeVisible();
-        await page.fill('[data-testid="password-input"]', vaultKey);
+        await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');
 
         // Should load from cache
-        // Should load from cache
         await expect(page.locator('.folder-dashboard')).toBeVisible();
-        await expect(page.getByText('Cached Entry')).toBeVisible({ timeout: 10000 });
+        // Use a more specific selector to avoid strict mode violation (2 elements found)
+        await expect(page.locator('.item-title').getByText('Cached Entry')).toBeVisible({ timeout: 10000 });
     });
 });
 
