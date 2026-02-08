@@ -12,49 +12,39 @@
 
   let { onLogin } = $props();
 
- onMount(async () => {
-     getSavedPreference();
-     await tick();
- });
+  onMount(async () => {
+    getSavedPreference();
+    await tick();
+  });
 
- function getSavedPreference () {
-     const savedPreference = localStorage.getItem("passkeys_device_preference");
-     if (savedPreference) {
-         trustDevice = savedPreference === "safe";
-         isRememberedPreference = true;
-     }
- }
+  function getSavedPreference() {
+    const savedPreference = localStorage.getItem("passkeys_device_preference");
+    if (savedPreference) {
+      trustDevice = savedPreference === "safe";
+      isRememberedPreference = true;
+    }
+  }
 
-  // Auto-clear error when user starts typing in either field
- $effect(() => {
-     // Create dependencies on username and password
-     username;
-     password;
-     isRememberedPreference;
-     trustDevice;
-     error;
- });
-
- async function handleLogin() {
-     try {
-         await api.login(username, password, trustDevice);
-         password = '';
-         onLogin(username);
-     } catch (e: any) {
-         error = e.message;
-         await tick();
-     } finally {
-         // clear rapidly the password
-         password = "";
-     }
-     if (trustDevice) {
-         localStorage.setItem("passkeys_device_preference", "safe");
-     } else if (isRememberedPreference) {
-         localStorage.setItem("passkeys_device_preference", "unsafe");
-     } else {
-         localStorage.removeItem("passkeys_device_preference");
-     }
- }
+  async function handleLogin() {
+    try {
+      await api.login(username, password, trustDevice);
+      password = "";
+      onLogin(username);
+    } catch (e: any) {
+      error = e.message;
+      await tick();
+    } finally {
+      // clear rapidly the password
+      password = "";
+    }
+    if (trustDevice) {
+      localStorage.setItem("passkeys_device_preference", "safe");
+    } else if (isRememberedPreference) {
+      localStorage.setItem("passkeys_device_preference", "unsafe");
+    } else {
+      localStorage.removeItem("passkeys_device_preference");
+    }
+  }
 </script>
 
 <div class="card">

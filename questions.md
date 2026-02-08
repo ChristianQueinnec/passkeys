@@ -783,3 +783,9 @@ hide better the vault password
 
 
 i18n not fully done for error messages.
+
+
+Some tests are currently failing due to the use of non-retrying
+Playwright assertions (like isChecked() and textContent()) which can
+fail if hydration hasn't completed. Prefer retrying assertions like
+toBeChecked() and toHaveText().

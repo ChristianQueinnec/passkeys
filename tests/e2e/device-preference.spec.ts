@@ -35,7 +35,7 @@ test.describe('Safe Device Preference Memory', () => {
 
       // Then: Checkbox should be unchecked by default
       // and isRememberedPreference should be false
-      await expect(await page.getByTestId('trust-device-checkbox').isChecked()).toBe(false);
+      await expect(page.getByTestId('trust-device-checkbox')).not.toBeChecked();
     });
 
     test('should show default help text for first-time users', async ({ page }) => {
@@ -46,8 +46,7 @@ test.describe('Safe Device Preference Memory', () => {
 
       // Then: Should show first-time message like:
       // "Trust this device? If yes, encrypted credentials will be stored locally."
-      await expect(await page.locator('.trust-device').textContent())
-        .toMatch(/(Trust this device|Faire confiance)/i);
+      await expect(page.locator('.trust-device')).toHaveText(/(Trust this device|Faire confiance)/i);
     });
 
     test('should save preference to localStorage after login', async ({ page }) => {
@@ -84,7 +83,7 @@ test.describe('Safe Device Preference Memory', () => {
       await page.evaluate(() => localStorage.setItem('passkeys_device_preference', 'safe'));
       await page.reload();
       await expect(await page.evaluate(() => localStorage.getItem('passkeys_device_preference'))).toBe('safe');
-      await expect(await page.getByTestId('trust-device-checkbox').isChecked()).toBe(true);
+      await expect(page.getByTestId('trust-device-checkbox')).toBeChecked();
 
       await page.locator('.trust-device').uncheck();
       // Setup initial user and login
@@ -117,8 +116,7 @@ test.describe('Safe Device Preference Memory', () => {
       await expect(page.getByTestId('trust-device-checkbox')).toBeChecked();
       await expect(storageVal).toBe('safe');
       // show "remembered preference" message
-      await expect(await page.locator('.trust-device').textContent())
-        .toMatch(/(marked as safe|marqué comme sûr)/i);
+      await expect(page.locator('.trust-device')).toHaveText(/(marked as safe|marqué comme sûr)/i);
     });
 
     test('should allow user to change preference', async ({ page }) => {
@@ -172,8 +170,7 @@ test.describe('Safe Device Preference Memory', () => {
       expect(isRememberedPreference).toBe(true);
       expect(isSafeDevice).toBe(false);
       // Message should be like: "This device was previously marked as unsafe."
-      await expect(await page.locator('.trust-device').textContent())
-        .toMatch(/(marked as unsafe|marqué comme non sûr)/i);
+      await expect(page.locator('.trust-device')).toHaveText(/(marked as unsafe|marqué comme non sûr)/i);
     });
 
     test('should allow user to upgrade to safe device', async ({ page }) => {
