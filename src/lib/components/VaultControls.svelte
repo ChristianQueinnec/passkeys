@@ -33,7 +33,7 @@
     <div class="actions">
         <button
             onclick={onToggleView}
-            title="Switch view"
+            title={i18n.t("vault.view.switch")}
             data-testid="toggle-view-btn"
         >
             {@render viewIcon()}

@@ -3,9 +3,10 @@
   import { onMount } from "svelte";
   import EyeOpenIcon from "../icons/EyeOpenIcon.svelte";
   import EyeClosedIcon from "../icons/EyeClosedIcon.svelte";
+  import { i18n } from "$lib/stores/useI18n.svelte";
 
   export let value: string = "";
-  export let placeholder: string = "Password";
+  export let placeholder: string = i18n.t("auth.password_placeholder");
   export let id: string = "vault-password";
   export let autocomplete: HTMLInputAttributes["autocomplete"] =
     "current-password";
@@ -22,6 +23,7 @@
   });
 
   function togglePasswordVisibility() {
+    passwordinput?.focus();
     showPassword = !showPassword;
   }
 </script>
@@ -42,7 +44,9 @@
     type="button"
     class="toggle-password"
     on:click={togglePasswordVisibility}
-    aria-label={showPassword ? "Hide password" : "Show password"}
+    aria-label={showPassword
+      ? i18n.t("auth.hide_password")
+      : i18n.t("auth.show_password")}
     tabindex="-1"
   >
     {#if showPassword}

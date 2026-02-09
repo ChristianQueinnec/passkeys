@@ -246,9 +246,7 @@
                             class="reset-filter"
                             onclick={() => (filter = "")}
                             data-testid="reset-filter"
-                            title={i18n.language === "en"
-                                ? "Reset filter"
-                                : "Réinitialiser le filtre"}
+                            title={i18n.t("vault.filter_reset")}
                         >
                             ×
                         </button>

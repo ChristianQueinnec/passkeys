@@ -768,11 +768,19 @@ selected in `LanguageSwitcher`
 
 Antigravity
 
-## 104 Internationalization
+## 104 i18n Completeness Fixes
 
 Check whether i18n is complete for all texts seen by the UI user.
-Propose fixes but do not apply these fixes.
 
+Antigravity OK
+
+## 105 keep vault ciphered as long as possible
+
+Deciphering the vault is fast so keep the vault always ciphered and
+decipher it only when copying username, password or opening site url.
+Delete the deciphered copy of the vault as soon as possible.
+
+In that case, useVaultSecurity ...
 
 # FUTURE
 
@@ -787,15 +795,14 @@ Do you see possible code sharing in server API.
 
 ## Tests speed
 
-Improve the speed of `tests/e2e/`
+In order to improve the speed of `tests/e2e/` check the flakyness
+of PWA offline tests.
 
 
 
 # Potential FUTURE
 
 bypass Login page if coming from authenticated nginx proxy ?
-
-decipher vault only when copy to clipboard
 
 ask for a small part of the vault password to re-unlock it once
 authenticated.
@@ -809,6 +816,4 @@ stored on the server since none can be written by the server.
 incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password
-
-i18n not fully done for error messages.
 
