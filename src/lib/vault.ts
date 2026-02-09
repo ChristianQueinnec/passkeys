@@ -1,11 +1,11 @@
 import type { PasswordEntry } from './types';
 
 /**
- * Sorts password entries alphabetically by title using French collation.
+ * Sorts password entries alphabetically by title using the provided locale's collation.
  */
-export function sortPasswordEntries(entries: PasswordEntry[]): PasswordEntry[] {
+export function sortPasswordEntries(entries: PasswordEntry[], locale = "en"): PasswordEntry[] {
     return [...entries].sort((a, b) =>
-        new Intl.Collator("fr", {
+        new Intl.Collator(locale, {
             sensitivity: "base",
             ignorePunctuation: true,
         }).compare(a.title || "", b.title || ""),

@@ -25,8 +25,11 @@
     let filter = $state("");
     let displayedEntries = $derived(
         filter
-            ? sortPasswordEntries(filterPasswordEntries(vault.items, filter))
-            : sortPasswordEntries(selectedFolder?.entries || []),
+            ? sortPasswordEntries(
+                  filterPasswordEntries(vault.items, filter),
+                  i18n.language,
+              )
+            : sortPasswordEntries(selectedFolder?.entries || [], i18n.language),
     );
     let dragTargetNode = $state<FolderNode | null>(null);
 
@@ -59,11 +62,15 @@
             entries: [],
         };
 
+        const collator = new Intl.Collator(i18n.language, {
+            sensitivity: "base",
+            ignorePunctuation: true,
+        });
         const sortedItems = [...vault.items].sort((a, b) => {
             const groupA = a.group || "";
             const groupB = b.group || "";
-            if (groupA !== groupB) return groupA.localeCompare(groupB);
-            return a.title.localeCompare(b.title);
+            if (groupA !== groupB) return collator.compare(groupA, groupB);
+            return collator.compare(a.title, b.title);
         });
 
         for (const item of sortedItems) {

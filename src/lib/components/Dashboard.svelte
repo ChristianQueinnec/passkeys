@@ -12,7 +12,10 @@
     // View-specific state
     let filter = $state("");
     let filteredFiles = $derived(
-        sortPasswordEntries(filterPasswordEntries(vault.items, filter)),
+        sortPasswordEntries(
+            filterPasswordEntries(vault.items, filter),
+            i18n.language,
+        ),
     );
 </script>
 

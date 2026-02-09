@@ -759,14 +759,35 @@ toBeChecked() and toHaveText(). Check the files of `tests/e2e/`
 and list the files to fix.
 
 devstral: address issue 102 of `questions.md`
+Unfortunately, devstral patches the files rather than just list.
+
+## 103 Sort password entries 
+
+In `vault.ts`, sort password entries according to the language
+selected in `LanguageSwitcher`
+
+Antigravity
+
+## 104 Internationalization
+
+Check whether i18n is complete for all texts seen by the UI user.
+Propose fixes but do not apply these fixes.
+
 
 # FUTURE
 
 
-## 99 Code sharing in server API
+
+##  Code sharing in server API
 
 Do you see possible code sharing in server API.
 
+## Hide vault more
+
+
+## Tests speed
+
+Improve the speed of `tests/e2e/`
 
 
 

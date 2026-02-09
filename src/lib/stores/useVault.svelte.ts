@@ -4,13 +4,15 @@ import { sortPasswordEntries, normalizeVaultItems } from "$lib/vault";
 import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
+import { i18n } from "./useI18n.svelte";
 
 export function useVault(
     getEncryptionKey: () => CryptoKey,
 ) {
 
     // State
-    let items = $state<PasswordEntry[]>([]);
+    let _items = $state<PasswordEntry[]>([]);
+    let items = $derived(sortPasswordEntries(_items, i18n.language));
     let selectedItem = $state<PasswordEntry | null>(null);
     let editingItem = $state<PasswordEntry | null>(null);
     let isCreating = $state(false);
@@ -110,7 +112,7 @@ export function useVault(
                 success = true;
             }
         } finally {
-            items = sortPasswordEntries(unsortedItems);
+            _items = unsortedItems;
             isLoading = false;
         }
         return success;
@@ -118,7 +120,7 @@ export function useVault(
 
     async function saveVault(both = true) {
         if (isLoading) return;
-        const jsonStr = JSON.stringify(items);
+        const jsonStr = JSON.stringify(_items);
         const encrypted = await encrypt(jsonStr, getEncryptionKey());
 
         const payload = {
@@ -217,17 +219,17 @@ export function useVault(
     async function handleSave(updatedItem: PasswordEntry) {
         let newItems;
         if (isCreating) {
-            newItems = [...items, updatedItem];
+            newItems = [..._items, updatedItem];
         } else {
-            const index = items.findIndex((i) => i.id === updatedItem.id);
+            const index = _items.findIndex((i) => i.id === updatedItem.id);
             if (index !== -1) {
-                newItems = [...items];
+                newItems = [..._items];
                 newItems[index] = updatedItem;
             } else {
-                newItems = [...items, updatedItem];
+                newItems = [..._items, updatedItem];
             }
         }
-        items = sortPasswordEntries(newItems);
+        _items = newItems;
         isCreating = false;
         editingItem = null;
         isDirty = true;
@@ -235,7 +237,7 @@ export function useVault(
 
     async function handleDelete(item: PasswordEntry) {
         if (confirm("Delete " + item.title + "?")) {
-            items = items.filter((i) => i.id !== item.id);
+            _items = _items.filter((i) => i.id !== item.id);
             selectedItem = null;
             isDirty = true;
         }
@@ -295,13 +297,12 @@ export function useVault(
             // Let's concat and sort.
 
             // However, to avoid ID conflicts if user imports same file twice, we should check IDs.
-            const currentIds = new Set(items.map(i => i.id));
+            const currentIds = new Set(_items.map(i => i.id));
             const distinctNew = normalized.filter(i => !currentIds.has(i.id));
 
             // If we really want to support 'submit an initial unciphered vault', user probably has empty vault or wants to populate it.
-            // Let's just append for now and sort.
-
-            items = sortPasswordEntries([...items, ...distinctNew]);
+            // Let's concat and sort.
+            _items = [..._items, ...distinctNew];
             isDirty = true;
             return true;
         } catch (e) {
@@ -355,7 +356,7 @@ export function useVault(
 
         // Setters (for use by other composables)
         setItems: (newItems: PasswordEntry[]) => {
-            items = newItems;
+            _items = newItems;
         },
         setOfflineMode: (offline: boolean) => {
             offlineMode = offline;
