@@ -779,11 +779,7 @@ Antigravity OK
 In order to improve the speed of `tests/e2e/` check the flakyness
 of PWA offline tests.
 
-Antigravity
-
-
-
-
+Antigravity OK
 
 ## 106 keep vault ciphered as long as possible
 
@@ -791,7 +787,9 @@ Deciphering the vault is fast so always keep the vault ciphered and
 decipher it only when copying username, password or opening site url.
 Delete the deciphered copy of the vault as soon as possible.
 
-In that case, useVaultSecurity ...
+Antigravity
+
+
 
 # FUTURE
 

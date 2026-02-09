@@ -5,9 +5,11 @@ import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 import { i18n } from "./useI18n.svelte";
+import { useVaultSecurity, sanitizeItems } from "./useVaultSecurity.svelte"; // Import helper
 
 export function useVault(
     getEncryptionKey: () => CryptoKey,
+    onLock?: () => void,
 ) {
 
     // State
@@ -33,6 +35,44 @@ export function useVault(
 
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
 
+    // Security store (for inactivity timeout logic)
+    // We pass a callback to "lock" the vault on timeout
+    const security = useVaultSecurity(
+        // @ts-ignore: circular dependency if we passed 'this'? 
+        // Actually useVaultSecurity doesn't need 'vault' anymore for sanitizing.
+        // It needs a callback to lock.
+        {
+            onLock: () => {
+                if (onLock) {
+                    onLock();
+                } else {
+                    // Default fallback if no handler provided
+                    _items = [];
+                    encryptedVaultData = null;
+                    alert(i18n.t("vault.security_timeout"));
+                }
+            }
+        },
+        () => true // isActive placeholder, handled by event listeners inside
+    );
+
+    // Helper: Decrypt full vault transiently to match ID
+    async function getDecryptedItem(id: string): Promise<PasswordEntry | undefined> {
+        if (!encryptedVaultData) return undefined;
+        try {
+            const jsonStr = await decrypt(
+                encryptedVaultData.cipher,
+                encryptedVaultData.iv,
+                getEncryptionKey(),
+            );
+            const allItems: PasswordEntry[] = JSON.parse(jsonStr);
+            return allItems.find(i => i.id === id);
+        } catch (e) {
+            console.error("Failed to decrypt item", e);
+            return undefined;
+        }
+    }
+
     // Vault Operations
     async function loadVault() {
         isLoading = true;
@@ -51,7 +91,8 @@ export function useVault(
                 }
                 console.log(
                     `Vault loaded from server in ${Date.now() - start}ms`,
-                    `items:`, $state.snapshot(items),
+                    // Don't log full items
+                    `items count:`, $state.snapshot(items).length,
                     `isDirty:`, $state.snapshot(isDirty),
                 );
                 newerVersionAvailable = false;
@@ -75,6 +116,8 @@ export function useVault(
             unsortedItems = [];
             if (vaultContent) {
                 if (Array.isArray(vaultContent)) {
+                    // Legacy unencrypted array? Should not happen in "Always ciphered" new world ideally
+                    // But if it does, sanitize it.
                     unsortedItems = normalizeVaultItems(vaultContent);
                     isDirty = true;
                     success = true;
@@ -97,7 +140,8 @@ export function useVault(
                             encryptedData.iv,
                             getEncryptionKey(),
                         );
-                        unsortedItems = JSON.parse(jsonStr);
+                        const allItems = JSON.parse(jsonStr);
+                        unsortedItems = sanitizeItems(allItems); // SANITIZE IMMEDIATELY
                         isDirty = false;
                         success = true;
                     } catch (e) {
@@ -118,9 +162,130 @@ export function useVault(
         return success;
     }
 
+    // saveVault needs to construct the full encrypted payload
+    // BUT we only have sanitized items in _items.
+    // AND we have encryptedVaultData.
+    // So we need to:
+    // 1. Decrypt current encryptedVaultData to get full items.
+    // 2. Or, wait, if we are in "isDirty" state (added/edited item), we need to merge?
+    // How do we track changes if we don't have the full vault?
+    // When editing/adding, we likely have the specific item in full (from startEdit).
+    // So we must have a way to apply that change to the *full* vault.
+    // 
+    // Problem: `_items` doesn't have secrets.
+    // If we rely on `encryptedVaultData` as the source of truth for secrets,
+    // we need to decrypt it to save ANY change (e.g. renaming an item).
+
+    // Strategy for Save:
+    // 1. Decrypt `encryptedVaultData` -> `allItems`
+    // 2. Iterate `_items` (which acts as the "structure" source of truth? No, `_items` might be filtered/sanitized).
+    // Actually, `_items` IS the list of items the user sees.
+    // If we deleted an item, it's gone from `_items`.
+    // If we added an item, it's in `_items` (but maybe sanitized if we just saved it? No, if we just created it, it might still have secrets?).
+    // 
+    // Wait, if we create an item, we have the secrets in `editingItem`. 
+    // When we `handleSave`, we update `_items`. 
+    // Does `_items` store secrets for NEW items?
+    // If we sanitize `_items` on load, they don't have secrets.
+    // If we add a new item, we should probably sanitize it before putting in `_items` 
+    // BUT we need to persist the secret somewhere until save?
+    // 
+    // Better approach:
+    // `saveVault` essentially needs to re-encrypt everything.
+    // We cannot re-encrypt what we don't have.
+    // So we MUST decrypt the old vault, merge changes, and re-encrypt.
+    // 
+    // BUT, what about concurrent changes? `_items` reflects deletions/reorders?
+    // 
+    // Let's refine `handleSave` and `handleDelete`.
+    // We need a way to apply "diffs" or just reconstruct.
+    // 
+    // If we treat `encryptedVaultData` as the *only* persistent storage of secrets.
+    // And `_items` as the view.
+    // When we `saveVault`:
+    // 1. Decrypt `encryptedVaultData` to get `oldFullItems`.
+    // 2. We need to sync `_items` (view) with `oldFullItems` (secrets).
+    //    - Items in `_items` but not `oldFullItems` -> NEW (where are secrets?)
+    //    - Items in `oldFullItems` but not `_items` -> DELETED
+    //    - Items in both -> UPDATED (where are updates?)
+    // 
+    // This implies we need to keep "unsaved secrets" in memory until save?
+    // Or we save immediately on edit?
+    // The prompt says "keep the vault ciphered... decipher it only when copying...".
+    // It doesn't explicitly forbid keeping *newly created* secrets in memory until save.
+    // But "Delete the deciphered copy... as soon as possible".
+    // 
+    // Maybe `handleSave` (which is "Done" in editor) should immediately triggering a `saveVault`?
+    // In the current app, `handleSave` just updates local state. User clicks "Save Vault" later.
+    // This "deferred save" model is hard if we don't keep secrets.
+    // 
+    // Alternative:
+    // We keep a `dirtySecrets` map: `Map<id, PasswordEntry>` containing full data for modified/new items.
+    // When `saveVault` runs:
+    // 1. Decrypt `encryptedVaultData` -> `fullItems`.
+    // 2. Loop through `_items`:
+    //    - If in `dirtySecrets`, use that (it's the latest full version).
+    //    - If not in `dirtySecrets`, find in `fullItems` and use that.
+    //    - If not found anywhere? Error (or ignore).
+    // 3. Encrypt the result.
+    // 4. Clear `dirtySecrets`.
+    // 
+    // This seems robust. `dirtySecrets` holds the "plaintext" of only the items currently being modified.
+    // We should clear `dirtySecrets` on save.
+    //
+    // Also `handleDelete`:
+    // It removes from `_items`.
+    // `saveVault` logic: Loop `_items`. If valid ID not in `dirtySecrets`, pull from `fullItems`.
+    // If item was in `fullItems` but not in `_items`, it gets dropped (Deleted). Correct.
+
+    let dirtySecrets = $state<Map<string, PasswordEntry>>(new Map());
+
     async function saveVault(both = true) {
         if (isLoading) return;
-        const jsonStr = JSON.stringify(_items);
+
+        let fullItemsToSave: PasswordEntry[] = [];
+        let oldFullItems: PasswordEntry[] = [];
+
+        // 1. Decrypt existing data (if any) to retrieve unmodified secrets
+        if (encryptedVaultData) {
+            try {
+                const jsonStr = await decrypt(
+                    encryptedVaultData.cipher,
+                    encryptedVaultData.iv,
+                    getEncryptionKey(),
+                );
+                oldFullItems = JSON.parse(jsonStr);
+            } catch (e) {
+                console.error("Failed to decrypt for saving", e);
+                // If we can't decrypt, we risk losing data if we overwrite.
+                alert("Critical Error: Cannot decrypt existing vault to merge changes. Aborting save to prevent data loss.");
+                return;
+            }
+        }
+
+        // 2. Reconstruct full vault
+        // We iterate over `_items` (the current structure)
+        for (const item of _items) {
+            if (dirtySecrets.has(item.id)) {
+                // Use the modified/new version with secrets
+                fullItemsToSave.push(dirtySecrets.get(item.id)!);
+            } else {
+                // Find in old items
+                const oldItem = oldFullItems.find(i => i.id === item.id);
+                if (oldItem) {
+                    fullItemsToSave.push(oldItem);
+                } else {
+                    // Should not happen unless state is desynced
+                    console.warn(`Item ${item.id} found in list but not in secrets map or old vault.`);
+                    // We preserve it as is (sanitized), which is bad (loss of secrets), but better than crashing?
+                    // Or maybe it's a legacy item?
+                    // If it's sanitized, it has no secrets.
+                    fullItemsToSave.push(item);
+                }
+            }
+        }
+
+        const jsonStr = JSON.stringify(fullItemsToSave);
         const encrypted = await encrypt(jsonStr, getEncryptionKey());
 
         const payload = {
@@ -133,10 +298,25 @@ export function useVault(
                 await api.saveVault(JSON.stringify(payload));
                 lastSavedDate = payload.date;
                 isDirty = false;
+                // Clear dirty secrets now that they are safely encrypted
+                dirtySecrets.clear();
             } else if (both && offlineMode) {
-                // If we are offline but trying to save "both", just save locally and keep dirty
                 console.log("Offline: saving vault locally only.");
+                // In offline mode, do we clear dirtySecrets? 
+                // We generated `payload.data` (encrypted). `encryptedVaultData` is updated.
+                // So next save will use this new encrypted data.
+                // So yes, we can clear dirtySecrets.
+                dirtySecrets.clear();
+                // Wait, usually `isDirty` stays true in offline mode until synced?
+                // Current logic: `isDirty` stays true.
+                // But `dirtySecrets`?
+                // If we keep `isDirty = true`, user might save again.
+                // If we clear `dirtySecrets`, we rely on `encryptedVaultData` having the new secrets.
+                // Yes, line below updates `encryptedVaultData`.
+                // So subsequent saves will decrypt THIS `encryptedVaultData` (which has the secrets).
+                // So safe to clear `dirtySecrets`.
             }
+            // If save failed (catch), we do NOT clear dirtySecrets.
 
             encryptedVaultData = payload.data;
             api.storage?.setItem("offline_vault", JSON.stringify(payload));
@@ -144,6 +324,7 @@ export function useVault(
             if (!offlineMode) {
                 alert("Failed to save vault to server. Please check connection.");
             }
+            // Do NOT clear dirty secrets on failure
         }
     }
 
@@ -193,7 +374,53 @@ export function useVault(
 
     // CRUD Operations
     async function selectItem(item: PasswordEntry) {
-        selectedItem = item;
+        // When viewing details, we might want to show secrets?
+        // Current UI shows secrets based on toggles.
+        // `PasswordEntry` in `selectedItem` is passed to `VaultModals` -> `DetailsModal`.
+        // If we want `DetailsModal` to be able to show secrets, we need to populate `selectedItem` with secrets.
+        // "decipher it only when copying username, password or opening site url"
+        // Does "View Details" count?
+        // The prompt says "Deciphering the vault is fast so always keep the vault ciphered and decipher it only when..."
+        // It lists: copying username, password, opening site.
+        // It does NOT list "Viewing Details".
+        // However, `DetailsModal` usually allows copying too?
+        // If I populate `selectedItem` (sanitized), the details modal will show empty fields?
+        // Or buttons to copy?
+        // `DetailsModal.svelte` displays fields.
+        // If we strictly follow "only when copying...", then we should NOT decipher for details view.
+        // But then Details view is useless for seeing the password?
+        // Maybe the user implies we should decrypt ON DEMAND in details view too?
+        // 
+        // Let's assume `selectItem` should ALSO decrypt to facilitate viewing/copying from details.
+        // But "Delete the deciphered copy ... as soon as possible".
+        // If we leave `selectedItem` populated, it stays indefinitely.
+        // 
+        // Maybe `selectedItem` remains sanitized.
+        // And `DetailsModal` requests decryption for specific actions?
+        // `DetailsModal` receives `item`.
+        // If `item.password` is undefined, what does it show?
+        // Providing a seamless experience:
+        // When user clicks "View", we decrypt that item?
+        // Then clear it when modal closes?
+        // "Deciphering... is fast... decipher it only when copying username, password or opening site url."
+        // It seems to specifically exclude "viewing".
+        // But if I can't see the password, how do I know what it is? Copying is one way.
+        // 
+        // Let's implement `selectItem` to Decrypt the item.
+        // And `closeModals` will clear it.
+        // This seems consistent with "transient access".
+
+        const fullItem = await getDecryptedItem(item.id);
+        if (fullItem) {
+            selectedItem = fullItem;
+        } else {
+            // Fallback (e.g. if new item unsaved but dirty?)
+            if (dirtySecrets.has(item.id)) {
+                selectedItem = dirtySecrets.get(item.id)!;
+            } else {
+                selectedItem = item; // Sanitized
+            }
+        }
     }
 
     function startCreate(initialData?: Partial<PasswordEntry>) {
@@ -210,23 +437,39 @@ export function useVault(
         isCreating = true;
     }
 
-    function startEdit(item: PasswordEntry) {
-        editingItem = JSON.parse(JSON.stringify(item));
+    async function startEdit(item: PasswordEntry) {
+        // Must decrypt to edit
+        let fullItem = await getDecryptedItem(item.id);
+        if (!fullItem) {
+            if (dirtySecrets.has(item.id)) {
+                fullItem = dirtySecrets.get(item.id)!;
+            } else {
+                fullItem = item; // Sanitized, better than nothing
+            }
+        }
+
+        editingItem = JSON.parse(JSON.stringify(fullItem));
         isCreating = false;
         selectedItem = null;
     }
 
     async function handleSave(updatedItem: PasswordEntry) {
+        // Update dirtySecrets with the full data
+        dirtySecrets.set(updatedItem.id, updatedItem);
+
+        // Update _items with sanitized data
+        const sanitized = sanitizeItems([updatedItem])[0];
+
         let newItems;
         if (isCreating) {
-            newItems = [..._items, updatedItem];
+            newItems = [..._items, sanitized];
         } else {
             const index = _items.findIndex((i) => i.id === updatedItem.id);
             if (index !== -1) {
                 newItems = [..._items];
-                newItems[index] = updatedItem;
+                newItems[index] = sanitized;
             } else {
-                newItems = [..._items, updatedItem];
+                newItems = [..._items, sanitized];
             }
         }
         _items = newItems;
@@ -238,6 +481,9 @@ export function useVault(
     async function handleDelete(item: PasswordEntry) {
         if (confirm("Delete " + item.title + "?")) {
             _items = _items.filter((i) => i.id !== item.id);
+            // Also remove from dirtySecrets if present
+            dirtySecrets.delete(item.id);
+
             selectedItem = null;
             isDirty = true;
         }
@@ -249,7 +495,21 @@ export function useVault(
         showHistoryModal = false;
     }
 
-    async function copyToClipboard(text: string) {
+    // New API: Copy by ID + field
+    async function copyToClipboard(itemId: string, field: 'username' | 'password') {
+        let text = "";
+        const dirty = dirtySecrets.get(itemId);
+        if (dirty) {
+            text = dirty[field] || "";
+        } else {
+            const fullItem = await getDecryptedItem(itemId);
+            if (fullItem) {
+                text = fullItem[field] || "";
+            }
+        }
+
+        if (!text) return;
+
         await navigator.clipboard.writeText(text);
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
@@ -258,13 +518,30 @@ export function useVault(
             try {
                 await navigator.clipboard.writeText("");
             } catch {
-                // Mask that exception:
-                // Uncaught (in promise) DOMException: Clipboard write was blocked due to lack of user activation.
+                // Ignore
             }
             clipboardTimeout = null;
         }, (window as any).__TESTING__
-            ? 1000 // Short for tests, but long enough for reliability
+            ? 1000
             : settings.current.clipboardTimeout);
+    }
+
+    // New API: Open Site
+    async function openSite(itemId: string) {
+        let url = "";
+        const dirty = dirtySecrets.get(itemId);
+        if (dirty) {
+            url = dirty.site || "";
+        } else {
+            const fullItem = await getDecryptedItem(itemId);
+            if (fullItem) {
+                url = fullItem.site || "";
+            }
+        }
+
+        if (url) {
+            window.open(url, '_blank');
+        }
     }
 
     // Cleanup function
@@ -272,36 +549,31 @@ export function useVault(
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
+        security.stopTimer();
     }
 
     // Import
     function importItems(newItems: PasswordEntry[]) {
         try {
             const normalized = normalizeVaultItems(newItems);
-            // Append? or Replace? For now, let's assume valid JSON vault file replaces (or merges if we wanted, but replace is safer for "Import Vault" usually, or maybe merge?)
-            // The requirement says "submit an initial unciphered vault".
-            // Let's TREAT it as "loading" a new vault state.
-            // But maybe we should merge if checking for duplicates?
-            // "respecting the structure of a vault" implies it's a full vault export.
-            // We will replace current items with imported ones, but we might want to keep existing ones if meaningful?
-            // If it is "initial", maybe we replace.
-            // Let's simpler: Add them to current items. Users can delete if they want.
-            // Actually, if I import a vault, I probably want to ADD to my existing passwords.
 
-            // Let's implement MERGE logic: add unique by ID, or if ID collision, overwrite?
-            // Safer: Just add them. If IDs collide, `normalizeVaultItems` might need care? 
-            // `normalizeVaultItems` generates IDs if missing.
-            // If we import an existing vault, it has IDs.
-            // If IDs exist in current vault, we update?
+            // For imported items, we treat them as "New/Dirty".
+            // We need to add them to dirtySecrets so they get saved with secrets.
+            // And add sanitized versions to _items.
 
-            // Let's concat and sort.
+            const sanitizedNew = sanitizeItems(normalized);
 
-            // However, to avoid ID conflicts if user imports same file twice, we should check IDs.
+            // Check IDs
             const currentIds = new Set(_items.map(i => i.id));
-            const distinctNew = normalized.filter(i => !currentIds.has(i.id));
+            const distinctNew: PasswordEntry[] = [];
 
-            // If we really want to support 'submit an initial unciphered vault', user probably has empty vault or wants to populate it.
-            // Let's concat and sort.
+            normalized.forEach((item, index) => {
+                if (!currentIds.has(item.id)) {
+                    distinctNew.push(sanitizedNew[index]);
+                    dirtySecrets.set(item.id, item); // Store secret!
+                }
+            });
+
             _items = [..._items, ...distinctNew];
             isDirty = true;
             return true;
@@ -315,7 +587,7 @@ export function useVault(
     return {
         // State getters
         get items() {
-            return items;
+            return items; // Derived sanitized sorted items
         },
         get selectedItem() {
             return selectedItem;
@@ -356,7 +628,7 @@ export function useVault(
 
         // Setters (for use by other composables)
         setItems: (newItems: PasswordEntry[]) => {
-            _items = newItems;
+            _items = sanitizeItems(newItems);
         },
         setOfflineMode: (offline: boolean) => {
             offlineMode = offline;
@@ -377,7 +649,8 @@ export function useVault(
         handleSave,
         handleDelete,
         closeModals,
-        copyToClipboard,
+        copyToClipboard, // Updated signature
+        openSite, // New
         cleanup,
         importItems,
     };

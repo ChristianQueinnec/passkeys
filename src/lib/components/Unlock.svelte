@@ -8,7 +8,7 @@
     let loading = $state(false);
     let error = $state("");
 
-    let { vaultExists, onUnlock } = $props();
+    let { vaultExists, onUnlock, message } = $props();
     const notice = $derived(
         vaultExists
             ? i18n.t("auth.unlock_vault_exists")
@@ -43,6 +43,14 @@
         {i18n.t("auth.unlock_confirm")}
     </p>
     <div class="unlock-notice" class:exists={vaultExists}>
+        {#if message}
+            <div
+                role="alert"
+                style="color: #856404; font-weight: bold; margin-bottom: 0.5rem;"
+            >
+                {message}
+            </div>
+        {/if}
         {notice}
     </div>
 

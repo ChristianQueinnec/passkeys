@@ -307,11 +307,12 @@
 
                 <PasswordList
                     items={displayedEntries}
-                    isMemoryCleared={security.isMemoryCleared}
-                    restoreSensitiveData={security.restoreSensitiveData}
                     onSelect={vault.selectItem}
-                    onCopyUsername={vault.copyToClipboard}
-                    onCopyPassword={vault.copyToClipboard}
+                    onCopyUsername={(item) =>
+                        vault.copyToClipboard(item.id, "username")}
+                    onCopyPassword={(item) =>
+                        vault.copyToClipboard(item.id, "password")}
+                    onOpenSite={(item) => vault.openSite(item.id)}
                     onDragStart={handleDragStart}
                 />
             </div>

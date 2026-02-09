@@ -44,7 +44,7 @@ test.describe('Security Inactivity Timeout', () => {
         }
     });
 
-    test('should clear vault from memory after inactivity and restore on interaction', async ({ page }) => {
+    test('should lock vault after inactivity', async ({ page }) => {
         // 1. Verify items are visible
         await expect(page.locator('[data-testid="vault-item"]').first()).toBeVisible();
 
@@ -57,15 +57,22 @@ test.describe('Security Inactivity Timeout', () => {
         // 3. Fast forward time by 61 seconds (timeout is 60s)
         await page.clock.fastForward(61000);
 
-        // 4. Verify empty state message
-        await expect(page.locator('.empty-state')).toHaveText(/Your vault has been cleared|votre coffre a été effacé/);
-        await expect(page.locator('[data-testid="vault-item"]')).toHaveCount(0);
+        // 4. Verify vault is locked (Phase 1)
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
 
-        // 5. Simulate interaction (mouse move)
-        await page.locator('body').click();
-        await page.locator('body').click(); // Move a bit to ensure event triggers
+        // 5. Verify security timeout message
+        // Using a flexible regex to match both English and French or partial text
+        await expect(page.getByText(/Security timeout|Délai de sécurité/i)).toBeVisible();
 
-        // 6. Verify items are restored
+        // 6. Verify items are NOT visible
+        await expect(page.locator('[data-testid="vault-item"]')).not.toBeVisible();
+
+        // 7. Verify we can unlock again
+        await page.getByPlaceholder(/Master Vault Password|Mot de passe maître/).fill('password');
+        await page.getByTestId('unlock-button').click();
+
+        // 8. Verify vault restored
+        await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
         await expect(page.locator('[data-testid="vault-item"]').first()).toBeVisible();
     });
 });

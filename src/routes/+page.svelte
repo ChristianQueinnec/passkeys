@@ -34,18 +34,31 @@
 
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
-    const vault = useVault(() => encryptionKey as CryptoKey);
+    let unlockMessage = $state("");
 
-    // Security handles auto-lock and clearing data from memory
-    const security = useVaultSecurity(
-        vault,
-        () => encryptionKey as CryptoKey,
-        () => {
-            // Optional callback when memory is cleared.
-            // Child components listen to security.isMemoryCleared to update UI
-        },
-        () => phase === 2,
-    );
+    function handleLock() {
+        encryptionKey = null;
+        phase = 1; // Go to Unlock
+        unlockMessage = i18n.t("vault.security_timeout");
+    }
+
+    // Initialize Global Stores
+    // Pass getter because encryptionKey changes over time
+    const vault = useVault(() => encryptionKey as CryptoKey, handleLock);
+
+    // Security handles auto-lock (delegated to useVault now)
+    // We keep this solely IF we need additional side effects, but useVault manages the timer now.
+    // However, the original code had useVaultSecurity independent.
+    // New design embeds it in useVault.
+    // So we don't need to instantiate it here unless we need purely the "isActive" logic for other reasons?
+    // Actually, useVault's internal security store tracks activity on window.
+    // So we can remove this external useVaultSecurity.
+    const security = {
+        // Mock security object for children who might expect it?
+        // Dashboard/FolderDashboard expects 'security' prop with restoreSensitiveData/isMemoryCleared?
+        // We updated them to NOT use those props!
+        // So we don't need to pass 'security' to Dashboard anymore.
+    };
 
     useVaultSync(vault, () => phase === 2);
 
@@ -114,7 +127,6 @@
     }
 
     function handleLogout() {
-        security.stopTimer();
         api.logout();
         username = "";
         encryptionKey = null;
@@ -140,7 +152,6 @@
         showUserMenu = false;
         await vault.synchronizeVault();
     }
-
 
     async function handleVaultPasswordChange(newKey: CryptoKey) {
         encryptionKey = newKey;
@@ -278,7 +289,11 @@
         {#if phase === 0}
             <Login onLogin={handleLogin} />
         {:else if phase === 1}
-            <Unlock {vaultExists} onUnlock={handleUnlock} />
+            <Unlock
+                {vaultExists}
+                onUnlock={handleUnlock}
+                message={unlockMessage}
+            />
         {:else if phase === 2 && encryptionKey}
             {#if useFolderView}
                 <FolderDashboard
@@ -395,6 +410,4 @@
         transform: none;
         box-shadow: none;
     }
-
-
 </style>

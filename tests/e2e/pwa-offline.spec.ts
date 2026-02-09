@@ -375,6 +375,36 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
       expect(clipboardText).toBeTruthy();
     });
+
+    test('should open site url when clicking title', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
+      await loginAndUnlockVault(page);
+
+      // Create entry with site
+      await page.getByTestId('new-entry-btn').click();
+      await page.getByTestId('edit-title').fill('Site Entry');
+      await page.getByTestId('edit-site').fill('https://example.com');
+      await page.getByTestId('edit-save').click();
+
+      await context.setOffline(true);
+
+      // Spy on window.open
+      await page.evaluate(() => {
+        (window as any).__OPENED_URL__ = null;
+        window.open = (url) => {
+          (window as any).__OPENED_URL__ = url;
+          return null;
+        };
+      });
+
+      // Click title (which is now a button for site)
+      // Note: PasswordList renders title as <button> if item.site is present
+      await page.getByRole('button', { name: 'Site Entry' }).click();
+
+      // Verify window.open was called
+      const openedUrl = await page.evaluate(() => (window as any).__OPENED_URL__);
+      expect(openedUrl).toBe('https://example.com');
+    });
   });
 
   test.describe('Folder Navigation Offline', () => {

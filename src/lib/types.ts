@@ -9,6 +9,11 @@ export interface PasswordEntry {
     group?: string; // Optional group from KeePass
     created?: number; // Unix timestamp in seconds
     modified?: number; // Unix timestamp in seconds
+
+    // Metadata flags for always-ciphered mode
+    hasUsername?: boolean;
+    hasPassword?: boolean;
+    hasSite?: boolean;
 }
 
 export interface VaultMetadata {

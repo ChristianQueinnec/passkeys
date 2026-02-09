@@ -1,42 +1,35 @@
 <script lang="ts">
     import type { PasswordEntry } from "$lib/types";
- import { i18n } from "$lib/stores/useI18n.svelte";
- import DetailsIcon from "$lib/icons/DetailsIcon.svelte";
- import UserIcon from "$lib/icons/UserIcon.svelte";
- import PasswordIcon from "$lib/icons/PasswordIcon.svelte";
+    import { i18n } from "$lib/stores/useI18n.svelte";
+    import DetailsIcon from "$lib/icons/DetailsIcon.svelte";
+    import UserIcon from "$lib/icons/UserIcon.svelte";
+    import PasswordIcon from "$lib/icons/PasswordIcon.svelte";
 
- let {
-     items = [],
-     isMemoryCleared = false,
-     restoreSensitiveData,
-     onSelect,
-     onCopyUsername,
-     onCopyPassword,
-     onDragStart,
- }: {
+    let {
+        items = [],
+        onSelect,
+        onCopyUsername,
+        onCopyPassword,
+        onOpenSite,
+        onDragStart,
+    }: {
         items: PasswordEntry[];
-        isMemoryCleared: boolean;
-        restoreSensitiveData: () => void;
         onSelect: (item: PasswordEntry) => void;
-        onCopyUsername: (text: string) => void;
-        onCopyPassword: (text: string) => void;
+        onCopyUsername: (item: PasswordEntry) => void;
+        onCopyPassword: (item: PasswordEntry) => void;
+        onOpenSite?: (item: PasswordEntry) => void;
         onDragStart?: (item: PasswordEntry, e: DragEvent) => void;
     } = $props();
 
-    async function reload() {
-        await restoreSensitiveData();
-    }
+    /* 
+       Note: `isMemoryCleared` prop and reload logic are removed 
+       because the vault is now always ciphered/sanitized by default.
+       We rely on `hasUsername`/`hasPassword` flags to show buttons.
+    */
 </script>
 
 <div class="list">
-    {#if isMemoryCleared}
-        <div class="empty-state">
-            {i18n.t("vault.security_timeout")}
-            <div>
-                <button onclick={reload}>{i18n.t("vault.reload")}</button>
-            </div>
-        </div>
-    {:else if items.length === 0}
+    {#if items.length === 0}
         <div class="empty-state">
             {i18n.t("vault.no_entries")}
         </div>
@@ -51,17 +44,27 @@
                 role="listitem"
             >
                 <span class="item-title">
-                    {#if item.site}
-                        <a href={item.site} target="_blank">{item.title}</a>
+                    {#if item.site || item.hasSite}
+                        <!-- Support opening site via handler if URL is hidden -->
+                        {#if onOpenSite}
+                            <button
+                                class="link-btn"
+                                onclick={() => onOpenSite(item)}
+                                >{item.title}</button
+                            >
+                        {:else}
+                            <!-- Fallback if plain site available -->
+                            <a href={item.site} target="_blank">{item.title}</a>
+                        {/if}
                     {:else}
                         {item.title}
                     {/if}
                 </span>
                 <div class="item-actions">
-                    {#if item.username}
+                    {#if item.username || item.hasUsername}
                         <button
                             class="icon-btn"
-                            onclick={() => onCopyUsername(item.username || "")}
+                            onclick={() => onCopyUsername(item)}
                             data-testid="copy-username-btn"
                             title={i18n.t("common.copy") +
                                 " " +
@@ -69,16 +72,16 @@
                             aria-label={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.username")}
-                            >
-                            <UserIcon/>
+                        >
+                            <UserIcon />
                         </button>
                     {:else}
                         <span class="icon-filler"></span>
                     {/if}
-                    {#if item.password}
+                    {#if item.password || item.hasPassword}
                         <button
                             class="icon-btn"
-                            onclick={() => onCopyPassword(item.password || "")}
+                            onclick={() => onCopyPassword(item)}
                             data-testid="copy-password-btn"
                             title={i18n.t("common.copy") +
                                 " " +
@@ -86,8 +89,8 @@
                             aria-label={i18n.t("common.copy") +
                                 " " +
                                 i18n.t("common.password")}
-                            >
-                            <PasswordIcon/>
+                        >
+                            <PasswordIcon />
                         </button>
                     {:else}
                         <span class="icon-filler"></span>
@@ -98,10 +101,10 @@
                         title={i18n.t("vault.view_details")}
                         aria-label={i18n.t("vault.view_details")}
                         data-testid="view-details-btn"
-                        >
-                        <DetailsIcon/>
+                    >
+                        <DetailsIcon />
                     </button>
-                     <span></span>
+                    <span></span>
                 </div>
             </div>
         {/each}
@@ -134,9 +137,15 @@
         flex: 1;
         margin-right: 0.5rem;
     }
-    .item-title a {
+    .item-title a,
+    .link-btn {
         text-decoration: underline;
         color: #007bff;
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
     }
     .item-title:hover {
         background-color: #f0f7ff;
