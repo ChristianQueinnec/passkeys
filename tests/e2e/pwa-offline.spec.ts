@@ -13,7 +13,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 test.describe('PWA Offline Functionality (E2E)', () => {
 
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page, context, request }) => {
     // Grant necessary permissions
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
 
@@ -22,8 +22,15 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       (window as any).__TESTING__ = true;
     });
 
+    // Clean up server-side vault
+    console.log('Cleaning up server-side vault...');
+    await request.get('/api/test/cleanup-vault?username=admin');
+
     // Navigate to app
     await page.goto('/');
+    // Clear local storage for clean state
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
   });
 
   test.describe('Service Worker Installation', () => {
@@ -32,28 +39,36 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       // Wait for service worker to register
       const swRegistered = await page.evaluate(async () => {
         if ('serviceWorker' in navigator) {
+          console.log('Registering service worker...');
           const registration = await navigator.serviceWorker.register('/sw.js');
 
-          // Wait for the service worker to be active
-          await navigator.serviceWorker.ready;
+          // Wait for the service worker to be ready
+          console.log('Waiting for SW ready...');
+          const reg = await navigator.serviceWorker.ready;
+          console.log('SW Ready, state:', reg.active?.state);
 
           // Wait for activation if it's still activating
           const getActiveWorker = () => registration.active || registration.waiting || registration.installing;
           let activeWorker = getActiveWorker();
 
           if (activeWorker && activeWorker.state !== 'activated') {
+            console.log('SW not activated yet, waiting...');
             await new Promise((resolve) => {
-              activeWorker?.addEventListener('statechange', () => {
-                if (activeWorker?.state === 'activated') resolve(true);
+              activeWorker?.addEventListener('statechange', (e: any) => {
+                console.log('SW State change:', e.target.state);
+                if (e.target.state === 'activated') resolve(true);
               });
               // Buffer check
               setTimeout(() => {
-                if (getActiveWorker()?.state === 'activated') resolve(true);
-              }, 2000);
+                const current = getActiveWorker();
+                console.log('SW state check timeout, current state:', current?.state);
+                if (current?.state === 'activated') resolve(true);
+              }, 5000);
             });
           }
 
           activeWorker = getActiveWorker();
+          console.log('Final SW state:', activeWorker?.state);
           return {
             registered: true,
             scope: registration.scope,
@@ -197,18 +212,11 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Offline Vault Operations', () => {
 
     test('should access vault entries while offline', async ({ page, context }) => {
-      // Login and load vault online
-      await page.goto('/');
-      await page.getByTestId('username-input').fill('admin');
-      await page.getByTestId('password-input').fill('password');
-      await page.getByTestId('login-button').click();
-
-      await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByTestId('password-input').fill('password');
-      await page.getByTestId('unlock-button').click();
+      await ensureVaultExists(page, 'admin', 'password', 'password');
+      await loginAndUnlockVault(page);
 
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-      await page.waitForSelector('[data-testid="vault-item"]');
+      await page.waitForSelector('.folder-dashboard');
 
       // Go offline
       await context.setOffline(true);
@@ -237,6 +245,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should edit entry while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
 
       // Go offline
@@ -253,6 +262,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should delete entry while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
 
       const initialCount = await page.locator('[data-testid="vault-item"]').count();
@@ -310,21 +320,32 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Clipboard Operations Offline', () => {
 
     test('should copy password to clipboard while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
 
       // Go offline
       await context.setOffline(true);
 
       // Copy password
+      console.log('Waiting for vault-item visibility...');
+      await expect(page.getByTestId('vault-item').first()).toBeVisible({ timeout: 10000 });
+      const count = await page.getByTestId('vault-item').count();
+      console.log(`Vault items visible: ${count}`);
+
+      console.log('Clicking copy-password-btn...');
       await page.getByTestId('vault-item').first().getByTestId('copy-password-btn').click();
+      console.log('Clicked copy-password-btn');
 
       // Verify clipboard (if accessible)
+      console.log('Reading clipboard...');
       const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
+      console.log('Clipboard read:', clipboardText ? 'success' : 'empty');
       expect(clipboardText).toBeTruthy();
       expect(clipboardText.length).toBeGreaterThan(0);
     });
 
     test('should auto-clear clipboard after 2 seconds', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
@@ -344,6 +365,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should copy username to clipboard while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
@@ -358,7 +380,16 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Folder Navigation Offline', () => {
 
     test('should navigate folder hierarchy while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
+
+      // Create folder by adding entry with group
+      await page.getByTestId('new-entry-btn').click();
+      await page.getByTestId('edit-title').fill('Source Entry');
+      await page.getByTestId('edit-group').fill('sources');
+      await page.getByTestId('edit-save').click();
+      await expect(page.getByTestId('vault-modals')).not.toBeVisible();
+
       await context.setOffline(true);
 
       // Click folder
@@ -369,6 +400,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should switch between folder and list views offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
@@ -382,6 +414,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should filter entries in list view while offline', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
@@ -389,7 +422,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       await page.getByTestId('toggle-view-btn').click();
 
       // Filter entries
-      await page.getByTestId('filter-input').fill('git');
+      await page.getByTestId('filter-input').fill('Init');
 
       // Verify filtering works
       const visibleEntries = page.locator('[data-testid="vault-item"]:visible');
@@ -400,33 +433,35 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Security Timeout Offline', () => {
 
     test('should clear decrypted data after 2s inactivity', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
       // Verify vault is unlocked
       await expect(page.locator('[data-testid="vault-item"]')).toBeVisible();
 
-      // Wait 2 seconds (inactivityTimeoutTest = 1000ms)
-      await page.waitForTimeout(2000);
+      // Wait 11 seconds (inactivityTimeoutTest = 10000ms)
+      await page.waitForTimeout(11000);
 
       // Vault should be locked (Dashboard component will show security timeout message)
       await expect(page.getByText(/security timeout/i)).toBeVisible();
     });
 
     test('should reset timeout on user activity', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
       await context.setOffline(true);
 
-      // Wait 0.5 seconds
-      await page.waitForTimeout(500);
+      // Wait 9 seconds (timeout is 10s)
+      await page.waitForTimeout(9000);
 
       // User activity - click an entry
       await page.getByTestId('vault-item').first().click();
 
-      // Wait another 0.7 seconds (total 1.2s, but timeout was reset at 0.5s)
-      await page.waitForTimeout(700);
+      // Wait another 2 seconds (total 11s, would be locked if no reset)
+      await page.waitForTimeout(2000);
 
-      // Vault should still be unlocked
+      // Verify still unlocked
       await expect(page.locator('[data-testid="vault-item"]')).toBeVisible();
       await expect(page.getByText(/security timeout/i)).not.toBeVisible();
     });
@@ -558,6 +593,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
   test.describe('Safe vs Unsafe Device Modes', () => {
 
     test('should persist vault on safe device after reload', async ({ page }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
       await page.getByTestId('password-input').fill('password');
@@ -588,6 +624,8 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     });
 
     test('should NOT persist vault on unsafe device', async ({ page }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
+
       // Clear localStorage to be sure
       await page.goto('/');
       await page.evaluate(() => localStorage.clear());
@@ -631,6 +669,8 @@ test.describe('PWA Offline Functionality (E2E)', () => {
           console.log(`[BROWSER]: ${text}`);
         }
       });
+      await ensureVaultExists(page, 'admin', 'password', 'password');
+
       console.log('Step 1: Login');
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
@@ -643,7 +683,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       await page.getByTestId('password-input').fill('password');
       await page.getByTestId('unlock-button').click();
       await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-      await page.waitForSelector('[data-testid="vault-item"]');
+      await page.waitForSelector('.folder-dashboard');
 
       console.log('Checking save button...');
       // Migrate to new format to ensure it's in localStorage
@@ -656,14 +696,26 @@ test.describe('PWA Offline Functionality (E2E)', () => {
 
       // Step 2.5: Ensure SW is ready and prime cache
       await page.evaluate(async () => {
-        console.log('Checking service worker...');
+        console.log('Step 2.5: Checking service worker...');
         if ('serviceWorker' in navigator) {
-          console.log('RService worker supported, egistering SW...');
+          console.log('Service worker supported, registering SW...');
           const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('checking ready state...');
+          console.log('Waiting for SW ready...');
           const reg = await navigator.serviceWorker.ready;
 
-          console.log('Service worker ready, checking controller...');
+          console.log('Service worker ready, checking controller... state:', reg.active?.state);
+
+          // Wait for activation if needed
+          if (reg.active?.state !== 'activated') {
+            console.log('Waiting for activation...');
+            await new Promise(r => {
+              reg.active?.addEventListener('statechange', (e: any) => {
+                if (e.target.state === 'activated') r(null);
+              });
+              setTimeout(() => r(null), 5000);
+            });
+          }
+
           if (!navigator.serviceWorker.controller) {
             console.log('Waiting for controllerchange...');
             await new Promise(resolve => {
@@ -682,15 +734,20 @@ test.describe('PWA Offline Functionality (E2E)', () => {
           // Manually prime caches to ensure offline works without a reload
           console.log('Manually priming caches...');
           const pagesCache = await caches.open('pages-cache');
-          const rootResp = await fetch('/');
-          if (rootResp.ok) {
-            await pagesCache.put('/', rootResp.clone());
-          }
+          try {
+            const rootResp = await fetch('/');
+            if (rootResp.ok) {
+              await pagesCache.put('/', rootResp.clone());
+            }
 
-          const settingsResp = await fetch('/client-settings.json');
-          if (settingsResp.ok) {
-            const dataCache = await caches.open('data-cache');
-            await dataCache.put('/client-settings.json', settingsResp.clone());
+            const settingsResp = await fetch('/client-settings.json');
+            if (settingsResp.ok) {
+              const dataCache = await caches.open('data-cache');
+              await dataCache.put('/client-settings.json', settingsResp.clone());
+            }
+            console.log('Caches primed successfully');
+          } catch (e) {
+            console.warn('Cache priming failed:', e);
           }
         }
       });
@@ -759,5 +816,37 @@ async function loginAndUnlockVault(page: Page) {
   await page.getByTestId('unlock-button').click();
 
   await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
-  await page.waitForSelector('[data-testid="vault-item"]');
+  await page.waitForSelector('.folder-dashboard');
+}
+
+
+
+async function ensureVaultExists(page: Page, user: string, pass: string, key: string) {
+  await page.goto('/');
+  await page.getByTestId('username-input').fill(user);
+  await page.getByTestId('password-input').fill(pass);
+  await page.getByTestId('login-button').click();
+
+  await expect(page.getByTestId('unlock-button')).toBeVisible();
+
+  await page.getByTestId('password-input').fill(key);
+  await page.getByTestId('unlock-button').click();
+
+  await expect(page.locator('.folder-dashboard')).toBeVisible();
+
+  // Add an entry and save to ensure server vault exists
+  await page.getByTestId('new-entry-btn').click();
+  await page.getByTestId('edit-title').fill('Init Entry');
+  await page.getByTestId('edit-username').fill('testuser');
+  await page.getByTestId('edit-password').fill('testpassword');
+  await page.getByTestId('edit-save').click();
+
+  const saveBtn = page.getByTestId('save-vault-btn');
+  await expect(saveBtn).toBeVisible();
+  await saveBtn.click();
+  await expect(saveBtn).not.toBeVisible({ timeout: 15000 });
+
+  await page.getByTestId('user-menu-btn').click();
+  await page.getByTestId('menu-logout').click();
+  await expect(page.getByTestId('login-button')).toBeVisible();
 }

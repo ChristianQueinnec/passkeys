@@ -38,8 +38,6 @@ run.dev :
 
 # Run tests after checking that a server runs (dev mode or container):
 run.tests :
-	if curl --silent http://localhost:3000 > /dev/null ; then true ; else \
-	  . ./.env && npm run dev & echo $$? > /tmp/passkeys.pid ; fi
 	npm run check
 	npm run test:unit
 #	npm run test:e2e
@@ -54,9 +52,6 @@ run.tests :
 		echo "*********************** Tests failures:" ; \
 		cat /tmp/tests-e2e.txt ; else \
 		echo "******* Successful end of all tests "; fi ; echo 
-	-[ -f /tmp/passkeys.pid ] && \
-	  	kill -9 $$(cat /tmp/passkeys.pid) && \
-		rm -f /tmp/passkeys.pid
 
 REMOTE=pk.queinnec.org
 archive.container : tag.container

@@ -774,9 +774,20 @@ Check whether i18n is complete for all texts seen by the UI user.
 
 Antigravity OK
 
-## 105 keep vault ciphered as long as possible
+## 105 Flakyness of PWA Offline 
 
-Deciphering the vault is fast so keep the vault always ciphered and
+In order to improve the speed of `tests/e2e/` check the flakyness
+of PWA offline tests.
+
+Antigravity
+
+
+
+
+
+## 106 keep vault ciphered as long as possible
+
+Deciphering the vault is fast so always keep the vault ciphered and
 decipher it only when copying username, password or opening site url.
 Delete the deciphered copy of the vault as soon as possible.
 
@@ -785,18 +796,27 @@ In that case, useVaultSecurity ...
 # FUTURE
 
 
+## Code Security Review
+
+Examine the code of the server API (in `src/routes/api`) and check for
+- Bugs: logic errors, off-by-one, null handling, race condition
+- Security: injection risk, auth issues, data exposure
+- Performance: N+1 queries, unnecessary loops, memory leaks
+- Maintainability: Naming, complexity, duplication
+- Edge cases: what inputs would break the webapp
+For each issue:
+- Severity: Critical / High / Medium / Low
+- Location: file, line number
+- What's wrong
+- proposed fix 
+Summarize your findings in the file named 
+`ProjectNotes/APIsecurityReport-20260209.md`
+
 
 ##  Code sharing in server API
 
 Do you see possible code sharing in server API.
 
-## Hide vault more
-
-
-## Tests speed
-
-In order to improve the speed of `tests/e2e/` check the flakyness
-of PWA offline tests.
 
 
 

@@ -18,7 +18,7 @@
 		"demo": "make run.demo"
 	},
 	"devDependencies": {
-		"@playwright/mcp": "^0.0.55",
+		"@playwright/mcp": "^0.0.64",
 		"@playwright/test": "1.58.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/adapter-node": "^5.4.0",
@@ -27,7 +27,7 @@
 		"@types/dompurify": "^3.0.5",
 		"@types/node": "^25.0.1",
 		"@types/proper-lockfile": "^4.1.4",
-		"jsdom": "^27.4.0",
+		"jsdom": "^28.0.0",
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
 		"typescript": "^5.9.3",

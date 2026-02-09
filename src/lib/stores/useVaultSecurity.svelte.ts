@@ -1,7 +1,7 @@
 import { untrack } from "svelte";
 import { decrypt } from "$lib/crypto";
 import { sortPasswordEntries } from "$lib/vault";
-import type { PasswordEntry, CipheredVaultData } from "$lib/types";
+import type { PasswordEntry } from "$lib/types";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 
@@ -61,6 +61,7 @@ export function useVaultSecurity(
             return;
         }
         try {
+            const t = Date.now();
             const jsonStr = await decrypt(
                 vault.encryptedVaultData.cipher,
                 vault.encryptedVaultData.iv,
@@ -69,6 +70,7 @@ export function useVaultSecurity(
             const unsorted = JSON.parse(jsonStr);
             vault.setItems(sortPasswordEntries(unsorted));
             isMemoryCleared = false;
+            console.log("Restored vault from memory in", Date.now() - t, "ms");
         } catch (e) {
             console.log("Failed to restore vault from memory", e);
             alert("Failed to restore vault from memory");

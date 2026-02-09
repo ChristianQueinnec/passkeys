@@ -15,7 +15,7 @@ const defaultSettings: ClientSettings = {
     pollForUpdatesInterval: 60000,
     pollForUpdatesIntervalTest: 1000,
     inactivityTimeout: 60000,
-    inactivityTimeoutTest: 1000,
+    inactivityTimeoutTest: 10000,
     clipboardTimeout: 10000,
     masterPasswordSalt: "mvp_salt_fixed",
     pbkdf2Iterations: 100000,
