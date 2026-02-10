@@ -792,8 +792,9 @@ Antigravity
 ## 107 Use class EncryptionKey 
 
 Encapsulate all accesses to encryptionKey into a class (see file
-`vaultkey.ts`) with get, set and remove properties.
+`src/lib/vaultkey.ts`) with get, set and remove properties.
 
+Antigravity
 
 
 # FUTURE

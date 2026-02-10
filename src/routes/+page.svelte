@@ -16,10 +16,11 @@
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
+    import { EncryptionKey } from "$lib/vaultkey";
 
     // Application State
     let username = $state("");
-    let encryptionKey = $state<CryptoKey | null>(null);
+    let encryptionKey = $state(new EncryptionKey(null)); // Encapsulated key
     let useFolderView = $state(true); // Default to folder view
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
@@ -34,7 +35,7 @@
     let unlockMessage = $state("");
 
     function removeEncryptionKey() {
-        encryptionKey = null;
+        encryptionKey.remove();
         phase = 1; // Go to Unlock
         unlockMessage = i18n.t("vault.security_timeout");
     }
@@ -42,7 +43,7 @@
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
     const vault = useVault(
-        () => encryptionKey as CryptoKey,
+        () => encryptionKey.get, // throws if not set, which is expected by useVault signature
         removeEncryptionKey,
     );
 
@@ -98,7 +99,7 @@
                 ? settings.current.pbkdf2IterationsTest
                 : settings.current.pbkdf2Iterations;
 
-        encryptionKey = await pbkdf2(masterPassword, salt, iterations);
+        encryptionKey.set = await pbkdf2(masterPassword, salt, iterations);
         // Load vault once key is derived
         const success = await vault.loadVault();
 
@@ -115,7 +116,7 @@
     function handleLogout() {
         api.logout();
         username = "";
-        encryptionKey = null;
+        encryptionKey.remove();
         vault.cleanup();
         phase = 0;
         showUserMenu = false;
@@ -140,7 +141,7 @@
     }
 
     async function handleVaultPasswordChange(newKey: CryptoKey) {
-        encryptionKey = newKey;
+        encryptionKey.set = newKey;
         await tick();
         // Force save to re-encrypt with new key
         // We pass true to save to server as well
@@ -280,7 +281,7 @@
                 onUnlock={handleUnlock}
                 message={unlockMessage}
             />
-        {:else if phase === 2 && encryptionKey}
+        {:else if phase === 2 && encryptionKey.isSet}
             {#if useFolderView}
                 <FolderDashboard {vault} onToggleView={toggleDashboardView} />
             {:else}
@@ -299,7 +300,7 @@
     isOpen={showChangeVaultPasswordModal}
     onClose={() => (showChangeVaultPasswordModal = false)}
     onSuccess={handleVaultPasswordChange}
-    {encryptionKey}
+    encryptionKey={encryptionKey.isSet ? encryptionKey.get : null}
     encryptedVaultData={vault.encryptedVaultData}
 />
 

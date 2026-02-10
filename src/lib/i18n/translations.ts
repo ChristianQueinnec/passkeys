@@ -93,7 +93,8 @@ export const translations = {
         "vault.password_changed": "Vault password changed successfully.",
         "vault.import": "Import Vault",
         "vault.import_success": "Vault imported successfully. Please save to persist changes.",
-        "vault.import_error": "Failed to import vault. Invalid format."
+        "vault.import_error": "Failed to import vault. Invalid format.",
+        "vault.no_encryption_key": "No encryption key available."
     },
     fr: {
         "app.title": "Passkeys - Coffre Sécurisé",
@@ -189,7 +190,8 @@ export const translations = {
         "vault.password_changed": "Le mot de passe du coffre a été modifié avec succès.",
         "vault.import": "Importer un coffre",
         "vault.import_success": "Coffre importé avec succès. Veuillez enregistrer pour persister les modifications.",
-        "vault.import_error": "Échec de l'importation du coffre. Format invalide."
+        "vault.import_error": "Échec de l'importation du coffre. Format invalide.",
+        "vault.no_encryption_key": "Aucune clé de chiffrement disponible."
     }
 };
 
