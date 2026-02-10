@@ -15,9 +15,6 @@
     import { settings } from "$lib/stores/useSettings.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
-    import PasswordInput from "$lib/components/PasswordInput.svelte";
-    import ConfirmedPasswordInput from "$lib/components/ConfirmedPasswordInput.svelte";
-
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
 
     // Application State
@@ -29,14 +26,14 @@
     let phase = $state(0);
     let vaultExists = $state(false);
     let showUserMenu = $state(false);
-    let showChangePasswordModal = $state(false);
+    let showChangeLoginPasswordModal = $state(false);
     let showChangeVaultPasswordModal = $state(false);
 
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
     let unlockMessage = $state("");
 
-    function handleLock() {
+    function removeEncryptionKey() {
         encryptionKey = null;
         phase = 1; // Go to Unlock
         unlockMessage = i18n.t("vault.security_timeout");
@@ -44,21 +41,10 @@
 
     // Initialize Global Stores
     // Pass getter because encryptionKey changes over time
-    const vault = useVault(() => encryptionKey as CryptoKey, handleLock);
-
-    // Security handles auto-lock (delegated to useVault now)
-    // We keep this solely IF we need additional side effects, but useVault manages the timer now.
-    // However, the original code had useVaultSecurity independent.
-    // New design embeds it in useVault.
-    // So we don't need to instantiate it here unless we need purely the "isActive" logic for other reasons?
-    // Actually, useVault's internal security store tracks activity on window.
-    // So we can remove this external useVaultSecurity.
-    const security = {
-        // Mock security object for children who might expect it?
-        // Dashboard/FolderDashboard expects 'security' prop with restoreSensitiveData/isMemoryCleared?
-        // We updated them to NOT use those props!
-        // So we don't need to pass 'security' to Dashboard anymore.
-    };
+    const vault = useVault(
+        () => encryptionKey as CryptoKey,
+        removeEncryptionKey,
+    );
 
     useVaultSync(vault, () => phase === 2);
 
@@ -144,7 +130,7 @@
     }
 
     function changeLoginPassword() {
-        showChangePasswordModal = true;
+        showChangeLoginPasswordModal = true;
         showUserMenu = false;
     }
 
@@ -296,25 +282,17 @@
             />
         {:else if phase === 2 && encryptionKey}
             {#if useFolderView}
-                <FolderDashboard
-                    {vault}
-                    {security}
-                    onToggleView={toggleDashboardView}
-                />
+                <FolderDashboard {vault} onToggleView={toggleDashboardView} />
             {:else}
-                <Dashboard
-                    {vault}
-                    {security}
-                    onToggleView={toggleDashboardView}
-                />
+                <Dashboard {vault} onToggleView={toggleDashboardView} />
             {/if}
         {/if}
     </main>
 </div>
 
 <ChangeLoginPasswordModal
-    isOpen={showChangePasswordModal}
-    onClose={() => (showChangePasswordModal = false)}
+    isOpen={showChangeLoginPasswordModal}
+    onClose={() => (showChangeLoginPasswordModal = false)}
 />
 
 <ChangeVaultPasswordModal

@@ -7,7 +7,7 @@
     import FolderIcon from "$lib/icons/FolderIcon.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
 
-    let { onToggleView, vault, security } = $props();
+    let { onToggleView, vault } = $props();
 
     // View-specific state
     let filter = $state("");

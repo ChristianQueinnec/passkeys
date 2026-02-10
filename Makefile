@@ -22,8 +22,7 @@ tag.container :
 # @cajou: 10 minutes
 
 run :
-	./scripts/init.sh -u -v -e 
-	. ./.env && npm run preview
+	./scripts/init.sh -u -v -e -r
 
 run.container :
 	. ./.env && PASSKEYS=$$(cat passkeys.id) docker compose up -d

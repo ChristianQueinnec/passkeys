@@ -194,7 +194,7 @@ build_and_run_backend () {
 
 run () {
     source ./.env
-    make run.demo
+    npm run preview
 }
 
 test_run () {

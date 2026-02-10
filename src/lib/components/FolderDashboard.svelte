@@ -10,7 +10,7 @@
     import type { Vault } from "$lib/stores/useVault.svelte";
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
 
-    let { onToggleView, vault, security } = $props();
+    let { onToggleView, vault } = $props();
 
     let folderTree = $state<FolderNode>({
         name: i18n.t("vault.root"),
