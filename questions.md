@@ -794,7 +794,13 @@ Antigravity
 Encapsulate all accesses to encryptionKey into a class (see file
 `src/lib/vaultkey.ts`) with get, set and remove properties.
 
-Antigravity
+Antigravity OK
+
+## 108 Simplify useVaultSecurity
+
+Since now the vault is always ciphered when the webapp is inactive,
+the `useVaultSecurity` function seems useless. If that is the case,
+then simplifies vault-related code and associated tests.
 
 
 # FUTURE

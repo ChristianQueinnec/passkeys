@@ -7,9 +7,7 @@
     import { pbkdf2 } from "$lib/crypto";
     import { api } from "$lib/api";
     import { onMount, tick, untrack } from "svelte";
-    import Modal from "$lib/components/Modal.svelte";
     import { useVault } from "$lib/stores/useVault.svelte";
-    import { useVaultSecurity } from "$lib/stores/useVaultSecurity.svelte";
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
@@ -29,9 +27,6 @@
     let showUserMenu = $state(false);
     let showChangeLoginPasswordModal = $state(false);
     let showChangeVaultPasswordModal = $state(false);
-
-    // Initialize Global Stores
-    // Pass getter because encryptionKey changes over time
     let unlockMessage = $state("");
 
     function removeEncryptionKey() {
@@ -41,11 +36,7 @@
     }
 
     // Initialize Global Stores
-    // Pass getter because encryptionKey changes over time
-    const vault = useVault(
-        () => encryptionKey.get, // throws if not set, which is expected by useVault signature
-        removeEncryptionKey,
-    );
+    const vault = useVault(encryptionKey, removeEncryptionKey);
 
     useVaultSync(vault, () => phase === 2);
 

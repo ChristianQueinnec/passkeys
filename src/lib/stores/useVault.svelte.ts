@@ -6,9 +6,10 @@ import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 import { i18n } from "./useI18n.svelte";
 import { useVaultSecurity, sanitizeItems } from "./useVaultSecurity.svelte"; // Import helper
+import type { EncryptionKey } from "$lib/vaultkey";
 
 export function useVault(
-    getEncryptionKey: () => CryptoKey,
+    encryptionKey: EncryptionKey,
     onLock?: () => void,
 ) {
 
@@ -63,7 +64,7 @@ export function useVault(
             const jsonStr = await decrypt(
                 encryptedVaultData.cipher,
                 encryptedVaultData.iv,
-                getEncryptionKey(),
+                encryptionKey.get,
             );
             const allItems: PasswordEntry[] = JSON.parse(jsonStr);
             return allItems.find(i => i.id === id);
@@ -138,7 +139,7 @@ export function useVault(
                         const jsonStr = await decrypt(
                             encryptedData.cipher,
                             encryptedData.iv,
-                            getEncryptionKey(),
+                            encryptionKey.get,
                         );
                         const allItems = JSON.parse(jsonStr);
                         unsortedItems = sanitizeItems(allItems); // SANITIZE IMMEDIATELY
@@ -252,7 +253,7 @@ export function useVault(
                 const jsonStr = await decrypt(
                     encryptedVaultData.cipher,
                     encryptedVaultData.iv,
-                    getEncryptionKey(),
+                    encryptionKey.get,
                 );
                 oldFullItems = JSON.parse(jsonStr);
             } catch (e) {
@@ -286,7 +287,7 @@ export function useVault(
         }
 
         const jsonStr = JSON.stringify(fullItemsToSave);
-        const encrypted = await encrypt(jsonStr, getEncryptionKey());
+        const encrypted = await encrypt(jsonStr, encryptionKey.get);
 
         const payload = {
             date: new Date().toISOString(),
