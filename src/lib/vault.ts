@@ -44,3 +44,26 @@ export function normalizeVaultItems(
         tags: item.tags || [],
     } as PasswordEntry));
 }
+
+/**
+ * Sanitizes password entries by removing sensitive data (passwords, usernames, etc.)
+ * while preserving metadata for display purposes.
+ */
+export function sanitizeItems(items: PasswordEntry[]): PasswordEntry[] {
+    return items.map(item => ({
+        id: item.id,
+        title: item.title,
+        group: item.group,
+        tags: item.tags,
+        created: item.created,
+        modified: item.modified,
+        hasUsername: !!item.username,
+        hasPassword: !!item.password,
+        hasSite: !!item.site,
+        // Strip sensitive data
+        username: undefined,
+        password: undefined,
+        site: undefined,
+        notes: undefined,
+    }));
+}

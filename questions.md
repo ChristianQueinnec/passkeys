@@ -799,8 +799,15 @@ Antigravity OK
 ## 108 Simplify useVaultSecurity
 
 Since now the vault is always ciphered when the webapp is inactive,
-the `useVaultSecurity` function seems useless. If that is the case,
-then simplifies vault-related code and associated tests.
+the `useVaultSecurity` function seems useless. Check that and if that
+is the case, then simplifies vault-related code and associated tests.
+However after 15 minutes of inactivity, the vault password should be
+erased so unlocking is mandatory.
+
+antigravity ok
+
+
+
 
 
 # FUTURE
@@ -846,4 +853,7 @@ stored on the server since none can be written by the server.
 incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password
+
+Allow the webapp user to choose the inactivity timeout currently set
+to 15 minutes.
 

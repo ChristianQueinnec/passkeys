@@ -1,12 +1,12 @@
 import { api } from "$lib/api";
 import { decrypt, encrypt } from "$lib/crypto";
-import { sortPasswordEntries, normalizeVaultItems } from "$lib/vault";
+import { sortPasswordEntries, normalizeVaultItems, sanitizeItems } from "$lib/vault";
 import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import { browser } from "$app/environment";
 import { settings } from "./useSettings.svelte";
 import { i18n } from "./useI18n.svelte";
-import { useVaultSecurity, sanitizeItems } from "./useVaultSecurity.svelte"; // Import helper
 import type { EncryptionKey } from "$lib/vaultkey";
+import { untrack } from "svelte";
 
 export function useVault(
     encryptionKey: EncryptionKey,
@@ -35,27 +35,45 @@ export function useVault(
     let historyFiles = $state<HistoryItem[]>([]);
 
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
+    let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Security store (for inactivity timeout logic)
-    // We pass a callback to "lock" the vault on timeout
-    const security = useVaultSecurity(
-        // @ts-ignore: circular dependency if we passed 'this'? 
-        // Actually useVaultSecurity doesn't need 'vault' anymore for sanitizing.
-        // It needs a callback to lock.
-        {
-            onLock: () => {
-                if (onLock) {
-                    onLock();
-                } else {
-                    // Default fallback if no handler provided
-                    _items = [];
-                    encryptedVaultData = null;
-                    alert(i18n.t("vault.security_timeout"));
-                }
+    // Inactivity timer management
+    function resetTimer() {
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+
+        inactivityTimer = setTimeout(() => {
+            // After 15 minutes of inactivity, lock the vault by clearing the encryption key
+            if (onLock) {
+                onLock();
+            } else {
+                // Default fallback if no handler provided
+                _items = [];
+                encryptedVaultData = null;
+                alert(i18n.t("vault.security_timeout"));
             }
-        },
-        () => true // isActive placeholder, handled by event listeners inside
-    );
+        }, (browser && (window as any).__TESTING__)
+            ? settings.current.inactivityTimeoutTest
+            : settings.current.inactivityTimeout);
+    }
+
+    // Auto-setup event listeners for activity detection
+    $effect(() => {
+        if (!browser) return;
+
+        const events = ["keydown", "click", "touchstart"];
+        events.forEach((event) =>
+            window.addEventListener(event, resetTimer),
+        );
+
+        untrack(() => resetTimer());
+
+        return () => {
+            events.forEach((event) =>
+                window.removeEventListener(event, resetTimer),
+            );
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+        };
+    });
 
     // Helper: Decrypt full vault transiently to match ID
     async function getDecryptedItem(id: string): Promise<PasswordEntry | undefined> {
@@ -550,7 +568,9 @@ export function useVault(
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
-        security.stopTimer();
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
     }
 
     // Import
