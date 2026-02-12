@@ -29,14 +29,13 @@
     let showChangeVaultPasswordModal = $state(false);
     let unlockMessage = $state("");
 
-    function removeEncryptionKey() {
-        encryptionKey.remove();
+    function forceUnlocking() {
         phase = 1; // Go to Unlock
         unlockMessage = i18n.t("vault.security_timeout");
     }
 
     // Initialize Global Stores
-    const vault = useVault(encryptionKey, removeEncryptionKey);
+    const vault = useVault(encryptionKey, forceUnlocking);
 
     useVaultSync(vault, () => phase === 2);
 

@@ -10,7 +10,7 @@ import { untrack } from "svelte";
 
 export function useVault(
     encryptionKey: EncryptionKey,
-    onLock?: () => void,
+    onLock: () => void,
 ) {
 
     // State
@@ -42,15 +42,9 @@ export function useVault(
         if (inactivityTimer) clearTimeout(inactivityTimer);
 
         inactivityTimer = setTimeout(() => {
+            encryptionKey.remove();
             // After 15 minutes of inactivity, lock the vault by clearing the encryption key
-            if (onLock) {
-                onLock();
-            } else {
-                // Default fallback if no handler provided
-                _items = [];
-                encryptedVaultData = null;
-                alert(i18n.t("vault.security_timeout"));
-            }
+            onLock();
         }, (browser && (window as any).__TESTING__)
             ? settings.current.inactivityTimeoutTest
             : settings.current.inactivityTimeout);
