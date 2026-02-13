@@ -118,7 +118,7 @@ export function useVault(
                 vaultContent = JSON.parse(offline);
                 offlineMode = true;
             } else {
-                alert("Failed to decrypt vault and no offline copy found.");
+                alert(i18n.t("vault.load_offline_error"));
                 isLoading = false;
                 return;
             }
@@ -158,7 +158,7 @@ export function useVault(
                         isDirty = false;
                         success = true;
                     } catch (e) {
-                        alert("Failed to decrypt vault.");
+                        alert(i18n.t("vault.decrypt_error"));
                         success = false;
                     }
                 }
@@ -271,7 +271,7 @@ export function useVault(
             } catch (e) {
                 console.error("Failed to decrypt for saving", e);
                 // If we can't decrypt, we risk losing data if we overwrite.
-                alert("Critical Error: Cannot decrypt existing vault to merge changes. Aborting save to prevent data loss.");
+                alert(i18n.t("vault.save_decrypt_error"));
                 return;
             }
         }
@@ -335,7 +335,7 @@ export function useVault(
             api.storage?.setItem("offline_vault", JSON.stringify(payload));
         } catch (e) {
             if (!offlineMode) {
-                alert("Failed to save vault to server. Please check connection.");
+                alert(i18n.t("vault.save_error"));
             }
             // Do NOT clear dirty secrets on failure
         }
@@ -344,9 +344,7 @@ export function useVault(
     async function synchronizeVault() {
         if (isDirty) {
             if (
-                !confirm(
-                    "You have unsaved changes. Synchronizing will discard them. Continue?",
-                )
+                !confirm(i18n.t("vault.sync_discard_confirm"))
             ) {
                 return;
             }
@@ -355,10 +353,10 @@ export function useVault(
         isSyncing = true;
         try {
             if (await loadVault()) {
-                alert("Vault synchronized successfully!");
+                alert(i18n.t("vault.sync_success"));
             }
         } catch (e) {
-            alert("Failed to synchronize vault. Please try again.");
+            alert(i18n.t("vault.sync_error"));
             console.error("Sync error:", e);
         } finally {
             isSyncing = false;
@@ -371,17 +369,17 @@ export function useVault(
             historyFiles = await api.getVaultHistory();
             showHistoryModal = true;
         } catch (e) {
-            alert("Failed to load history.");
+            alert(i18n.t("vault.history_error"));
         }
     }
 
     async function deleteHistoryItem(filename: string) {
-        if (!confirm(`Delete version ${filename}?`)) return;
+        if (!confirm(i18n.t("vault.history.delete_confirm", { filename }))) return;
         try {
             await api.deleteVault(filename);
             historyFiles = await api.getVaultHistory();
         } catch (e) {
-            alert("Failed to delete item.");
+            alert(i18n.t("vault.delete_error"));
         }
     }
 
@@ -492,7 +490,7 @@ export function useVault(
     }
 
     async function handleDelete(item: PasswordEntry) {
-        if (confirm("Delete " + item.title + "?")) {
+        if (confirm(i18n.t("vault.delete_confirm", { title: item.title }))) {
             _items = _items.filter((i) => i.id !== item.id);
             // Also remove from dirtySecrets if present
             dirtySecrets.delete(item.id);

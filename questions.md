@@ -806,7 +806,13 @@ erased so unlocking is mandatory.
 
 antigravity ok
 
-## 109 
+## 109 i18n
+
+There are still texts seen by the webapp user that are not
+internationalized (in some `alert` calls for instance). Find them and
+fix them.
+
+Antigravity OK
 
 
 
