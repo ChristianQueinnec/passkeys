@@ -62,7 +62,7 @@ archive.container : tag.container
 # Don't forget to be authenticated:
 #    docker login registry.queinnec.org:5000 username: codegradx
 
-run.remote.container : archive.container 
+run.remote.container : 
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	ssh ${REMOTE} make -C Passkeys do.run.remote.container
 do.run.remote.container :

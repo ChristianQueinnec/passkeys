@@ -76,3 +76,24 @@ export async function verifyRequest(
 
     return user;
 }
+
+/**
+ * Helper to safely extract username from JWT token in request for logging purposes.
+ * Does not validate the token - use verifyRequest or getAuthUser for authentication.
+ * @param request The incoming request
+ * @returns The username from the token, or undefined if not found
+ */
+export function peekUsernameFromRequest(request: Request): string | undefined {
+    const authHeader = request.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        const parts = token.split('.');
+        if (parts.length === 3) {
+            try {
+                const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+                return payload.username;
+            } catch { /* ignore */ }
+        }
+    }
+    return undefined;
+}

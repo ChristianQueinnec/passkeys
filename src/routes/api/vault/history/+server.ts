@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
-import { verifyRequest } from '$lib/server/auth';
+import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
 import { sanitizeFilename } from '$lib/server/sanitizer';
 import type { ErrorResponse, DeleteVaultResponse } from '$lib/server/requestTypes';
 import logger from '$lib/server/logger';
@@ -45,20 +45,4 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
         logger.error({ error: e.message, username: peekUsernameFromRequest(request) }, 'Vault history DELETE error');
         return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
     }
-}
-
-function peekUsernameFromRequest(request: Request): string | undefined {
-    // Helper to safely peek username for logging
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        const parts = token.split('.');
-        if (parts.length === 3) {
-            try {
-                const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-                return payload.username;
-            } catch { /* ignore */ }
-        }
-    }
-    return undefined;
 }

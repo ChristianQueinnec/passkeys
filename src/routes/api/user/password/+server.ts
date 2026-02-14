@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { updateUserPassword } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
-import { verifyRequest } from '$lib/server/auth';
+import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
 import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
 import type { RequestEvent } from './$types';
@@ -56,20 +56,4 @@ export async function POST({ request }: RequestEvent) {
         return json({ error: e.message || 'Failed to update password' } as ErrorResponse,
             { status: 500 });
     }
-}
-
-function peekUsernameFromRequest(request: Request): string | undefined {
-    // Helper to safely peek username for logging
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        const parts = token.split('.');
-        if (parts.length === 3) {
-            try {
-                const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-                return payload.username;
-            } catch { /* ignore */ }
-        }
-    }
-    return undefined;
 }
