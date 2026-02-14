@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
+import { handleServerError } from '$lib/server/error-handler';
 import type { NewerVaultResponse, ErrorResponse } from '$lib/server/requestTypes';
 
 export const GET: RequestHandler = async ({ request }) => {
@@ -13,6 +14,6 @@ export const GET: RequestHandler = async ({ request }) => {
         if (vaults.length === 0) return json({ mtime: null } as NewerVaultResponse, { status: 200 });
         return json({ mtime: vaults[0].mtime.toISOString() } as NewerVaultResponse, { status: 200 });
     } catch (e: any) {
-        return json({ error: e.message } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { username: user.username, operation: 'Vault metadata GET' }, 'Failed to retrieve vault metadata');
     }
 }

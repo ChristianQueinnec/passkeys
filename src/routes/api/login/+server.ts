@@ -4,6 +4,7 @@ import { verifyPassword } from '$lib/server/crypto-utils';
 import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
+import { handleServerError } from '$lib/server/error-handler';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/requestTypes';
@@ -70,7 +71,6 @@ export async function POST(event: RequestEvent) {
         return json({ token, username: sanitizedUsername } as LoginResponse,
             { status: 200 });
     } catch (e: any) {
-        logger.error({ error: e.message, ip }, 'Login error');
-        return json({ error: e.message || 'Internal Error' } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { ip, operation: 'Login' }, 'Authentication failed');
     }
 }

@@ -2,8 +2,8 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
 import { sanitizeFilename } from '$lib/server/sanitizer';
+import { handleServerError } from '$lib/server/error-handler';
 import type { ErrorResponse, DeleteVaultResponse } from '$lib/server/requestTypes';
-import logger from '$lib/server/logger';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);
@@ -14,8 +14,7 @@ export const GET: RequestHandler = async ({ request }) => {
         const vaults = listVaults(user.username);
         return json(vaults);
     } catch (e: any) {
-        logger.error({ error: e.message, username: user.username }, 'Vault history GET error');
-        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { username: user.username, operation: 'Vault history GET' }, 'Failed to retrieve vault history');
     }
 }
 
@@ -42,7 +41,6 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
         deleteVault(user.username, filename);
         return json({ success: true } as DeleteVaultResponse, { status: 200 });
     } catch (e: any) {
-        logger.error({ error: e.message, username: peekUsernameFromRequest(request) }, 'Vault history DELETE error');
-        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { username: peekUsernameFromRequest(request), operation: 'Vault history DELETE' }, 'Failed to delete vault history');
     }
 }

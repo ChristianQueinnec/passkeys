@@ -2,8 +2,8 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { getLatestVault, saveVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizeVaultContent, sanitizeRequestBody } from '$lib/server/sanitizer';
+import { handleServerError } from '$lib/server/error-handler';
 import type { LatestVaultResponse, ErrorResponse, SaveVaultResponse, SaveVaultRequest } from '$lib/server/requestTypes';
-import logger from '$lib/server/logger';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);
@@ -15,8 +15,7 @@ export const GET: RequestHandler = async ({ request }) => {
         if (!vault) return json({ error: 'Not found' } as ErrorResponse, { status: 404 });
         return json(JSON.parse(vault));
     } catch (e: any) {
-        logger.error({ error: e.message, username: user.username }, 'Vault GET error');
-        return json({ error: 'Internal error' } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { username: user.username, operation: 'Vault GET' }, 'Failed to retrieve vault');
     }
 }
 
@@ -45,7 +44,6 @@ export const POST: RequestHandler = async ({ request }) => {
         const filename = await saveVault(user.username, sanitizedContent);
         return json({ success: true, filename } as SaveVaultResponse, { status: 200 });
     } catch (e: any) {
-        logger.error({ error: e.message, username: user.username }, 'Vault POST error');
-        return json({ error: e.message || 'Internal error' } as ErrorResponse, { status: 500 });
+        return handleServerError(e, { username: user.username, operation: 'Vault POST' }, 'Failed to save vault');
     }
 }

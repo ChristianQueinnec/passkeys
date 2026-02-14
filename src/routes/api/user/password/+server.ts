@@ -4,9 +4,9 @@ import { verifyPassword } from '$lib/server/crypto-utils';
 import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
 import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
+import { handleServerError } from '$lib/server/error-handler';
 import type { RequestEvent } from './$types';
 import type { PasswordChangeRequest, ErrorResponse, PasswordChangeResponse } from '$lib/server/requestTypes';
-import logger from '$lib/server/logger';
 
 export async function POST({ request }: RequestEvent) {
     try {
@@ -52,8 +52,6 @@ export async function POST({ request }: RequestEvent) {
         return json({ success: true, token: newToken, username: user.username } as PasswordChangeResponse,
             { status: 200 });
     } catch (e: any) {
-        logger.error({ error: e.message, username: peekUsernameFromRequest(request) }, 'Password change error');
-        return json({ error: e.message || 'Failed to update password' } as ErrorResponse,
-            { status: 500 });
+        return handleServerError(e, { username: peekUsernameFromRequest(request), operation: 'Password change' }, 'Failed to update password');
     }
 }
