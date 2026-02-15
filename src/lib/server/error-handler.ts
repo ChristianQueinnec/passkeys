@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { dev } from '$app/environment';
 import logger from './logger';
+import { HTTP_STATUS } from './http-codes';
 import type { ErrorResponse } from './requestTypes';
 
 /**
@@ -17,7 +18,7 @@ export function handleServerError(
     e: unknown,
     context: Record<string, any>,
     publicMessage: string = 'Internal server error',
-    statusCode: number = 500
+    statusCode: number = HTTP_STATUS.INTERNAL_SERVER_ERROR
 ): Response {
     // Extract error message safely
     const errorMessage = e instanceof Error ? e.message : String(e);

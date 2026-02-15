@@ -5,6 +5,7 @@ import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
 import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
 import { handleServerError } from '$lib/server/error-handler';
+import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { RequestEvent } from './$types';
 import type { PasswordChangeRequest, ErrorResponse, PasswordChangeResponse } from '$lib/server/requestTypes';
 
@@ -19,7 +20,7 @@ export async function POST({ request }: RequestEvent) {
         const { oldPassword, newPassword } = body;
 
         if (!oldPassword || !newPassword) {
-            return json({ error: 'Missing parameters' } as ErrorResponse, { status: 400 });
+            return json({ error: 'Missing parameters' } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
 
         let sanitizedOldPassword: string;
@@ -29,7 +30,7 @@ export async function POST({ request }: RequestEvent) {
             sanitizedOldPassword = sanitizePassword(oldPassword);
             sanitizedNewPassword = sanitizePassword(newPassword);
         } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: 400 });
+            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
 
         // Verify old password
@@ -37,7 +38,7 @@ export async function POST({ request }: RequestEvent) {
         const isValid = await verifyPassword(sanitizedOldPassword, hash, salt);
 
         if (!isValid) {
-            return json({ error: 'Invalid current password' } as ErrorResponse, { status: 403 });
+            return json({ error: 'Invalid current password' } as ErrorResponse, { status: HTTP_STATUS.FORBIDDEN });
         }
 
         // Update password
@@ -50,7 +51,7 @@ export async function POST({ request }: RequestEvent) {
         const newToken = generateToken(user.username);
 
         return json({ success: true, token: newToken, username: user.username } as PasswordChangeResponse,
-            { status: 200 });
+            { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { username: peekUsernameFromRequest(request), operation: 'Password change' }, 'Failed to update password');
     }

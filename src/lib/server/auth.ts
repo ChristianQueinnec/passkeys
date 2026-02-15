@@ -3,6 +3,7 @@ import { getUser } from '$lib/server/users';
 import { sanitizeJWTToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 import { verifyToken } from '$lib/server/jwt';
+import { HTTP_STATUS } from './http-codes';
 import type { User } from '$lib/types';
 import logger from '$lib/server/logger';
 
@@ -53,7 +54,7 @@ export async function verifyRequest(
 ): Promise<User | Response> {
     const user = getAuthUser(request);
     if (!user) {
-        return json({ error: 'Unauthorized' }, { status: 401 });
+        return json({ error: 'Unauthorized' }, { status: HTTP_STATUS.UNAUTHORIZED });
     }
 
     if (options.csrf) {
@@ -61,16 +62,16 @@ export async function verifyRequest(
         const sessionId = getSessionIdFromRequest(request);
 
         if (!csrfTokenRaw || !sessionId) {
-            return json({ error: 'Missing CSRF token' }, { status: 403 });
+            return json({ error: 'Missing CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
         }
 
         try {
             const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
             if (!validateCSRFToken(sessionId, csrfToken)) {
-                return json({ error: 'Invalid CSRF token' }, { status: 403 });
+                return json({ error: 'Invalid CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
             }
         } catch (sanitizeError: any) {
-            return json({ error: 'Invalid CSRF token format' }, { status: 403 });
+            return json({ error: 'Invalid CSRF token format' }, { status: HTTP_STATUS.FORBIDDEN });
         }
     }
 

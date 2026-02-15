@@ -5,6 +5,7 @@ import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/se
 import { generateToken } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import { handleServerError } from '$lib/server/error-handler';
+import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/requestTypes';
@@ -15,7 +16,7 @@ export async function POST(event: RequestEvent) {
     const ip = getClientAddress();
 
     if (isBlocked(ip)) {
-        return json({ error: 'Too many failed attempts. Please try again later.' } as ErrorResponse, { status: 429 });
+        return json({ error: 'Too many failed attempts. Please try again later.' } as ErrorResponse, { status: HTTP_STATUS.TOO_MANY_REQUESTS });
     }
 
     try {
@@ -25,7 +26,7 @@ export async function POST(event: RequestEvent) {
         // Validate required fields
         if (!username || !password) {
             return json({ error: 'Username and password required' } as ErrorResponse,
-                { status: 400 });
+                { status: HTTP_STATUS.BAD_REQUEST });
         }
 
         // Sanitize inputs
@@ -36,7 +37,7 @@ export async function POST(event: RequestEvent) {
             sanitizedUsername = sanitizeUsername(username);
             sanitizedPassword = sanitizePassword(password);
         } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: 400 });
+            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
 
         // Authenticate user
@@ -59,7 +60,7 @@ export async function POST(event: RequestEvent) {
             const delay = getDelay(ip);
             // Add incremental delay to prevent brute force
             await new Promise(resolve => setTimeout(resolve, Math.max(100, delay)));
-            return json({ error: 'Invalid credentials' } as ErrorResponse, { status: 401 });
+            return json({ error: 'Invalid credentials' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
         }
 
         // Reset rate limiter on successful login
@@ -69,7 +70,7 @@ export async function POST(event: RequestEvent) {
         const token = generateToken(sanitizedUsername);
 
         return json({ token, username: sanitizedUsername } as LoginResponse,
-            { status: 200 });
+            { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { ip, operation: 'Login' }, 'Authentication failed');
     }

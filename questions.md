@@ -823,7 +823,7 @@ Antigravity claude sonnet
 - Code Duplication Issues                            DONE
 - Inconsistent Error Handling                        DONE
 - Type Safety Issues in Request Types                DONE
-- Missing HTTP Status Code Constants
+- Missing HTTP Status Code Constants                 DONE
 - CSRF Token Management
 - API Client (api.ts) Issues
 - Rate Limiting Improvements
