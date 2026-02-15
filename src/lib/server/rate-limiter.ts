@@ -2,8 +2,18 @@ import { browser } from "$app/environment";
 import fs from 'node:fs';
 import path from 'node:path';
 import lockfile from 'proper-lockfile';
+import logger from './logger';
 
 const STATS_FILE = path.join(process.cwd(), 'data', 'rate-limiter-stats.json');
+
+interface IpStats {
+    failures: number;
+    lastAttempt: number;
+    blockedUntil: number;
+}
+
+// In-memory cache
+let inMemoryStats: Map<string, IpStats> | null = null;
 
 function ensureDataDir() {
     if (browser) return;
@@ -12,48 +22,63 @@ function ensureDataDir() {
         fs.mkdirSync(dir, { recursive: true });
     }
     if (!fs.existsSync(STATS_FILE)) {
-        fs.writeFileSync(STATS_FILE, '{}', 'utf8');
+        try {
+            fs.writeFileSync(STATS_FILE, '{}', 'utf8');
+        } catch (e: any) {
+            logger.error({ error: e.message, path: STATS_FILE }, 'Failed to initialize rate limiter stats file');
+        }
     }
 }
 
-interface IpStats {
-    failures: number;
-    lastAttempt: number;
-    blockedUntil: number;
-}
-
-function readStats(): Record<string, IpStats> {
+function loadStatsFromDisk(): Record<string, IpStats> {
     if (browser) return {};
+    ensureDataDir();
     try {
-        ensureDataDir();
         if (fs.existsSync(STATS_FILE)) {
             const data = fs.readFileSync(STATS_FILE, 'utf8');
             return JSON.parse(data);
         }
-    } catch (e) {
-        // Silently ignore
+    } catch (e: any) {
+        logger.error({ error: e.message }, 'Failed to read rate limiter stats from disk');
     }
     return {};
 }
 
-async function writeStats(stats: Record<string, IpStats>) {
-    if (browser) return;
-    ensureDataDir();
-    const release = await lockfile.lock(STATS_FILE);
+function getInMemoryStats(): Map<string, IpStats> {
+    if (inMemoryStats === null) {
+        const stats = loadStatsFromDisk();
+        inMemoryStats = new Map(Object.entries(stats));
+    }
+    return inMemoryStats;
+}
+
+async function persistStatsToDisk() {
+    if (browser || !inMemoryStats) return;
+
+    // We use lockfile to ensure only one process/thread writes to the file at a time
+    // Even with in-memory cache, multiple SvelteKit processes might share the same data file
+    let release;
     try {
-        ensureDataDir();
-        fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2));
-    } catch (e) {
-        // Silently ignore
+        release = await lockfile.lock(STATS_FILE, { retries: 5 });
+    } catch (e: any) {
+        logger.error({ error: e.message }, 'Failed to acquire lock for rate limiter stats');
+        return;
+    }
+
+    try {
+        const statsObj = Object.fromEntries(inMemoryStats);
+        fs.writeFileSync(STATS_FILE, JSON.stringify(statsObj, null, 2));
+    } catch (e: any) {
+        logger.error({ error: e.message }, 'Failed to write rate limiter stats to disk');
     } finally {
-        release();
+        await release();
     }
 }
 
 function normalizeIp(ip: string): string {
     if (!ip) return 'unknown';
     let normalized = ip;
-    if (ip === '::1') {
+    if (ip === '::1' || ip === '::ffff:127.0.0.1') {
         normalized = '127.0.0.1';
     } else if (ip.startsWith('::ffff:')) {
         normalized = ip.substring(7);
@@ -62,7 +87,6 @@ function normalizeIp(ip: string): string {
 }
 
 const MAX_FAILURES = 5;
-// Configuration with defaults
 let isTestMode = process.env.RATE_LIMIT_TEST_MODE === 'true';
 
 const CONSTANTS = {
@@ -86,23 +110,24 @@ export function setTestMode(enabled: boolean) {
     isTestMode = enabled;
 }
 
-
-
-
-function getStats(ip: string): IpStats {
-    const allStats = readStats();
-    const normalizedIp = normalizeIp(ip);
-    if (!allStats[normalizedIp]) {
-        return { failures: 0, lastAttempt: 0, blockedUntil: 0 };
-    }
-    return allStats[normalizedIp];
-}
-
-async function saveStats(ip: string, stats: IpStats) {
-    const normalizedIp = normalizeIp(ip);
-    const allStats = readStats();
-    allStats[normalizedIp] = stats;
-    await writeStats(allStats);
+// Prune stale entries from memory (entries older than 24h)
+const PRUNE_INTERVAL = 60 * 60 * 1000; // 1 hour
+const STALE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
+if (!browser) {
+    setInterval(() => {
+        const stats = getInMemoryStats();
+        const now = Date.now();
+        let changed = false;
+        for (const [ip, data] of stats.entries()) {
+            if (now - data.lastAttempt > STALE_THRESHOLD && data.blockedUntil < now) {
+                stats.delete(ip);
+                changed = true;
+            }
+        }
+        if (changed) {
+            persistStatsToDisk().catch(e => logger.error({ error: e.message }, 'Failed to persist pruned stats'));
+        }
+    }, PRUNE_INTERVAL);
 }
 
 /**
@@ -110,8 +135,9 @@ async function saveStats(ip: string, stats: IpStats) {
  */
 export function isBlocked(ip: string): boolean {
     if (browser) return false;
-    const stats = getStats(ip);
-    if (stats.blockedUntil > Date.now()) {
+    const normalizedIp = normalizeIp(ip);
+    const stats = getInMemoryStats().get(normalizedIp);
+    if (stats && stats.blockedUntil > Date.now()) {
         return true;
     }
     return false;
@@ -122,8 +148,9 @@ export function isBlocked(ip: string): boolean {
  */
 export function getDelay(ip: string): number {
     if (browser) return 0;
-    const stats = getStats(ip);
-    const failureCount = stats.failures;
+    const normalizedIp = normalizeIp(ip);
+    const stats = getInMemoryStats().get(normalizedIp);
+    const failureCount = stats ? stats.failures : 0;
 
     const config = getConfig();
 
@@ -139,14 +166,23 @@ export function getDelay(ip: string): number {
  */
 export async function recordFailure(ip: string) {
     if (browser) return;
-    const stats = getStats(ip);
+    const normalizedIp = normalizeIp(ip);
+    const statsMap = getInMemoryStats();
+    let stats = statsMap.get(normalizedIp);
+
+    if (!stats) {
+        stats = { failures: 0, lastAttempt: 0, blockedUntil: 0 };
+    }
+
     stats.failures++;
     stats.lastAttempt = Date.now();
 
     if (stats.failures >= MAX_FAILURES) {
         stats.blockedUntil = Date.now() + getConfig().BLOCK_DURATION;
     }
-    await saveStats(ip, stats);
+
+    statsMap.set(normalizedIp, stats);
+    await persistStatsToDisk();
 }
 
 /**
@@ -155,10 +191,10 @@ export async function recordFailure(ip: string) {
 export async function recordSuccess(ip: string) {
     if (browser) return;
     const normalizedIp = normalizeIp(ip);
-    const allStats = readStats();
-    if (allStats[normalizedIp]) {
-        delete allStats[normalizedIp];
-        await writeStats(allStats);
+    const statsMap = getInMemoryStats();
+    if (statsMap.has(normalizedIp)) {
+        statsMap.delete(normalizedIp);
+        await persistStatsToDisk();
     }
 }
 
@@ -167,5 +203,6 @@ export async function recordSuccess(ip: string) {
  */
 export async function clearAll() {
     if (browser) return;
-    await writeStats({});
+    inMemoryStats = new Map();
+    await persistStatsToDisk();
 }
