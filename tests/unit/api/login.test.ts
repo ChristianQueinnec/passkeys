@@ -1,9 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as loginHandler from '../../../src/routes/api/login/+server';
-import * as users from '$lib/server/users';
-import * as cryptoUtils from '$lib/server/crypto-utils';
-import * as jwt from '$lib/server/jwt';
-import * as rateLimiter from '$lib/server/rate-limiter';
 
 vi.mock('$lib/server/rate-limiter', () => ({
     isBlocked: vi.fn().mockReturnValue(false),
@@ -21,6 +16,16 @@ vi.mock('$lib/server/crypto-utils', () => ({
 vi.mock('$lib/server/jwt', () => ({
     generateToken: vi.fn(),
 }));
+vi.mock('$lib/server/csrf', () => ({
+    generateCSRFToken: vi.fn().mockReturnValue('mock-csrf-token'),
+}));
+
+import * as loginHandler from '../../../src/routes/api/login/+server';
+import * as users from '$lib/server/users';
+import * as cryptoUtils from '$lib/server/crypto-utils';
+import * as jwt from '$lib/server/jwt';
+import * as rateLimiter from '$lib/server/rate-limiter';
+import * as csrf from '$lib/server/csrf';
 
 describe('API Login', () => {
     beforeEach(() => {
@@ -46,7 +51,7 @@ describe('API Login', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Username and password required');
+        expect(data.error).toBe('Field "password": Password must be a string');
     });
 
     it('should return 400 if username missing', async () => {
@@ -62,7 +67,7 @@ describe('API Login', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.error).toBe('Username and password required');
+        expect(data.error).toBe('Field "username": Username must be a string');
     });
 
     it('should return 401 if user not found', async () => {
@@ -108,6 +113,7 @@ describe('API Login', () => {
 
     it('should return JWT token on success', async () => {
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.signature';
+        vi.mocked(csrf.generateCSRFToken).mockReturnValue('mock-csrf-token');
 
         vi.mocked(users.getUser).mockReturnValue({
             username: 'test',
@@ -127,10 +133,13 @@ describe('API Login', () => {
         } as any);
         const data = await response.json();
 
+
         expect(response.status).toBe(200);
         expect(data.token).toBe(mockToken);
         expect(data.username).toBe('test');
+        expect(data.csrfToken).toBe('mock-csrf-token');
         expect(jwt.generateToken).toHaveBeenCalledWith('test');
+        expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockToken);
     });
 
     it('should verify password even if user does not exist (timing attack protection)', async () => {

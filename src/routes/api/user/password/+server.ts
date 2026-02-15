@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { updateUserPassword } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
 import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
-import { sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
+import { sanitizePassword, sanitizeRequestBody, validateObject } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
 import { handleServerError } from '$lib/server/error-handler';
 import { HTTP_STATUS } from '$lib/server/http-codes';
@@ -16,22 +16,19 @@ export async function POST({ request }: RequestEvent) {
         const user = result;
 
         // Parse and sanitize request body
-        const body = await sanitizeRequestBody(request) as PasswordChangeRequest;
-        const { oldPassword, newPassword } = body;
+        const body = await sanitizeRequestBody(request);
 
-        if (!oldPassword || !newPassword) {
-            return json({ error: 'Missing parameters' } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
-        }
-
-        let sanitizedOldPassword: string;
-        let sanitizedNewPassword: string;
-
+        let pwdReq: PasswordChangeRequest;
         try {
-            sanitizedOldPassword = sanitizePassword(oldPassword);
-            sanitizedNewPassword = sanitizePassword(newPassword);
-        } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
+            pwdReq = validateObject<PasswordChangeRequest>(body, {
+                oldPassword: sanitizePassword,
+                newPassword: sanitizePassword
+            });
+        } catch (validationError: any) {
+            return json({ error: validationError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
+
+        const { oldPassword: sanitizedOldPassword, newPassword: sanitizedNewPassword } = pwdReq;
 
         // Verify old password
         const [salt, hash] = user.password.split(':');

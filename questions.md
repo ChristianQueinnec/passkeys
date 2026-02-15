@@ -826,9 +826,9 @@ Antigravity claude sonnet
 - Missing HTTP Status Code Constants                 DONE
 - CSRF Token Management                              DONE
 - API Client (api.ts) Issues                         DONE
-- Rate Limiting Improvements
+- Rate Limiting Improvements                         DONE
+- Missing Request Validation                         DONE
 - Type Definitions for Vault Content
-- Missing Request Validation
 - Authentication Header Parsing
 
 # FUTURE
@@ -875,3 +875,5 @@ hide better the vault password
 Allow the webapp user to choose the inactivity timeout currently set
 to 15 minutes.
 
+Gather constants used in server API code into its own file
+`server-settings.json`

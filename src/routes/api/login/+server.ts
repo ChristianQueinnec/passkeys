@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
-import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/server/sanitizer';
+import { sanitizeUsername, sanitizePassword, sanitizeRequestBody, validateObject } from '$lib/server/sanitizer';
 import { generateToken } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import { handleServerError } from '$lib/server/error-handler';
@@ -22,24 +22,18 @@ export async function POST(event: RequestEvent) {
 
     try {
         const body = await sanitizeRequestBody(request);
-        const { username, password } = body as LoginRequest;
 
-        // Validate required fields
-        if (!username || !password) {
-            return json({ error: 'Username and password required' } as ErrorResponse,
-                { status: HTTP_STATUS.BAD_REQUEST });
-        }
-
-        // Sanitize inputs
-        let sanitizedUsername: string;
-        let sanitizedPassword: string;
-
+        let credentials: LoginRequest;
         try {
-            sanitizedUsername = sanitizeUsername(username);
-            sanitizedPassword = sanitizePassword(password);
-        } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
+            credentials = validateObject<LoginRequest>(body, {
+                username: sanitizeUsername,
+                password: sanitizePassword
+            });
+        } catch (validationError: any) {
+            return json({ error: validationError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
+
+        const { username: sanitizedUsername, password: sanitizedPassword } = credentials;
 
         // Authenticate user
         const user: User | undefined = getUser(sanitizedUsername);

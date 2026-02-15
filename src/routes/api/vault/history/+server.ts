@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults, deleteVault } from '$lib/server/storage';
 import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
-import { sanitizeFilename } from '$lib/server/sanitizer';
+import { sanitizeFilename, validateObject } from '$lib/server/sanitizer';
 import { handleServerError } from '$lib/server/error-handler';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { ErrorResponse, DeleteVaultResponse } from '$lib/server/requestTypes';
@@ -27,16 +27,17 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
 
         // Sanitize filename from query parameter
         const filenameRaw = url.searchParams.get('filename');
-        if (!filenameRaw) {
-            return json({ error: 'Filename required' } as ErrorResponse, { status: 400 });
+
+        let historyReq: { filename: string };
+        try {
+            historyReq = validateObject<{ filename: string }>({ filename: filenameRaw }, {
+                filename: (val: unknown) => sanitizeFilename(val, '.vault')
+            });
+        } catch (validationError: any) {
+            return json({ error: validationError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
 
-        let filename: string;
-        try {
-            filename = sanitizeFilename(filenameRaw, '.vault');
-        } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
-        }
+        const { filename } = historyReq;
 
         // Delete vault
         deleteVault(user.username, filename);
@@ -44,4 +45,4 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
     } catch (e: any) {
         return handleServerError(e, { username: peekUsernameFromRequest(request), operation: 'Vault history DELETE' }, 'Failed to delete vault history');
     }
-}
+};

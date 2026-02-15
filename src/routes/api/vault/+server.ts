@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { getLatestVault, saveVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
-import { sanitizeVaultContent, sanitizeRequestBody } from '$lib/server/sanitizer';
+import { sanitizeVaultContent, sanitizeRequestBody, validateObject } from '$lib/server/sanitizer';
 import { handleServerError } from '$lib/server/error-handler';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { ErrorResponse, SaveVaultResponse, SaveVaultRequest } from '$lib/server/requestTypes';
@@ -27,19 +27,18 @@ export const POST: RequestHandler = async ({ request }) => {
 
     try {
         // Parse and sanitize request body
-        const body = await sanitizeRequestBody(request) as SaveVaultRequest;
-        const { content } = body;
+        const body = await sanitizeRequestBody(request);
 
-        if (!content) {
-            return json({ error: 'Missing content' } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
-        }
-
-        let sanitizedContent: string;
+        let vaultReq: SaveVaultRequest;
         try {
-            sanitizedContent = sanitizeVaultContent(content);
-        } catch (sanitizeError: any) {
-            return json({ error: sanitizeError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
+            vaultReq = validateObject<SaveVaultRequest>(body, {
+                content: sanitizeVaultContent
+            });
+        } catch (validationError: any) {
+            return json({ error: validationError.message } as ErrorResponse, { status: HTTP_STATUS.BAD_REQUEST });
         }
+
+        const { content: sanitizedContent } = vaultReq;
 
         // Save vault
         const filename = await saveVault(user.username, sanitizedContent);

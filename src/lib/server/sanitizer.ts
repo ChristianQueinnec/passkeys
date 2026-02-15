@@ -146,7 +146,7 @@ export function sanitizeVaultContent(content: unknown): string {
     } catch (e) {
         throw new Error('Vault content must be valid JSON');
     }
-    if ( vault /*&& vault.iv && vault.content*/ ) {
+    if (vault /*&& vault.iv && vault.content*/) {
         return content;
     }
     throw new Error('Vault content is incorrect JSON');
@@ -188,14 +188,17 @@ export async function sanitizeRequestBody(
     request: Request,
     maxSize = 10 * 1024 * 1024
 ): Promise<any> {
-    const contentType = request.headers.get('content-type');
-
-    if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Content-Type must be application/json');
+    // Only check content-type if there is a potential body (POST, PUT, PATCH)
+    if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
+        const contentType = request.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Content-Type must be application/json');
+        }
     }
 
     try {
         const text = await request.text();
+        if (text.length === 0) return {};
 
         if (text.length > maxSize) {
             throw new Error('Request body too large');
@@ -208,4 +211,19 @@ export async function sanitizeRequestBody(
         }
         throw e;
     }
+}
+
+/**
+ * Generic object validator
+ */
+export function validateObject<T>(obj: any, schema: Record<keyof T, (val: any) => any>): T {
+    const result: any = {};
+    for (const key in schema) {
+        try {
+            result[key] = schema[key](obj[key]);
+        } catch (e: any) {
+            throw new Error(`Field "${key}": ${e.message}`);
+        }
+    }
+    return result as T;
 }
