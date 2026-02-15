@@ -27,7 +27,7 @@ export interface VaultMetadata {
 export interface HistoryItem {
     name: string;
     size: number;
-    mtime: Date;
+    mtime: string; // ISO 8601 date string
     isCiphered: boolean;
 }
 

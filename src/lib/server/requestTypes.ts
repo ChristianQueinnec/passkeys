@@ -43,14 +43,6 @@ export interface DeleteVaultResponse {
 }
 
 // src/routes/api/vault/
-// TODO not satisfactory! 
-export interface LatestVaultResponse { // = VaultDescription;
-    name: string,
-    size: number,
-    mtime: Date,
-    isCiphered: boolean
-}    
-
 export interface SaveVaultRequest {
     content: string
 }
@@ -60,10 +52,14 @@ export interface SaveVaultResponse {
     filename: string
 }
 
+/**
+ * Describes a vault file stored on the server.
+ * Note: mtime is an ISO 8601 date string (not Date object) due to JSON serialization.
+ */
 export type VaultDescription = {
     name: string,
     size: number,
-    mtime: Date,
+    mtime: string, // ISO 8601 date string
     isCiphered: boolean
 }
 

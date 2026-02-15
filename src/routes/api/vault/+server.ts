@@ -3,7 +3,7 @@ import { getLatestVault, saveVault } from '$lib/server/storage';
 import { verifyRequest } from '$lib/server/auth';
 import { sanitizeVaultContent, sanitizeRequestBody } from '$lib/server/sanitizer';
 import { handleServerError } from '$lib/server/error-handler';
-import type { LatestVaultResponse, ErrorResponse, SaveVaultResponse, SaveVaultRequest } from '$lib/server/requestTypes';
+import type { ErrorResponse, SaveVaultResponse, SaveVaultRequest } from '$lib/server/requestTypes';
 
 export const GET: RequestHandler = async ({ request }) => {
     const result = await verifyRequest(request);

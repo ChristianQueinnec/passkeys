@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LatestVaultResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, VaultDescription } from './server/requestTypes';
+import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, VaultDescription } from './server/requestTypes';
 
 // Client-side API wrapper (updated for SvelteKit relative paths)
 
