@@ -42,6 +42,12 @@ export const api = {
         const data = await res.json() as LoginResponse;
         this.token = data.token;
         this.username = data.username;
+
+        // Store CSRF token if provided in login response (optimization)
+        if (data.csrfToken) {
+            this.csrfToken = data.csrfToken;
+        }
+
         if (browser) {
             console.log('Login success, trustDevice:', trustDevice);
             const storage = trustDevice === true ? window.localStorage : window.sessionStorage;
@@ -56,8 +62,11 @@ export const api = {
             }
             if (this.username) storage.setItem('username', this.username);
         }
-        // Get CSRF token after login
-        await this.getCSRFToken();
+
+        // Only fetch if we didn't get it in the login response
+        if (!this.csrfToken) {
+            await this.getCSRFToken();
+        }
         return data;
     },
 
@@ -161,6 +170,7 @@ export const api = {
                 }
             }
             // Refresh CSRF token for the new auth token
+            // If the server doesn't provide it in this response, fetch it
             await this.getCSRFToken();
         }
         return data;

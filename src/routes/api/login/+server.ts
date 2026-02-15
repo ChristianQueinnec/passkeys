@@ -5,6 +5,7 @@ import { sanitizeUsername, sanitizePassword, sanitizeRequestBody } from '$lib/se
 import { generateToken } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import { handleServerError } from '$lib/server/error-handler';
+import { generateCSRFToken } from '$lib/server/csrf';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
@@ -69,7 +70,10 @@ export async function POST(event: RequestEvent) {
         // Generate JWT token
         const token = generateToken(sanitizedUsername);
 
-        return json({ token, username: sanitizedUsername } as LoginResponse,
+        // Generate CSRF token (tied to the JWT session)
+        const csrfToken = generateCSRFToken(token);
+
+        return json({ token, username: sanitizedUsername, csrfToken } as LoginResponse,
             { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { ip, operation: 'Login' }, 'Authentication failed');

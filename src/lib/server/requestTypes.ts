@@ -13,7 +13,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
     token: string,
-    username: string
+    username: string,
+    csrfToken?: string
 }
 
 // src/routes/api/user/password/

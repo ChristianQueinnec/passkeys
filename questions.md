@@ -824,7 +824,7 @@ Antigravity claude sonnet
 - Inconsistent Error Handling                        DONE
 - Type Safety Issues in Request Types                DONE
 - Missing HTTP Status Code Constants                 DONE
-- CSRF Token Management
+- CSRF Token Management                              DONE
 - API Client (api.ts) Issues
 - Rate Limiting Improvements
 - Type Definitions for Vault Content

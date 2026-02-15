@@ -54,7 +54,8 @@ export function removeCSRFToken(sessionId: string): void {
 }
 
 /**
- * Get session ID from request (using Authorization header)
+ * Get session ID from request (using Authorization header).
+ * In this implementation, the JWT itself acts as the session ID for CSRF token mapping.
  */
 export function getSessionIdFromRequest(request: Request): string | null {
     const authHeader = request.headers.get('Authorization');
