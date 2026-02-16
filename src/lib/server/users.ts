@@ -5,8 +5,9 @@ import { createHashedEntry, createHashedEntrySync } from './crypto-utils';
 import type { User } from '$lib/types';
 import lockfile from 'proper-lockfile';
 import logger from '$lib/server/logger';
+import settings from './server-settings.json';
 
-const USERS_FILE = path.join(process.cwd(), 'data/users.json');
+const USERS_FILE = path.join(process.cwd(), settings.storage.dataDir, settings.storage.usersFile);
 
 export const getUsers = (): User[] => {
     if (!fs.existsSync(USERS_FILE)) {

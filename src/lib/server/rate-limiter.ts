@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import lockfile from 'proper-lockfile';
 import logger from './logger';
+import settings from './server-settings.json';
 
-const STATS_FILE = path.join(process.cwd(), 'data', 'rate-limiter-stats.json');
+const STATS_FILE = path.join(process.cwd(), settings.storage.dataDir, settings.storage.rateLimitFile);
 
 interface IpStats {
     failures: number;
@@ -86,19 +87,19 @@ function normalizeIp(ip: string): string {
     return normalized;
 }
 
-const MAX_FAILURES = 5;
+const MAX_FAILURES = settings.rateLimit.maxFailures;
 let isTestMode = process.env.RATE_LIMIT_TEST_MODE === 'true';
 
 const CONSTANTS = {
     PROD: {
-        BLOCK_DURATION: 15 * 60 * 1000, // 15m
-        MIN_DELAY: 1000,                // 1s
-        MAX_DELAY: 60000,               // 60s
+        BLOCK_DURATION: settings.rateLimit.prod.blockDurationMs,
+        MIN_DELAY: settings.rateLimit.prod.minDelayMs,
+        MAX_DELAY: settings.rateLimit.prod.maxDelayMs,
     },
     TEST: {
-        BLOCK_DURATION: 5000,           // 5s
-        MIN_DELAY: 100,                 // 0.1s
-        MAX_DELAY: 1000,                // 1s
+        BLOCK_DURATION: settings.rateLimit.test.blockDurationMs,
+        MIN_DELAY: settings.rateLimit.test.minDelayMs,
+        MAX_DELAY: settings.rateLimit.test.maxDelayMs,
     }
 };
 
@@ -110,9 +111,9 @@ export function setTestMode(enabled: boolean) {
     isTestMode = enabled;
 }
 
-// Prune stale entries from memory (entries older than 24h)
-const PRUNE_INTERVAL = 60 * 60 * 1000; // 1 hour
-const STALE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
+// Prune stale entries from memory
+const PRUNE_INTERVAL = settings.rateLimit.pruneIntervalMs;
+const STALE_THRESHOLD = settings.rateLimit.staleThresholdMs;
 if (!browser) {
     setInterval(() => {
         const stats = getInMemoryStats();

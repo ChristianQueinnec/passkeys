@@ -1,0 +1,30 @@
+{
+    "rateLimit": {
+        "prod": {
+            "blockDurationMs": 900000,
+            "minDelayMs": 1000,
+            "maxDelayMs": 60000
+        },
+        "test": {
+            "blockDurationMs": 5000,
+            "minDelayMs": 100,
+            "maxDelayMs": 1000
+        },
+        "maxFailures": 5,
+        "pruneIntervalMs": 3600000,
+        "staleThresholdMs": 86400000
+    },
+    "csrf": {
+        "tokenLifetimeMs": 3600000,
+        "cleanupIntervalMs": 300000
+    },
+    "sanitization": {
+        "maxVaultSize": 10485760,
+        "maxRequestBodySize": 10485760
+    },
+    "storage": {
+        "dataDir": "data",
+        "usersFile": "users.json",
+        "rateLimitFile": "rate-limiter-stats.json"
+    }
+}

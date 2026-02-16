@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sanitizeUsername } from '$lib/server/sanitizer';
 import lockfile from 'proper-lockfile';
+import settings from './server-settings.json';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = path.join(process.cwd(), settings.storage.dataDir);
 
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -57,7 +58,7 @@ export const saveVault = async (username: string, content: string): Promise<stri
         fs.writeFileSync(filePath, content);
         return filename;
     } finally {
-        if ( release ) await release();
+        if (release) await release();
     }
 };
 

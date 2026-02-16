@@ -1,3 +1,10 @@
+import { json } from '@sveltejs/kit';
+import logger from './logger';
+import settings from './server-settings.json';
+
+const MAX_VAULT_SIZE = settings.sanitization.maxVaultSize;
+const MAX_REQUEST_BODY_SIZE = settings.sanitization.maxRequestBodySize;
+
 /**
  * Input sanitization utilities for API endpoints
  * Protects against injection attacks, path traversal, and malformed input
@@ -134,7 +141,6 @@ export function sanitizeVaultContent(content: unknown): string {
         throw new Error('Vault content must be a string');
     }
 
-    const MAX_VAULT_SIZE = 10 * 1024 * 1024; // 10MB
     if (content.length === 0 || content.length > MAX_VAULT_SIZE) {
         throw new Error('Vault content size is invalid');
     }
@@ -186,7 +192,7 @@ export function sanitizeCSRFToken(token: unknown): string {
  */
 export async function sanitizeRequestBody(
     request: Request,
-    maxSize = 10 * 1024 * 1024
+    maxSize = MAX_REQUEST_BODY_SIZE
 ): Promise<any> {
     // Only check content-type if there is a potential body (POST, PUT, PATCH)
     if (['POST', 'PUT', 'PATCH'].includes(request.method)) {

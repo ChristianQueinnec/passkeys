@@ -828,8 +828,24 @@ Antigravity claude sonnet
 - API Client (api.ts) Issues                         DONE
 - Rate Limiting Improvements                         DONE
 - Missing Request Validation                         DONE
-- Type Definitions for Vault Content
-- Authentication Header Parsing
+- Type Definitions for Vault Content  not done
+- Authentication Header Parsing       not done
+
+## 110 Improvements in server API
+
+Do you see possible improvements in server API.
+
+Antigravity gemini 3 flash
+
+## 111 Gather server's constants
+
+Gather constants used in server API code into its own file
+`server-settings.json`
+
+Antigravity gemini 3 flash
+
+
+
 
 # FUTURE
 

@@ -1,12 +1,13 @@
 import { randomBytes } from 'node:crypto';
+import settings from './server-settings.json';
 
 // In-memory store for CSRF tokens (in production, use Redis or database)
 const csrfTokens = new Map<string, { token: string; expiresAt: number }>();
 
-// Token lifetime: 1 hour
-const TOKEN_LIFETIME = 60 * 60 * 1000;
+// Token lifetime
+const TOKEN_LIFETIME = settings.csrf.tokenLifetimeMs;
 
-// Cleanup expired tokens every 5 minutes
+// Cleanup expired tokens
 setInterval(() => {
     const now = Date.now();
     for (const [sessionId, data] of csrfTokens.entries()) {
@@ -14,7 +15,7 @@ setInterval(() => {
             csrfTokens.delete(sessionId);
         }
     }
-}, 5 * 60 * 1000);
+}, settings.csrf.cleanupIntervalMs);
 
 /**
  * Generate a CSRF token for a session
