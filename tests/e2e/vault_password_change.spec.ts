@@ -83,14 +83,14 @@ test.describe('Vault Password Change', () => {
         await page.locator('#new-vault-pass').fill(newVaultKey);
         await page.locator('#confirm-vault-pass').fill(newVaultKey);
 
-        // Click save and handle success dialog
-        const successDialogPromise = page.waitForEvent('dialog');
+        // Click save and verify success toast
         await page.getByTestId('submit-change-vault-password').click();
-        const successDialog = await successDialogPromise;
+        const successToast = page.getByTestId('toast-content');
+        await expect(successToast).toBeVisible();
+        await expect(successToast).toHaveText(/success|succès|changed|changé/i);
 
-        // Assert success message (i18n safe)
-        expect(successDialog.message()).toMatch(/success|succès/i);
-        await successDialog.accept();
+        // Close toast to clear UI
+        await page.getByTestId('toast-close').click();
 
         // Wait for modal to close
         await expect(modalTitle).not.toBeVisible();
@@ -104,12 +104,15 @@ test.describe('Vault Password Change', () => {
         await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', initialVaultKey);
 
-        // Handle failure dialog
-        const failDialogPromise = page.waitForEvent('dialog');
+        // Click and verify failure toast or error message
         await page.click('[data-testid="unlock-button"]');
-        const failDialog = await failDialogPromise;
-        expect(failDialog.message()).toMatch(/Failed|Échec|incorrect/i);
-        await failDialog.accept();
+
+        // It could be either a toast or the inline error message
+        const failToast = page.getByTestId('toast-content');
+        const inlineError = page.locator('.error[role="alert"]');
+
+        await expect(failToast.or(inlineError).first()).toBeVisible();
+        await expect(failToast.or(inlineError).first()).toHaveText(/failed|échec|incorrect/i);
 
         // 7. Unlock with NEW password -> Should Success
         await page.fill('[data-testid="password-input"]', newVaultKey);

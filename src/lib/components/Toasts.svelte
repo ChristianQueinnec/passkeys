@@ -24,17 +24,19 @@
             in:fly={{ y: 20, duration: 400 }}
             out:fly={{ x: 100, duration: 300 }}
             animate:flip={{ duration: 300 }}
+            data-testid="toast"
         >
             <div class="icon">
                 {@html getIcon(toast.type)}
             </div>
-            <div class="content">
+            <div class="content" data-testid="toast-content">
                 {toast.message}
             </div>
             <button
                 class="close-btn"
                 onclick={() => toasts.remove(toast.id)}
                 aria-label="Close"
+                data-testid="toast-close"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

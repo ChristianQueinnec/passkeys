@@ -67,15 +67,16 @@ test.describe('Vault Import', () => {
         const fileChooser = await fileChooserPromise;
         console.log("File chooser opened");
 
-        const dialogPromise = page.waitForEvent('dialog');
         await fileChooser.setFiles(importFilePath);
         console.log("Files set to chooser");
 
-        // 5. Verify Import Alert
-        const dialog = await dialogPromise;
-        console.log("Dialog appeared:", dialog.message());
-        expect(dialog.message()).toContain('imported successfully');
-        await dialog.accept();
+        // 5. Verify Import Toast
+        const successToast = page.getByTestId('toast-content');
+        await expect(successToast).toBeVisible();
+        await expect(successToast).toHaveText(/success|succès|successfully/i);
+
+        // Close toast to clear UI
+        await page.getByTestId('toast-close').click();
 
         // 6. Verify entry appears
         // Force folder view or list view?
@@ -84,7 +85,7 @@ test.describe('Vault Import', () => {
 
         // Let's search for it to be view-agnostic
         await page.fill('[data-testid="filter-input"]', 'Imported Entry');
-        await expect(page.getByText('Imported Entry')).toBeVisible();
+        await expect(page.getByText('Imported Entry').first()).toBeVisible();
 
         // 7. Save
         await page.click('button:has-text("Securely Save Changes")');
@@ -105,6 +106,6 @@ test.describe('Vault Import', () => {
 
         // Check if data persisted
         await page.fill('input[placeholder*="Search"]', 'Imported Entry');
-        await expect(page.getByText('Imported Entry')).toBeVisible();
+        await expect(page.getByText('Imported Entry').first()).toBeVisible();
     });
 });
