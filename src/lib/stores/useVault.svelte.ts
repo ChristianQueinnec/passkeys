@@ -7,6 +7,7 @@ import { settings } from "./useSettings.svelte";
 import { i18n } from "./useI18n.svelte";
 import type { EncryptionKey } from "$lib/vaultkey";
 import { untrack } from "svelte";
+import { toasts } from "./useToasts.svelte";
 
 export function useVault(
     encryptionKey: EncryptionKey,
@@ -118,7 +119,7 @@ export function useVault(
                 vaultContent = JSON.parse(offline);
                 offlineMode = true;
             } else {
-                alert(i18n.t("vault.load_offline_error"));
+                toasts.error(i18n.t("vault.load_offline_error"));
                 isLoading = false;
                 return;
             }
@@ -158,7 +159,7 @@ export function useVault(
                         isDirty = false;
                         success = true;
                     } catch (e) {
-                        alert(i18n.t("vault.decrypt_error"));
+                        toasts.error(i18n.t("vault.decrypt_error"));
                         success = false;
                     }
                 }
@@ -271,7 +272,7 @@ export function useVault(
             } catch (e) {
                 console.error("Failed to decrypt for saving", e);
                 // If we can't decrypt, we risk losing data if we overwrite.
-                alert(i18n.t("vault.save_decrypt_error"));
+                toasts.error(i18n.t("vault.save_decrypt_error"));
                 return;
             }
         }
@@ -335,7 +336,7 @@ export function useVault(
             api.storage?.setItem("offline_vault", JSON.stringify(payload));
         } catch (e) {
             if (!offlineMode) {
-                alert(i18n.t("vault.save_error"));
+                toasts.error(i18n.t("vault.save_error"));
             }
             // Do NOT clear dirty secrets on failure
         }
@@ -353,10 +354,10 @@ export function useVault(
         isSyncing = true;
         try {
             if (await loadVault()) {
-                alert(i18n.t("vault.sync_success"));
+                toasts.success(i18n.t("vault.sync_success"));
             }
         } catch (e) {
-            alert(i18n.t("vault.sync_error"));
+            toasts.error(i18n.t("vault.sync_error"));
             console.error("Sync error:", e);
         } finally {
             isSyncing = false;
@@ -369,7 +370,7 @@ export function useVault(
             historyFiles = await api.getVaultHistory();
             showHistoryModal = true;
         } catch (e) {
-            alert(i18n.t("vault.history_error"));
+            toasts.error(i18n.t("vault.history_error"));
         }
     }
 
@@ -379,7 +380,7 @@ export function useVault(
             await api.deleteVault(filename);
             historyFiles = await api.getVaultHistory();
         } catch (e) {
-            alert(i18n.t("vault.delete_error"));
+            toasts.error(i18n.t("vault.delete_error"));
         }
     }
 

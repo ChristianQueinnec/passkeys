@@ -11,6 +11,7 @@
     import { useVaultSync } from "$lib/stores/useVaultSync.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
+    import { toasts } from "$lib/stores/useToasts.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
@@ -139,7 +140,7 @@
         // Show success logic if needed (modal handles success callback then close)
         // Check if save was successful? saveVault handles errors with alerts.
         // Alert user of success
-        alert(i18n.t("vault.password_changed"));
+        toasts.success(i18n.t("vault.password_changed"));
     }
 
     let fileInput = $state<HTMLInputElement>();
@@ -165,16 +166,16 @@
                 if (Array.isArray(json)) {
                     const success = vault.importItems(json);
                     if (success) {
-                        alert(i18n.t("vault.import_success"));
+                        toasts.success(i18n.t("vault.import_success"));
                     } else {
-                        alert(i18n.t("vault.import_error"));
+                        toasts.error(i18n.t("vault.import_error"));
                     }
                 } else {
-                    alert(i18n.t("vault.import_error"));
+                    toasts.error(i18n.t("vault.import_error"));
                 }
             } catch (err) {
                 console.error(err);
-                alert(i18n.t("vault.import_error"));
+                toasts.error(i18n.t("vault.import_error"));
             } finally {
                 input.value = ""; // Reset
             }

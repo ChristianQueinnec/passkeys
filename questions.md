@@ -835,7 +835,8 @@ Antigravity claude sonnet
 
 Do you see possible improvements in server API.
 
-Antigravity gemini 3 flash
+Antigravity gemini 3 flash 
+Not convincing: abandoned!
 
 ## 111 Gather server's constants
 
@@ -843,6 +844,18 @@ Gather constants used in server API code into its own file
 `server-settings.json`
 
 Antigravity gemini 3 flash
+
+## 112 Improvements in webapp client
+
+Do you see possible improvements in the webapp client.
+
+Antigravity gemini 3 flash
+
+- Premium Notification System:                 DONE
+- UI/UX Refinements: Implement Svelte transitions and skeleton loaders to make the interface feel more fluid and "premium."
+- Store Modularization: Refactor the large useVault store into smaller, testable sub-composables.
+- Client-Side Validation: Add real-time feedback in the editor to catch errors before they even reach the server.
+
 
 
 
@@ -886,10 +899,10 @@ stored on the server since none can be written by the server.
 
 incorporate __TESTING__ into client-settings.json ?
 
-hide better the vault password
+hide better the vault password, re-ciphering it regularly
 
 Allow the webapp user to choose the inactivity timeout currently set
 to 15 minutes.
 
-Gather constants used in server API code into its own file
-`server-settings.json`
+Provide an implementation of `storage.ts` on Google drive or other web
+drive rather than a directory on the server. ????
