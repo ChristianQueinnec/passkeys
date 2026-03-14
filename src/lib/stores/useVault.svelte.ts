@@ -522,15 +522,21 @@ export function useVault(
 
         if (!text) return;
 
-        await navigator.clipboard.writeText(text);
+        setTimeout(async () => {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (e) {
+                console.error("Failed to copy to clipboard", e);
+            }
+        }, 0);
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
         clipboardTimeout = setTimeout(async () => {
             try {
                 await navigator.clipboard.writeText("");
-            } catch {
-                // Ignore
+            } catch (e) {
+                console.error("Failed to clear clipboard", e);
             }
             clipboardTimeout = null;
         }, (window as any).__TESTING__

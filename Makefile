@@ -53,7 +53,8 @@ run.tests :
 		echo "******* Successful end of all tests "; fi ; echo 
 
 REMOTE=pk.queinnec.org
-archive.container : tag.container
+archive.container : tag.container archive.remote.vaults
+	-git tag -a "$$(cat passkeys.tag)" -m "version $$(cat passkeys.tag)" 
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	docker push registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
 	docker push registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
@@ -84,3 +85,11 @@ pass.json : pass.csv
 	mv pass.json realdata/${USER}/init.vault
 	rm -f pass.json pass.csv
 	@echo "Quick! let Passkeys cipher this vault!"
+
+archive.remote.vaults :
+	rsync -avu ${REMOTE}:Passkeys/realdata .
+
+static/favicon-512.png : static/favicon.svg
+	cd static/ && convert -geometry 512x512 favicon.svg favicon-512.png
+static/favicon-192.png : static/favicon.svg
+	cd static/ && convert -geometry 192x192 favicon.svg favicon-192.png
