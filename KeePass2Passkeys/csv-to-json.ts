@@ -115,6 +115,26 @@ export function convertRow(fields: string[]): PasswordEntry | null {
   };
 }
 
+/*
+ * Identify the vault with its creation dae
+ */
+
+function generateDateRecord () {
+    const d = new Date();
+    const dt = Math.floor(d.getTime() / 1000);
+    return {
+        group: '',
+        title: "Passkeys",
+        username: '',
+        password: '',
+        site: 'https://pk.queinnec.org/',
+        tags: [],
+        notes: d.toString(),
+        created: dt,
+        modified: dt,
+    };
+}
+
 /**
  * Parse CSV content into rows, handling multi-line fields
  */
@@ -190,7 +210,9 @@ export function parseCSVContent(csvContent: string): string[][] {
  */
 export function convertCSVToJSON(csvContent: string): PasswordEntry[] {
   const rows = parseCSVContent(csvContent);
-  const entries: PasswordEntry[] = [];
+    const entries: PasswordEntry[] = [
+        generateDateRecord()
+    ];
 
   // Skip header (first row)
   for (let i = 1; i < rows.length; i++) {

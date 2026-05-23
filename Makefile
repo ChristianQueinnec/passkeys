@@ -78,7 +78,14 @@ clean :
 	-rm -f *.log
 
 server.htpasswd : 
-	htpasswd -c server.htpasswd queinnec 
+	htpasswd -c server.htpasswd queinnec
+
+# Refresh passwords from Keepass to Passkeys
+#    Keepass   export as csv into Passkeys/pass.csv
+#    m pass.json run.remote.container
+#    open https://pk.queinnec.org/
+#       synchronize
+#       remove init.vault
 
 pass.json : pass.csv
 	cd KeePass2Passkeys/ && make work
@@ -86,7 +93,18 @@ pass.json : pass.csv
 	rm -f pass.json pass.csv
 	@echo "Quick! let Passkeys cipher this vault!"
 
+install.new.vault : 
+	if [ -f ${HOME}/pass.csv ] ; then mv ${HOME}/pass.csv . ; else \
+	  echo "FIRST: Export ~/pass.csv from Keepass" ; exit 1 ; fi
+	cd KeePass2Passkeys/ && make work
+	mv pass.json realdata/${USER}/new.vault
+	-rm -f ${HOME}/pass.*
+	rm -f pass.json pass.csv
+	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
+	@echo "Quick! let Passkeys cipher this vault!"
+
 archive.remote.vaults :
+	@echo This will import remote vaults locally.... ; sleep 10
 	rsync -avu ${REMOTE}:Passkeys/realdata .
 
 static/favicon-512.png : static/favicon.svg
