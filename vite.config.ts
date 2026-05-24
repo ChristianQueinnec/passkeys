@@ -11,7 +11,7 @@ export default defineConfig({
 			registerType: 'autoUpdate',
 			injectRegister: 'auto',
 			devOptions: { enabled: true },
-			includeAssets: ['favicon.svg', 'robots.txt', 'favicon.ico'],
+			includeAssets: ['favicon.svg', 'robots.txt', 'favicon.ico', 'favicon-192.png', 'favicon-512.png'],
 			workbox: {
 				globPatterns: ['**/*.{js,css,ico,png,svg,webmanifest}'],
 				navigateFallback: null,
@@ -50,7 +50,12 @@ export default defineConfig({
 				display: 'standalone',
 				theme_color: '#ffffff',
 				background_color: '#ffffff',
-				icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }]
+				icons: [
+					{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+					{ src: 'favicon-192.png', sizes: '192x192', type: 'image/png' },
+					{ src: 'favicon-512.png', sizes: '512x512', type: 'image/png' },
+					{ src: 'favicon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+				]
 			}
 		}),
 

@@ -35,3 +35,4 @@ test-results/
 server.htpasswd
 *.log
 pk.queinnec.org
+.antigravitycli/
