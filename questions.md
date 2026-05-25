@@ -869,16 +869,17 @@ Antigravity
 Badly formulated demand hence unsatisfactory result so revert and eliminate 113.
 `git reset --hard f806471d5cc9f05ed7a4667ae80480c828430901`
 
-## 114 icon
+## 114 icon   PROBLEM
 
 Installing Passkeys on a phone does not display the expected icon. Fix it
-
-PROBLEM
  
 ## 115 back to 112
 
 Refactor the large useVault store into smaller, testable sub-composables.
 Fix the related tests.
+
+Implement Svelte transitions and skeleton loaders to make the
+interface feel more fluid and "premium."
 
 
 
