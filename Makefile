@@ -113,3 +113,39 @@ static/favicon-512.png : static/favicon.svg
 	cd static/ && convert -geometry 512x512 favicon.svg favicon-512.png
 static/favicon-192.png : static/favicon.svg
 	cd static/ && convert -geometry 192x192 favicon.svg favicon-192.png
+
+
+# ############################## AI
+
+# {{{ Run AI agent
+run.gemini :
+#	cd ${HOME}/IA/Gemini/ && npm update
+	${HOME}/IA/Gemini/node_modules/.bin/gemini
+
+run.claude :
+	claude-desktop &
+
+run.mistral :
+#	cd ~/.local/share/uv/ ; rm -rf tools/mistral-vibe/
+#   cd ~/.local/share/uv/ ; uv tool install --force mistral-vibe
+	vibe
+# write instructions into vibe.md
+# then ask vibe by typing:     @vibe.md
+
+run.opencode :
+# requires Ollama, very slow!
+	grep OLLAMA_HOST /etc/systemd/system/ollama.service
+	rsync -avu /usr/share/ollama/.ollama/ /home/queinnec/.ollama/
+	${HOME}/IA/OpenCode/.opencode/bin/opencode
+
+run.codex :
+	${HOME}/IA/Codex/node_modules/.bin/codex
+# write instructions into vibecodex.md
+# then ask codex by typing:    @vibecodex.md
+
+run.cursor :
+# NOT YET CONFIGURED
+	${HOME}/.local/bin/agent --list-models
+	${HOME}/.local/bin/agent --trust --plan
+
+# }}}

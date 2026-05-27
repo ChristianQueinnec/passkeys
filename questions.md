@@ -879,9 +879,11 @@ Refactor the large useVault store into smaller, testable sub-composables.
 Fix the related tests.
 
 Implement Svelte transitions and skeleton loaders to make the
-interface feel more fluid and "premium."
+interface feel more fluid and "premium." UNFINISHED! 
+`git reset --hard 5515e44c77f234735a5b23a480f5dd1ca508c7e3`
 
-
+removed pwa stuff from vite.config.ts so, with Codex: 
+`fix tests/e2e/pwa-offline.spec.ts`
 
 
 

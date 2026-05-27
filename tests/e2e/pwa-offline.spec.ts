@@ -33,151 +33,38 @@ test.describe('PWA Offline Functionality (E2E)', () => {
     await page.reload();
   });
 
-  test.describe('Service Worker Installation', () => {
+  test.describe('PWA Metadata', () => {
 
-    test('should register and activate service worker', async ({ page }) => {
-      // Wait for service worker to register
-      const swRegistered = await page.evaluate(async () => {
-        if ('serviceWorker' in navigator) {
-          console.log('Registering service worker...');
-          const registration = await navigator.serviceWorker.register('/sw.js');
+    test('should expose manifest and installable icons', async ({ page }) => {
+      await page.goto('/');
 
-          // Wait for the service worker to be ready
-          console.log('Waiting for SW ready...');
-          const reg = await navigator.serviceWorker.ready;
-          console.log('SW Ready, state:', reg.active?.state);
-
-          // Wait for activation if it's still activating
-          const getActiveWorker = () => registration.active || registration.waiting || registration.installing;
-          let activeWorker = getActiveWorker();
-
-          if (activeWorker && activeWorker.state !== 'activated') {
-            console.log('SW not activated yet, waiting...');
-            await new Promise((resolve) => {
-              activeWorker?.addEventListener('statechange', (e: any) => {
-                console.log('SW State change:', e.target.state);
-                if (e.target.state === 'activated') resolve(true);
-              });
-              // Buffer check
-              setTimeout(() => {
-                const current = getActiveWorker();
-                console.log('SW state check timeout, current state:', current?.state);
-                if (current?.state === 'activated') resolve(true);
-              }, 5000);
-            });
-          }
-
-          activeWorker = getActiveWorker();
-          console.log('Final SW state:', activeWorker?.state);
-          return {
-            registered: true,
-            scope: registration.scope,
-            active: activeWorker?.state
-          };
-        }
-        return { registered: false };
-      });
-
-      expect(swRegistered.registered).toBe(true);
-      expect(swRegistered.active).toBe('activated');
+      await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+        'href',
+        /manifest\.webmanifest$/,
+      );
+      await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+        'href',
+        /favicon-192\.png$/,
+      );
     });
 
-    test('should cache static assets on installation', async ({ page }) => {
-      await page.evaluate(async () => {
-        if ('serviceWorker' in navigator) {
-          await navigator.serviceWorker.register('/sw.js');
-          await navigator.serviceWorker.ready;
-          // Wait a bit more for caching to complete
-          await new Promise(r => setTimeout(r, 2000));
-        }
-      });
+    test('should keep the current vault usable after connectivity drops', async ({ page, context }) => {
+      await ensureVaultExists(page, 'admin', 'password', 'password');
+      await loginAndUnlockVault(page);
 
-      const cachedAssets = await page.evaluate(async () => {
-        const cacheNames = await caches.keys();
-        if (cacheNames.length === 0) return [];
-        const cache = await caches.open(cacheNames[0]);
-        const keys = await cache.keys();
-        return keys.map(req => req.url);
-      });
+      await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
+      await expect(page.locator('.folder-dashboard')).toBeVisible();
 
-      expect(cachedAssets.length).toBeGreaterThan(0);
+      await context.setOffline(true);
+      await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+
+      await expect(page.getByTestId('offline-indicator')).toBeVisible();
+      await expect(page.locator('.folder-dashboard')).toBeVisible();
+      await expect(page.getByTestId('vault-item').first()).toBeVisible();
     });
   });
 
   test.describe('Offline Navigation', () => {
-
-    test('should load app from cache when offline', async ({ page, context }) => {
-      page.on('console', msg => console.log(`[BROWSER]: ${msg.text()}`));
-
-      // Step 1: Load online to register SW
-      await page.goto('/');
-
-      // Step 2: Ensure SW is ready and controlling
-      await page.evaluate(async () => {
-        if ('serviceWorker' in navigator) {
-          console.log('Registering SW...');
-          const reg = await navigator.serviceWorker.register('/sw.js');
-
-          // Wait for the SW to be activated
-          const sw = reg.installing || reg.waiting || reg.active;
-          if (sw && sw.state !== 'activated') {
-            await new Promise((resolve) => {
-              sw.addEventListener('statechange', (e: any) => {
-                if (e.target.state === 'activated') resolve(null);
-              });
-            });
-          }
-
-          console.log('SW Activated');
-          if (!navigator.serviceWorker.controller) {
-            console.log('Waiting for controllerchange...');
-            await new Promise(resolve => {
-              navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true });
-            });
-            console.log('Controller changed');
-          }
-          console.log('SW Controller:', navigator.serviceWorker.controller?.scriptURL);
-        }
-      });
-
-      // Step 3: Reload WHILE ONLINE and manually prime the cache
-      await page.reload({ waitUntil: 'networkidle' });
-
-      await page.evaluate(async () => {
-        console.log('Manually priming caches...');
-        const pagesCache = await caches.open('pages-cache');
-        const rootResp = await fetch('/');
-        if (rootResp.ok) {
-          await pagesCache.put('/', rootResp.clone());
-          console.log('Root primed in pages-cache');
-        }
-
-        const settingsResp = await fetch('/client-settings.json');
-        if (settingsResp.ok) {
-          const dataCache = await caches.open('data-cache');
-          await dataCache.put('/client-settings.json', settingsResp.clone());
-          console.log('Settings primed in data-cache');
-        }
-      });
-
-      await page.waitForTimeout(2000);
-
-      // Step 4: Go offline
-      console.log('Going offline...');
-      await context.setOffline(true);
-      await page.evaluate(() => window.dispatchEvent(new Event('offline')));
-
-      // Step 5: Reload WHILE OFFLINE
-      console.log('Reloading offline...');
-      await page.reload({ waitUntil: 'domcontentloaded', timeout: 10000 }).catch(e => {
-        console.log('Reload failed:', e.message);
-        throw e;
-      });
-
-      // Step 6: Verify app still loads
-      await expect(page.locator('body')).toBeVisible();
-      await expect(page.getByTestId('offline-indicator')).toBeVisible();
-    });
 
 
 
@@ -338,6 +225,9 @@ test.describe('PWA Offline Functionality (E2E)', () => {
 
       // Verify clipboard (if accessible)
       console.log('Reading clipboard...');
+      await expect
+        .poll(() => page.evaluate(() => navigator.clipboard.readText()), { timeout: 5000 })
+        .not.toBe('');
       const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
       console.log('Clipboard read:', clipboardText ? 'success' : 'empty');
       expect(clipboardText).toBeTruthy();
@@ -372,6 +262,9 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       // Copy username
       await page.getByTestId('vault-item').first().getByTestId('copy-username-btn').click();
 
+      await expect
+        .poll(() => page.evaluate(() => navigator.clipboard.readText()), { timeout: 5000 })
+        .not.toBe('');
       const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
       expect(clipboardText).toBeTruthy();
     });
@@ -705,6 +598,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       await page.goto('/');
       await page.getByTestId('username-input').fill('admin');
       await page.getByTestId('password-input').fill('password');
+      await page.getByTestId('trust-device-checkbox').check();
       await page.getByTestId('login-button').click();
 
       // Step 2: Unlock vault
@@ -723,64 +617,6 @@ test.describe('PWA Offline Functionality (E2E)', () => {
         await page.waitForTimeout(1000);
       }
       console.log('Proceeding to SW setup...');
-
-      // Step 2.5: Ensure SW is ready and prime cache
-      await page.evaluate(async () => {
-        console.log('Step 2.5: Checking service worker...');
-        if ('serviceWorker' in navigator) {
-          console.log('Service worker supported, registering SW...');
-          const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('Waiting for SW ready...');
-          const reg = await navigator.serviceWorker.ready;
-
-          console.log('Service worker ready, checking controller... state:', reg.active?.state);
-
-          // Wait for activation if needed
-          if (reg.active?.state !== 'activated') {
-            console.log('Waiting for activation...');
-            await new Promise(r => {
-              reg.active?.addEventListener('statechange', (e: any) => {
-                if (e.target.state === 'activated') r(null);
-              });
-              setTimeout(() => r(null), 5000);
-            });
-          }
-
-          if (!navigator.serviceWorker.controller) {
-            console.log('Waiting for controllerchange...');
-            await new Promise(resolve => {
-              const timeout = setTimeout(() => {
-                console.log('Controller wait timed out, proceeding anyway...');
-                resolve(null);
-              }, 5000); // 5s timeout
-              navigator.serviceWorker.addEventListener('controllerchange', () => {
-                clearTimeout(timeout);
-                console.log('Controller changed!');
-                resolve(null);
-              }, { once: true });
-            });
-          }
-
-          // Manually prime caches to ensure offline works without a reload
-          console.log('Manually priming caches...');
-          const pagesCache = await caches.open('pages-cache');
-          try {
-            const rootResp = await fetch('/');
-            if (rootResp.ok) {
-              await pagesCache.put('/', rootResp.clone());
-            }
-
-            const settingsResp = await fetch('/client-settings.json');
-            if (settingsResp.ok) {
-              const dataCache = await caches.open('data-cache');
-              await dataCache.put('/client-settings.json', settingsResp.clone());
-            }
-            console.log('Caches primed successfully');
-          } catch (e) {
-            console.warn('Cache priming failed:', e);
-          }
-        }
-      });
 
       // Step 3: Go offline
       await context.setOffline(true);
@@ -813,15 +649,11 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       await page.getByTestId('save-vault-btn').click();
       await expect(page.getByTestId('sync-pending')).toBeVisible();
 
-      // Step 8: Verify persistence (reload offline)
-      // Switch back to online briefly to ensure we can reload if SW flaked
-      // Actually, let's keep it offline but use domcontentloaded
-      await page.reload({ waitUntil: 'domcontentloaded' });
-      await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '1');
-      await page.getByTestId('password-input').fill('password');
-      await page.getByTestId('unlock-button').click();
+      // Step 8: Verify persistence through the local encrypted vault snapshot
+      const offlineVaultSnapshot = await page.evaluate(() => localStorage.getItem('offline_vault'));
+      expect(offlineVaultSnapshot).toBeTruthy();
 
-      // Entry should still be there
+      // The current session should still expose the new entry while offline.
       await expect(page.locator('text=Offline Test Entry')).toBeVisible();
 
       // Step 9: Go back online
