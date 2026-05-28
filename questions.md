@@ -885,12 +885,120 @@ interface feel more fluid and "premium." UNFINISHED!
 removed pwa stuff from vite.config.ts so, with Codex: 
 `fix tests/e2e/pwa-offline.spec.ts`
 
+## 116 Analyze vault
 
+Tell me how and when a vault is deciphered or ciphered, list the timing
+constants governing that behavior. 
+
+```
+• I’m tracing the vault crypto path and the timeout constants in the code, then
+  I’ll give you a precise timeline of when decryption and encryption happen.
+
+• Explored
+  └ Read useSettings.svelte.ts, core.ts
+    Search decrypt\(|encrypt\(|pbkdf2Iterations|inactivityTimeout|clipboardTimeout|pollForUpdatesInterval|offline_vault|saveVault\(|loadVault\(|synchronizeVault\( in src
+
+────────────────────────────────────────────────────────────────────────────────
+
+• I’ve got the main load/save path. I’m checking the activity store now because
+  that’s where the auto-lock and clipboard timers live, which affect when
+  decrypted data is cleared or re-used.
+
+• Explored
+  └ Read +page.svelte, activity.svelte.ts
+
+────────────────────────────────────────────────────────────────────────────────
+
+• I have the behavior; I’m fetching line numbers for the exact constants and
+  save/load branches so I can point you at the source precisely.
+
+• Explored
+  └ Read core.ts, activity.svelte.ts, +page.svelte, useSettings.svelte.ts
+
+────────────────────────────────────────────────────────────────────────────────
+
+• A vault is decrypted and re-encrypted in a few specific places:
+
+  - Unlock flow: after login, the client derives the vault key with PBKDF2 and
+    then calls vault.loadVault(). If the server returns an encrypted vault, loa
+    dVault() decrypts encryptedData.cipher/iv and turns it into in-memory entri
+    es. See src/routes/+page.svelte ((/home/queinnec/Passkeys/src/routes/+page.
+    svelte#L83)) and src/lib/stores/vault/core.ts ((/home/queinnec/Passkeys/src
+    /lib/stores/vault/core.ts#L12)).
+  - Offline reload / fallback: if the server fetch fails, loadVault() reads
+    offline_vault from browser storage and decrypts that snapshot instead. See
+    src/lib/stores/vault/core.ts ((/home/queinnec/Passkeys/src/lib/stores/vault/
+    core.ts#L34)).
+  - Save flow: when the vault is saved, saveVault() first decrypts the previous
+    encrypted vault if it exists, merges in any edited secrets, then encrypts
+    the full JSON again with encrypt(...). It then posts the encrypted payload
+    to the server and also stores it locally. See src/lib/stores/vault/core.ts
+    ((/home/queinnec/Passkeys/src/lib/stores/vault/core.ts#L96)).
+  - Change-password flow: changing the vault password forces a re-save, which
+    re-encrypts the vault with the new key. See src/routes/+page.svelte ((/home/
+    queinnec/Passkeys/src/routes/+page.svelte#L134)).
+  - Imported plain vaults: if the server returns an unciphered array,
+    loadVault() treats it as plain entries, marks the vault dirty, and the next
+    save will encrypt it. See src/lib/stores/vault/core.ts ((/home/queinnec/
+    Passkeys/src/lib/stores/vault/core.ts#L52)).
+
+  What “deciphered” means in practice:
+
+  - The decrypted vault lives in memory after loadVault() succeeds.
+  - It is not immediately re-encrypted by a timer.
+  - It is cleared when the app locks after inactivity or on logout, because the
+    encryption key is removed and the UI returns to the unlock phase. See src/
+    lib/stores/vault/activity.svelte.ts ((/home/queinnec/Passkeys/src/lib/
+    stores/vault/activity.svelte.ts#L11)) and src/routes/+page.svelte ((/home/
+    queinnec/Passkeys/src/routes/+page.svelte#L107)).
+
+  Timing constants that govern this behavior:
+
+  - pbkdf2Iterations: 100000 normal, 100 in test mode. This controls key
+    derivation before decryption. See src/lib/stores/useSettings.svelte.ts ((/
+    home/queinnec/Passkeys/src/lib/stores/useSettings.svelte.ts#L14)) and src/
+    routes/+page.svelte ((/home/queinnec/Passkeys/src/routes/+page.svelte#L88)).
+  - inactivityTimeout: 900000 ms, or 15 minutes normal.
+  - inactivityTimeoutTest: 10000 ms in tests.
+      - When the timer fires, the app removes the encryption key and locks the
+        vault. See src/lib/stores/useSettings.svelte.ts ((/home/queinnec/
+        Passkeys/src/lib/stores/useSettings.svelte.ts#L14)) and src/lib/stores/
+        vault/activity.svelte.ts ((/home/queinnec/Passkeys/src/lib/stores/vault/
+        activity.svelte.ts#L14)).
+  - clipboardTimeout: 10000 ms normal.
+      - In tests, clipboard clearing uses 1000 ms via __TESTING__. This does not
+        re-encrypt the vault, but it is part of the decrypted-session lifecycle.
+        See src/lib/stores/useSettings.svelte.ts ((/home/queinnec/Passkeys/src/
+        lib/stores/useSettings.svelte.ts#L14)) and src/lib/stores/vault/
+        activity.svelte.ts ((/home/queinnec/Passkeys/src/lib/stores/vault/
+        activity.svelte.ts#L65)).
+  - pollForUpdatesInterval: 60000 ms normal.
+  - pollForUpdatesIntervalTest: 1000 ms in tests.
+      - This controls how often the client checks for a newer server vault while
+        the dashboard is active, which can lead to a fresh loadVault() and
+        another decrypt. See src/lib/stores/useSettings.svelte.ts ((/home/
+        queinnec/Passkeys/src/lib/stores/useSettings.svelte.ts#L14)) and src/
+        lib/stores/useVaultSync.svelte.ts ((/home/queinnec/Passkeys/src/lib/
+        stores/useVaultSync.svelte.ts#L12)).
+
+  One important detail: the app uses localStorage / sessionStorage only for the
+  encrypted snapshot and auth token, not for plaintext entries. Plaintext
+  entries exist only in memory while unlocked.
+```
+
+The vault seems to live deciphered in `_items`.
+
+## 117 small screen
+
+On a telephone screen, prefer the view list since, in the folder view,
+the content of a selected folder is on the right of the folders list
+and only very partially visible. 
 
 
 # FUTURE
 
-continue 112...
+113 again
+
 
 
 ## Code Security Review
