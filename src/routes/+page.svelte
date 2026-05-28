@@ -63,6 +63,13 @@
         // Load settings first
         await settings.load();
 
+        if (browser) {
+            const prefersListView = window.matchMedia(
+                "(max-width: 768px) and (orientation: portrait)",
+            ).matches;
+            useFolderView = !prefersListView;
+        }
+
         if (api.token) {
             username = api.username || "";
             // Get CSRF token for existing session

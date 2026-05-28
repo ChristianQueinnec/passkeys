@@ -873,7 +873,7 @@ Badly formulated demand hence unsatisfactory result so revert and eliminate 113.
 
 Installing Passkeys on a phone does not display the expected icon. Fix it
  
-## 115 back to 112
+## 115 back to 112 
 
 Refactor the large useVault store into smaller, testable sub-composables.
 Fix the related tests.
@@ -882,10 +882,10 @@ Implement Svelte transitions and skeleton loaders to make the
 interface feel more fluid and "premium." UNFINISHED! 
 `git reset --hard 5515e44c77f234735a5b23a480f5dd1ca508c7e3`
 
-removed pwa stuff from vite.config.ts so, with Codex: 
+removed pwa stuff by hand from vite.config.ts so, with Codex: 
 `fix tests/e2e/pwa-offline.spec.ts`
 
-## 116 Analyze vault
+## 116 Analyze vault  (Codex)
 
 Tell me how and when a vault is deciphered or ciphered, list the timing
 constants governing that behavior. 
@@ -988,16 +988,20 @@ constants governing that behavior.
 
 The vault seems to live deciphered in `_items`.
 
-## 117 small screen
+## 117 small screen (Codex)
 
-On a telephone screen, prefer the view list since, in the folder view,
-the content of a selected folder is on the right of the folders list
-and only very partially visible. 
+On a telephone screen in portrait mode, prefer the view list since, in
+the folder view, the content of a selected folder is on the right of
+the folders list and only very partially visible.
+
+## 118 back to 113
+
+
 
 
 # FUTURE
 
-113 again
+
 
 
 
