@@ -28,11 +28,10 @@ test.describe('API Request Validation', () => {
         const loginRes = await request.post('/api/login', {
             data: { username: 'auth_test', password: 'password' }
         });
-        const { token, csrfToken } = await loginRes.json();
+        const { csrfToken } = await loginRes.json();
 
         const response = await request.post('/api/vault', {
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'X-CSRF-Token': csrfToken
             },
             data: {} // Missing content
@@ -47,11 +46,10 @@ test.describe('API Request Validation', () => {
         const loginRes = await request.post('/api/login', {
             data: { username: 'auth_test', password: 'password' }
         });
-        const { token, csrfToken } = await loginRes.json();
+        const { csrfToken } = await loginRes.json();
 
         const response = await request.delete('/api/vault/history?filename=../unauthorized.vault', {
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'X-CSRF-Token': csrfToken
             }
         });

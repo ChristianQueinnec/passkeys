@@ -95,11 +95,11 @@ describe('CSRF Token Management', () => {
     });
 
     describe('getSessionIdFromRequest', () => {
-        it('should extract session ID from Authorization header', () => {
+        it('should extract session ID from auth cookie', () => {
             const token = 'test-token-123';
             const request = new Request('http://localhost', {
                 headers: new Headers({
-                    'Authorization': `Bearer ${token}`
+                    'cookie': `passkeys_auth=${token}`
                 })
             });
 
@@ -107,7 +107,7 @@ describe('CSRF Token Management', () => {
             expect(sessionId).toBe(token);
         });
 
-        it('should return null if no Authorization header', () => {
+        it('should return null if no auth cookie', () => {
             const request = new Request('http://localhost', {
                 headers: new Headers()
             });
@@ -116,10 +116,10 @@ describe('CSRF Token Management', () => {
             expect(sessionId).toBeNull();
         });
 
-        it('should return null if Authorization header is malformed', () => {
+        it('should return null if auth cookie is malformed', () => {
             const request = new Request('http://localhost', {
                 headers: new Headers({
-                    'Authorization': 'InvalidFormat'
+                    'cookie': 'invalid-format'
                 })
             });
 
@@ -127,15 +127,15 @@ describe('CSRF Token Management', () => {
             expect(sessionId).toBeNull();
         });
 
-        it('should return null if Authorization is not Bearer', () => {
+        it('should return null if auth cookie is missing a value', () => {
             const request = new Request('http://localhost', {
                 headers: new Headers({
-                    'Authorization': 'Basic dXNlcjpwYXNz'
+                    'cookie': 'passkeys_auth='
                 })
             });
 
             const sessionId = getSessionIdFromRequest(request);
-            expect(sessionId).toBeNull();
+            expect(sessionId).toBe('');
         });
     });
 

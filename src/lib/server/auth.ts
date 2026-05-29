@@ -3,6 +3,7 @@ import { getUser } from '$lib/server/users';
 import { sanitizeJWTToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
 import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
 import { verifyToken } from '$lib/server/jwt';
+import { getAuthTokenFromRequest } from '$lib/server/auth-cookie';
 import { HTTP_STATUS } from './http-codes';
 import type { User } from '$lib/types';
 import logger from '$lib/server/logger';
@@ -11,18 +12,13 @@ import logger from '$lib/server/logger';
  * Helper to validate JWT token and return authenticated user
  */
 export function getAuthUser(request: Request): User | null {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
-        return null;
-    }
-
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    const token = getAuthTokenFromRequest(request);
+    if (!token) {
         return null;
     }
 
     try {
-        const sanitizedToken = sanitizeJWTToken(parts[1]);
+        const sanitizedToken = sanitizeJWTToken(token);
 
         // Verify JWT token
         const payload = verifyToken(sanitizedToken);
@@ -85,16 +81,17 @@ export async function verifyRequest(
  * @returns The username from the token, or undefined if not found
  */
 export function peekUsernameFromRequest(request: Request): string | undefined {
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        const parts = token.split('.');
-        if (parts.length === 3) {
-            try {
-                const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
-                return payload.username;
-            } catch { /* ignore */ }
-        }
+    const token = getAuthTokenFromRequest(request);
+    if (!token) {
+        return undefined;
+    }
+
+    const parts = token.split('.');
+    if (parts.length === 3) {
+        try {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+            return payload.username;
+        } catch { /* ignore */ }
     }
     return undefined;
 }

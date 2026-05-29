@@ -1004,10 +1004,37 @@ possible to unlock the vault by asking the user to provide the first
 way to unlock the vault will no longer be available after 1 hour of
 inactivity.
 
+## 119 Security (Codex)
+
+The token is stored in localStorage and that is not safe in case some
+external javascript runs in the page (ads for instance). Move token to
+a safe cookie and adapt the webapp and tests accordingly.
+
+
+
+
+
+## 120 Renewing authentication (Codex)
+
+when unlocking the vault with a correct vault password, the
+authentication token may be obsolete, renew it automatically. 
+
+##
+
+The ciphered vault (held in localStorage with key `offline_vault`)
+may be stored, more persistently, in indexed db.
+
+
+## 120 localStorage safety
+
+Check the use of localStorage:
+- check that getItem of JSON stored objects are correctly parsed, 
+- check that setItem are correctly executed
+
 
 # FUTURE
 
-
+icon for desktop shortcut
 
 
 

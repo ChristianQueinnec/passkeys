@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import settings from './server-settings.json';
+import { getAuthTokenFromRequest } from './auth-cookie';
 
 // In-memory store for CSRF tokens (in production, use Redis or database)
 const csrfTokens = new Map<string, { token: string; expiresAt: number }>();
@@ -55,16 +56,9 @@ export function removeCSRFToken(sessionId: string): void {
 }
 
 /**
- * Get session ID from request (using Authorization header).
+ * Get session ID from request (using the auth cookie).
  * In this implementation, the JWT itself acts as the session ID for CSRF token mapping.
  */
 export function getSessionIdFromRequest(request: Request): string | null {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return null;
-    }
-
-    // Use the token itself as session ID (or extract username from it)
-    const token = authHeader.substring(7);
-    return token;
+    return getAuthTokenFromRequest(request);
 }

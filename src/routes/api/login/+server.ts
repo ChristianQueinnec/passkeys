@@ -6,6 +6,7 @@ import { generateToken } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import { handleServerError } from '$lib/server/error-handler';
 import { generateCSRFToken } from '$lib/server/csrf';
+import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
@@ -13,7 +14,7 @@ import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/req
 import logger from '$lib/server/logger';
 
 export async function POST(event: RequestEvent) {
-    const { request, getClientAddress } = event;
+    const { request, getClientAddress, cookies } = event;
     const ip = getClientAddress();
 
     if (isBlocked(ip)) {
@@ -23,9 +24,9 @@ export async function POST(event: RequestEvent) {
     try {
         const body = await sanitizeRequestBody(request);
 
-        let credentials: LoginRequest;
+        let credentials: Pick<LoginRequest, 'username' | 'password'>;
         try {
-            credentials = validateObject<LoginRequest>(body, {
+            credentials = validateObject<Pick<LoginRequest, 'username' | 'password'>>(body, {
                 username: sanitizeUsername,
                 password: sanitizePassword
             });
@@ -34,6 +35,7 @@ export async function POST(event: RequestEvent) {
         }
 
         const { username: sanitizedUsername, password: sanitizedPassword } = credentials;
+        const trustDevice = body.trustDevice === true;
 
         // Authenticate user
         const user: User | undefined = getUser(sanitizedUsername);
@@ -67,7 +69,15 @@ export async function POST(event: RequestEvent) {
         // Generate CSRF token (tied to the JWT session)
         const csrfToken = generateCSRFToken(token);
 
-        return json({ token, username: sanitizedUsername, csrfToken } as LoginResponse,
+        cookies.set(AUTH_COOKIE_NAME, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: trustDevice ? 24 * 60 * 60 : undefined
+        });
+
+        return json({ username: sanitizedUsername, csrfToken } as LoginResponse,
             { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { ip, operation: 'Login' }, 'Authentication failed');

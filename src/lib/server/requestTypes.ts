@@ -8,11 +8,11 @@ export interface CSRFTokenResponse {
 // src/routes/api/login/
 export interface LoginRequest {
     username: string,
-    password: string
+    password: string,
+    trustDevice?: boolean
 }
 
 export interface LoginResponse {
-    token: string,
     username: string,
     csrfToken?: string
 }
@@ -25,7 +25,10 @@ export interface PasswordChangeRequest {
 
 export interface PasswordChangeResponse {
     success: boolean,
-    token: string,
+    username: string
+}
+
+export interface SessionResponse {
     username: string
 }
 

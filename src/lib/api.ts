@@ -1,23 +1,19 @@
 import { browser } from '$app/environment';
-import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, VaultDescription } from './server/requestTypes';
+import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, SessionResponse, VaultDescription } from './server/requestTypes';
 
 // Client-side API wrapper (updated for SvelteKit relative paths)
 
 export const api = {
-    token: browser ? (window.localStorage.getItem('token') || window.sessionStorage.getItem('token')) : null,
     username: browser ? (window.localStorage.getItem('username') || window.sessionStorage.getItem('username')) : null,
     csrfToken: null as string | null,
     get storage() {
         if (!browser) return null;
-        return window.localStorage.getItem('token') ? window.localStorage : window.sessionStorage;
+        return window.localStorage.getItem('username') ? window.localStorage : window.sessionStorage;
     },
 
     // Internal helper for headers
     async _getHeaders(includeCsrf: boolean = false): Promise<HeadersInit> {
         const headers: Record<string, string> = {};
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
-        }
         if (includeCsrf) {
             if (!this.csrfToken) {
                 await this.getCSRFToken();
@@ -45,10 +41,9 @@ export const api = {
     },
 
     async getCSRFToken() {
-        if (!this.token) return null;
         try {
             const res = await fetch('/api/csrf', {
-                headers: { 'Authorization': `Bearer ${this.token}` }
+                credentials: 'include'
             });
             if (res.ok) {
                 const data = await res.json() as CSRFTokenResponse;
@@ -64,8 +59,9 @@ export const api = {
     async login(username: string, password: string, trustDevice: boolean = false) {
         const res = await fetch('/api/login', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, trustDevice })
         });
 
         if (!res.ok) {
@@ -74,7 +70,6 @@ export const api = {
         }
 
         const data = await res.json() as LoginResponse;
-        this.token = data.token;
         this.username = data.username;
 
         // Store CSRF token if provided in login response (optimization)
@@ -83,17 +78,11 @@ export const api = {
         }
 
         if (browser) {
-            console.log('Login success, trustDevice:', trustDevice);
             const storage = trustDevice === true ? window.localStorage : window.sessionStorage;
             const other = trustDevice === true ? window.sessionStorage : window.localStorage;
 
-            other.removeItem('token');
             other.removeItem('username');
 
-            if (this.token) {
-                storage.setItem('token', this.token);
-                console.log('Token set in', trustDevice === true ? 'localStorage' : 'sessionStorage');
-            }
             if (this.username) storage.setItem('username', this.username);
         }
 
@@ -104,21 +93,50 @@ export const api = {
         return data;
     },
 
-    logout() {
-        this.token = null;
+    async getSession() {
+        try {
+            const res = await fetch('/api/session', {
+                credentials: 'include'
+            });
+
+            if (res.status === 401) {
+                this.username = null;
+                if (browser) {
+                    localStorage.removeItem('username');
+                    sessionStorage.removeItem('username');
+                }
+                return null;
+            }
+
+            const data = await this._handleResponse<SessionResponse>(res, 'Failed to get session');
+            this.username = data.username;
+            return data.username;
+        } catch (e) {
+            throw e;
+        }
+    },
+
+    async logout() {
         this.username = null;
         this.csrfToken = null;
         if (browser) {
-            localStorage.removeItem('token');
             localStorage.removeItem('username');
-            sessionStorage.removeItem('token');
             sessionStorage.removeItem('username');
+        }
+
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (e) {
+            console.error('Failed to logout cleanly:', e);
         }
     },
 
     async getLatestVault() {
-        if (!this.token) throw new Error('Not authenticated');
         const res = await fetch('/api/vault', {
+            credentials: 'include',
             headers: await this._getHeaders()
         });
         if (res.status === 404) return null;
@@ -126,19 +144,18 @@ export const api = {
     },
 
     async getLatestVaultMetadata() {
-        if (!this.token) throw new Error('Not authenticated');
         const res = await fetch('/api/vault/metadata', {
+            credentials: 'include',
             headers: await this._getHeaders()
         });
         return this._handleResponse<NewerVaultResponse>(res, 'Failed to get metadata');
     },
 
     async saveVault(content: string) {
-        if (!this.token) throw new Error('Not authenticated');
-
         const headers = await this._getHeaders(true);
         const res = await fetch('/api/vault', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 ...headers,
                 'Content-Type': 'application/json'
@@ -149,19 +166,18 @@ export const api = {
     },
 
     async getVaultHistory() {
-        if (!this.token) throw new Error('Not authenticated');
         const res = await fetch('/api/vault/history', {
+            credentials: 'include',
             headers: await this._getHeaders()
         });
         return this._handleResponse<VaultDescription[]>(res, 'Failed to list history');
     },
 
     async changePassword(oldPassword: string, newPassword: string) {
-        if (!this.token) throw new Error('Not authenticated');
-
         const headers = await this._getHeaders(true);
         const res = await fetch('/api/user/password', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 ...headers,
                 'Content-Type': 'application/json'
@@ -170,30 +186,13 @@ export const api = {
         });
 
         const data = await this._handleResponse<PasswordChangeResponse>(res, 'Failed to update password');
-
-        if (data.token) {
-            this.token = data.token;
-            if (browser && this.token) {
-                // Determine which storage was being used
-                if (window.localStorage.getItem('token')) {
-                    window.localStorage.setItem('token', this.token);
-                } else if (window.sessionStorage.getItem('token')) {
-                    window.sessionStorage.setItem('token', this.token);
-                }
-            }
-            // Refresh CSRF token for the new auth token
-            // If the server doesn't provide it in this response, fetch it
-            await this.getCSRFToken();
-        }
+        await this.getCSRFToken();
         return data;
     },
 
     async vaultExists(username: string, token?: string) {
-        const t = token || this.token;
-        if (!t) return false;
-
         const res = await fetch('/api/vault/metadata', {
-            headers: { 'Authorization': `Bearer ${t}` }
+            credentials: 'include'
         });
 
         if (res.status === 404) return false;
@@ -203,11 +202,10 @@ export const api = {
     },
 
     async deleteVault(filename: string) {
-        if (!this.token) throw new Error('Not authenticated');
-
         const headers = await this._getHeaders(true);
         const res = await fetch(`/api/vault/history?filename=${encodeURIComponent(filename)}`, {
             method: 'DELETE',
+            credentials: 'include',
             headers
         });
         return this._handleResponse<DeleteVaultResponse>(res, 'Failed to delete vault');

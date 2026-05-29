@@ -45,7 +45,7 @@ const mockAuth = (username: string | null) => {
 
         return {
             headers: new Headers({
-                'Authorization': `Bearer ${mockToken}`,
+                'cookie': `passkeys_auth=${mockToken}`,
                 'X-CSRF-Token': 'mock-csrf-token-at-least-32-chars-long'
             })
         };

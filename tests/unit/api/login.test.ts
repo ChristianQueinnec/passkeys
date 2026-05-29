@@ -28,8 +28,13 @@ import * as rateLimiter from '$lib/server/rate-limiter';
 import * as csrf from '$lib/server/csrf';
 
 describe('API Login', () => {
+    const cookies = {
+        set: vi.fn()
+    };
+
     beforeEach(() => {
         vi.resetAllMocks();
+        cookies.set.mockClear();
     });
 
     function makeHeaders() {
@@ -38,16 +43,21 @@ describe('API Login', () => {
         });
     }
 
+    function makeEvent(request: Request) {
+        return {
+            request,
+            getClientAddress: () => '127.0.0.1',
+            cookies
+        } as any;
+    }
+
     it('should return 400 if password missing', async () => {
         const request = new Request('http://localhost', {
             method: 'POST',
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test' }), // Missing password
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -60,10 +70,7 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ password: 'test' }), // Missing username
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -79,10 +86,7 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'unknown', password: 'password123' }),
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(401);
@@ -101,17 +105,14 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'wrongpass123' }),
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(401);
         expect(data.error).toBe('Invalid credentials');
     });
 
-    it('should return JWT token on success', async () => {
+    it('should set auth cookie on success', async () => {
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.signature';
         vi.mocked(csrf.generateCSRFToken).mockReturnValue('mock-csrf-token');
 
@@ -127,19 +128,24 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'correctpass123' }),
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
 
         expect(response.status).toBe(200);
-        expect(data.token).toBe(mockToken);
         expect(data.username).toBe('test');
         expect(data.csrfToken).toBe('mock-csrf-token');
         expect(jwt.generateToken).toHaveBeenCalledWith('test');
         expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockToken);
+        expect(cookies.set).toHaveBeenCalledWith(
+            'passkeys_auth',
+            mockToken,
+            expect.objectContaining({
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/'
+            })
+        );
     });
 
     it('should verify password even if user does not exist (timing attack protection)', async () => {
@@ -152,10 +158,7 @@ describe('API Login', () => {
             body: JSON.stringify({ username: 'nonexistent', password: 'password123' }),
         });
 
-        await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        await loginHandler.POST(makeEvent(request));
 
         // Should still call verifyPassword even though user doesn't exist
         expect(cryptoUtils.verifyPassword).toHaveBeenCalled();
@@ -167,10 +170,7 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test', password: 'short' }),
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(400);
@@ -183,10 +183,7 @@ describe('API Login', () => {
             headers: makeHeaders(),
             body: JSON.stringify({ username: 'test/../admin', password: 'password123' }),
         });
-        const response = await loginHandler.POST({
-            request,
-            getClientAddress: () => '127.0.0.1'
-        } as any);
+        const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(400);

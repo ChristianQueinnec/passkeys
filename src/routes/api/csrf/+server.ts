@@ -12,7 +12,7 @@ export async function GET({ request }: RequestEvent) {
         return json({ error: 'Unauthorized' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
     }
 
-    // Get session ID from Authorization header
+    // Get session ID from the auth cookie
     const sessionId = getSessionIdFromRequest(request);
 
     if (!sessionId) {

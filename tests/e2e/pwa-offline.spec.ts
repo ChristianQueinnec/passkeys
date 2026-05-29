@@ -566,7 +566,7 @@ test.describe('PWA Offline Functionality (E2E)', () => {
       // Reload page
       await page.reload();
 
-      // On logout or reload if not trusted, the token is in sessionStorage 
+      // On logout or reload if not trusted, the session marker is in sessionStorage 
       // but the encrypted vault is in localStorage for offline access.
       // Wait, let's check useVault.saveVault.
       // It says: if (api.trustDevice) { localStorage.setItem("offline_vault", ...) }

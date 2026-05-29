@@ -75,7 +75,9 @@ test.describe('Login Rate Limiting', () => {
         await expect(page.getByText('Unlock Vault')).toBeVisible();
 
         // 3. Logout and fail 4 more times - it should NOT be blocked yet
+        await page.context().clearCookies();
         await page.evaluate(() => {
+            localStorage.removeItem('username');
             sessionStorage.clear();
         });
         await page.reload();

@@ -19,7 +19,6 @@ export function useVaultSync(
     }
 
     async function pollForUpdates() {
-        if (!api.token) return;
         try {
             const metadata = await api.getLatestVaultMetadata();
             console.log("Polling success, server mtime:", metadata.mtime, "local lastSavedDate:", $state.snapshot(vault.lastSavedDate));

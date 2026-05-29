@@ -6,6 +6,7 @@ const username = 'auth_test';
 const password = 'password';
 const vaultKey = 'password';
 const vaultDir = path.join(process.cwd(), 'data', username);
+const authCookieName = 'passkeys_auth';
 
 /**
  * Comprehensive tests for vault behavior in various situations:
@@ -81,18 +82,19 @@ test.describe('Vault Situations: Safe Device', () => {
         // Wait for vault to load
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
-        // Verify token is in localStorage (safe device)
-        const token = await page.evaluate(() => localStorage.getItem('token'));
-        expect(token).not.toBeNull();
+        const cookies = await page.context().cookies();
+        const authCookie = cookies.find(cookie => cookie.name === authCookieName);
+        expect(authCookie).toBeTruthy();
+        expect(authCookie?.expires).toBeGreaterThan(0);
 
         // Verify offline vault is stored
         const offlineVault = await page.evaluate(() => localStorage.getItem('offline_vault'));
         expect(offlineVault).not.toBeNull();
 
-        // Reload page - should stay authenticated (at least have token)
+        // Reload page - should stay authenticated
         await page.reload();
 
-        // Should be at Unlock phase (requires master password even if token persisted)
+        // Should be at Unlock phase (requires master password even if cookie persisted)
         await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.fill('[data-testid="password-input"]', vaultKey);
         await page.click('[data-testid="unlock-button"]');
@@ -123,7 +125,7 @@ test.describe('Vault Situations: Safe Device', () => {
         // Reload page to simulate restarting app
         await page.reload();
 
-        // Should be at Unlock phase (token persisted)
+        // Should be at Unlock phase (cookie persisted)
         await expect(page.getByTestId('unlock-button')).toBeVisible();
 
         // Unlock with cached vault
@@ -169,12 +171,10 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await expect(page.locator('.folder-dashboard')).toBeVisible();
         await page.waitForTimeout(1000);
 
-        // Verify token is in sessionStorage, NOT localStorage
-        const localToken = await page.evaluate(() => localStorage.getItem('token'));
-        const sessionToken = await page.evaluate(() => sessionStorage.getItem('token'));
-
-        expect(localToken).toBeNull();
-        expect(sessionToken).not.toBeNull();
+        const cookies = await page.context().cookies();
+        const authCookie = cookies.find(cookie => cookie.name === authCookieName);
+        expect(authCookie).toBeTruthy();
+        expect(authCookie?.expires).toBe(-1);
 
         // Offline vault should not be in localStorage for offline access
         await page.reload();
@@ -182,7 +182,7 @@ test.describe('Vault Situations: Unsafe Device', () => {
         expect(offlineVault).toBeNull();
     });
 
-    test('should NOT persist login after browser restart on unsafe device', async ({ page, context }) => {
+    test('should NOT persist login after browser restart on unsafe device', async ({ page }) => {
         await ensureVaultExists(page, username, password, vaultKey);
 
         // Login without trust
@@ -196,20 +196,20 @@ test.describe('Vault Situations: Unsafe Device', () => {
         await page.click('[data-testid="unlock-button"]');
         await expect(page.locator('.folder-dashboard')).toBeVisible();
 
-        // Simulate browser restart by creating new context
-        const newPage = await context.newPage();
-        await newPage.goto('/');
+        const browser = page.context().browser();
+        expect(browser).not.toBeNull();
+        const newContext = await browser!.newContext();
+        const newPage = await newContext.newPage();
+        await newPage.goto(new URL('/', page.url()).toString());
 
         // Should be at login screen, NOT authenticated
         await expect(newPage.getByTestId('login-button')).toBeVisible();
 
-        // Token should not persist
-        const token = await newPage.evaluate(() => {
-            return localStorage.getItem('token') || sessionStorage.getItem('token');
-        });
-        expect(token).toBeNull();
+        const cookies = await newContext.cookies();
+        expect(cookies.find(cookie => cookie.name === authCookieName)).toBeUndefined();
 
         await newPage.close();
+        await newContext.close();
     });
 });
 
@@ -580,7 +580,7 @@ test.describe('Vault Situations: Online/Offline Modes', () => {
         // Reload to simulate fresh start offline
         await page.reload();
 
-        // Even with API blocked, we should be able to see Unlock screen because token is in localStorage
+        // Even with API blocked, we should be able to see Unlock screen because the session marker is stored locally
         await expect(page.getByTestId('unlock-button')).toBeVisible();
         await page.getByTestId('password-input').fill(vaultKey);
         await page.click('[data-testid="unlock-button"]');

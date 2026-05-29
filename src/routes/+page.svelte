@@ -43,7 +43,7 @@
     useVaultSync(vault, () => phase === 2);
 
     async function checkVaultExists() {
-        if (!api.token) return;
+        if (!username) return;
         vaultExists = false; // Reset first
         try {
             // Check local
@@ -82,12 +82,21 @@
             }
         }
 
-        if (api.token) {
-            username = api.username || "";
-            // Get CSRF token for existing session
-            await api.getCSRFToken();
-            await checkVaultExists();
-            phase = 1; // Go to unlock
+        try {
+            const sessionUsername = await api.getSession();
+            if (sessionUsername) {
+                username = sessionUsername;
+                // Get CSRF token for existing session
+                await api.getCSRFToken();
+                await checkVaultExists();
+                phase = 1; // Go to unlock
+            }
+        } catch {
+            if (api.username) {
+                username = api.username;
+                await checkVaultExists();
+                phase = 1;
+            }
         }
     });
 
@@ -137,8 +146,8 @@
         await handleUnlock(masterPassword);
     }
 
-    function handleLogout() {
-        api.logout();
+    async function handleLogout() {
+        await api.logout();
         username = "";
         encryptionKey.remove();
         vault.cleanup();

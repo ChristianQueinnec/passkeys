@@ -105,7 +105,11 @@ install.new.vault :
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	@echo "Quick! let Passkeys cipher this vault!"
 
-archive.remote.vaults :
+deploy.new.vault :
+	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
+	@echo "Quick! let Passkeys cipher this vault!"
+
+import.remote.vaults :
 	@echo This will import remote vaults locally.... ; sleep 10
 	rsync -avu ${REMOTE}:Passkeys/realdata .
 

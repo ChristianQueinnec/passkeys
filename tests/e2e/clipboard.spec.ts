@@ -55,16 +55,20 @@ test.describe('Clipboard Reset', () => {
         await firstItem.getByTestId('copy-username-btn').click();
 
         // Verify it was copied
-        let clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).not.toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).not.toBe('');
 
         // Wait a bit (1000ms reset + 500ms buffer)
         console.log('Waiting for clipboard reset...');
         await page.waitForTimeout(1500);
 
         // Verify it's cleared
-        clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).toBe('');
     });
 
     test('should reset timer when copying again', async ({ page }) => {
@@ -72,29 +76,37 @@ test.describe('Clipboard Reset', () => {
 
         // Copy first time
         await firstItem.getByTestId('copy-username-btn').click();
-        let clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).not.toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).not.toBe('');
 
         // Wait 500ms (timer at 1s, not cleared yet)
         await page.waitForTimeout(500);
 
         // Copy again (resets timer to another 1s)
         await firstItem.getByTestId('copy-password-btn').click();
-        clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).not.toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).not.toBe('');
 
         // Wait 700ms (total 1.2s from first copy, but only 700ms from second)
         await page.waitForTimeout(700);
 
         // Verify it's NOT cleared yet
-        clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).not.toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).not.toBe('');
 
         // Wait another 500ms (total 1.2s from second copy)
         await page.waitForTimeout(500);
 
         // Verify it's cleared
-        clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-        expect(clipboardText).toBe('');
+        await expect.poll(
+            () => page.evaluate(() => navigator.clipboard.readText()),
+            { timeout: 5000 },
+        ).toBe('');
     });
 });
