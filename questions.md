@@ -1010,13 +1010,9 @@ The token is stored in localStorage and that is not safe in case some
 external javascript runs in the page (ads for instance). Move token to
 a safe cookie and adapt the webapp and tests accordingly.
 
-
-
-
-
 ## 120 Renewing authentication (Codex)
 
-when unlocking the vault with a correct vault password, the
+When unlocking the vault with a correct vault password, the
 authentication token may be obsolete, renew it automatically. 
 
 ##

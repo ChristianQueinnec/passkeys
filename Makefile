@@ -53,7 +53,7 @@ run.tests :
 		echo "******* Successful end of all tests "; fi ; echo 
 
 REMOTE=pk.queinnec.org
-archive.container : tag.container archive.remote.vaults
+archive.container : tag.container import.remote.vaults
 	-git tag -a "$$(cat passkeys.tag)" -m "version $$(cat passkeys.tag)" 
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	docker push registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
