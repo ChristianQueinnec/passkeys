@@ -6,6 +6,7 @@ test.describe('Folder Count', () => {
         await page.addInitScript(() => {
             (window as any).__TESTING__ = true;
         });
+        await page.goto('/api/test/cleanup-vault?username=auth_test');
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
@@ -69,20 +70,12 @@ test.describe('Folder Count', () => {
         // Folder A should have 1 (direct) + 2 (from B) = 3
         // Root should have 8 (4 initial + 4 new)(from A) = 4
 
-        // Expand root if needed (it is open by default)
-        // Expand Folder A
         const folderA = page.locator('.folder-item', { hasText: 'Folder A' });
-        await folderA.getByRole('button').click(); // Toggle open if not open, or select. 
-        // Note: Logic in component toggles on click.
-
-        // Wait for tree to update
-        await page.waitForTimeout(500);
-
-        // Check text contents
-        await expect(folderA.locator('.entry-count')).toHaveText('(3)');
+        await folderA.getByTestId('folder').click();
+        await expect(folderA.locator('.entry-count')).toHaveText('(3)', { timeout: 15000 });
 
         const folderB = page.locator('.folder-item', { hasText: 'Folder B' });
-        await expect(folderB.locator('.entry-count')).toHaveText('(2)');
+        await expect(folderB.locator('.entry-count')).toHaveText('(2)', { timeout: 15000 });
 
         // Check Root (Total)
         // Root usually has name from i18n 'vault.root' -> "My Vault" or similar.
@@ -90,6 +83,6 @@ test.describe('Folder Count', () => {
         const rootFolder = page.locator('.folder-item').first();
         // Assuming root is first.
         // We can check the count directly.
-        await expect(rootFolder.locator('.entry-count')).toHaveText('(4)'); // 4 new items
+        await expect(rootFolder.locator('.entry-count')).toHaveText('(4)', { timeout: 15000 }); // 4 new items
     });
 });

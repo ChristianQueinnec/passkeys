@@ -142,6 +142,7 @@ run.codex :
 	${HOME}/IA/Codex/node_modules/.bin/codex
 # write instructions into vibecodex.md
 # then ask codex by typing:    @vibecodex.md
+# or copy/paste from questions.md
 
 run.cursor :
 # NOT YET CONFIGURED

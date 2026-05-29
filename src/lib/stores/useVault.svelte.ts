@@ -9,6 +9,11 @@ import { createVaultCore } from "./vault/core";
 import { createVaultCrud } from "./vault/crud";
 import { createVaultHistory } from "./vault/history";
 import { createVaultActivity } from "./vault/activity.svelte";
+import {
+    EASY_UNLOCK_WINDOW_MS,
+    createEasyUnlockChallenge,
+    validateEasyUnlockAnswer,
+} from "$lib/vault/easyUnlock";
 
 export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
     const state = new VaultState(encryptionKey, onLock);
@@ -17,6 +22,32 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
     const crud = createVaultCrud(state, crypto);
     const history = createVaultHistory(state);
     const activity = createVaultActivity(state, crypto);
+    let rememberedMasterPassword: string | null = null;
+    let easyUnlockTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function clearEasyUnlockState() {
+        if (easyUnlockTimer) {
+            clearTimeout(easyUnlockTimer);
+            easyUnlockTimer = null;
+        }
+        rememberedMasterPassword = null;
+        state.easyUnlockChallenge = null;
+    }
+
+    function rememberMasterPassword(masterPassword: string) {
+        clearEasyUnlockState();
+
+        const challenge = createEasyUnlockChallenge(masterPassword);
+        if (!challenge) {
+            return;
+        }
+
+        rememberedMasterPassword = masterPassword;
+        state.easyUnlockChallenge = challenge;
+        easyUnlockTimer = setTimeout(() => {
+            clearEasyUnlockState();
+        }, EASY_UNLOCK_WINDOW_MS);
+    }
 
     return {
         // State getters
@@ -59,6 +90,9 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         get historyFiles() {
             return state.historyFiles;
         },
+        get easyUnlockChallenge() {
+            return state.easyUnlockChallenge;
+        },
 
         // Setters
         setItems: (newItems: PasswordEntry[]) => {
@@ -69,6 +103,18 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         },
         setNewerVersionAvailable: (available: boolean) => {
             state.newerVersionAvailable = available;
+        },
+        rememberMasterPassword,
+        clearEasyUnlockState,
+        getRememberedMasterPassword() {
+            return rememberedMasterPassword;
+        },
+        validateEasyUnlockAnswer(answer: string) {
+            if (!state.easyUnlockChallenge) return false;
+            return validateEasyUnlockAnswer(state.easyUnlockChallenge, answer);
+        },
+        lockNow() {
+            activity.lockNow();
         },
 
         // Methods
@@ -85,7 +131,10 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         closeModals: crud.closeModals,
         copyToClipboard: activity.copyToClipboard,
         openSite: activity.openSite,
-        cleanup: activity.cleanup,
+        cleanup() {
+            clearEasyUnlockState();
+            activity.cleanup();
+        },
         importItems: core.importItems,
     };
 }

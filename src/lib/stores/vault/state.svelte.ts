@@ -1,5 +1,6 @@
 import type { PasswordEntry, HistoryItem, CipheredVaultData } from "$lib/types";
 import type { EncryptionKey } from "$lib/vaultkey";
+import type { EasyUnlockChallenge } from "$lib/vault/easyUnlock";
 
 export class VaultState {
     _items = $state<PasswordEntry[]>([]);
@@ -16,6 +17,7 @@ export class VaultState {
     showHistoryModal = $state(false);
     historyFiles = $state<HistoryItem[]>([]);
     dirtySecrets = $state<Map<string, PasswordEntry>>(new Map());
+    easyUnlockChallenge = $state<EasyUnlockChallenge | null>(null);
     encryptionKey: EncryptionKey;
     onLock: () => void;
 

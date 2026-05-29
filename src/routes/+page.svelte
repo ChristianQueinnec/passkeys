@@ -32,7 +32,9 @@
 
     function forceUnlocking() {
         phase = 1; // Go to Unlock
-        unlockMessage = i18n.t("vault.security_timeout");
+        unlockMessage = vault.easyUnlockChallenge
+            ? i18n.t("vault.quick_unlock_available")
+            : i18n.t("vault.security_timeout");
     }
 
     // Initialize Global Stores
@@ -68,6 +70,16 @@
                 "(max-width: 768px) and (orientation: portrait)",
             ).matches;
             useFolderView = !prefersListView;
+
+            if ((window as any).__TESTING__) {
+                (window as any).__PASSKEYS_TEST__ = {
+                    lockVault: () => vault.lockNow(),
+                    clearEasyUnlock: () => vault.clearEasyUnlockState(),
+                    getEasyUnlockChallenge: () => vault.easyUnlockChallenge,
+                    getRememberedMasterPassword: () =>
+                        vault.getRememberedMasterPassword(),
+                };
+            }
         }
 
         if (api.token) {
@@ -102,6 +114,7 @@
         const success = await vault.loadVault();
 
         if (success) {
+            vault.rememberMasterPassword(masterPassword);
             // Upate vaultExists status after successful load just in case
             vaultExists = true;
             phase = 2; // Move to Dashboard
@@ -109,6 +122,19 @@
             throw new Error(i18n.t("auth.unlock_failed"));
         }
         await tick();
+    }
+
+    async function handleEasyUnlock(answer: string) {
+        if (!vault.validateEasyUnlockAnswer(answer)) {
+            throw new Error(i18n.t("auth.easy_unlock_failed"));
+        }
+
+        const masterPassword = vault.getRememberedMasterPassword();
+        if (!masterPassword) {
+            throw new Error(i18n.t("auth.easy_unlock_unavailable"));
+        }
+
+        await handleUnlock(masterPassword);
     }
 
     function handleLogout() {
@@ -277,7 +303,9 @@
             <Unlock
                 {vaultExists}
                 onUnlock={handleUnlock}
+                onEasyUnlock={handleEasyUnlock}
                 message={unlockMessage}
+                easyUnlockChallenge={vault.easyUnlockChallenge}
             />
         {:else if phase === 2 && encryptionKey.isSet}
             {#if useFolderView}

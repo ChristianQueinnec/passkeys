@@ -9,13 +9,15 @@ describe('Settings Store', () => {
 
     it('should have default settings initially', () => {
         expect(settings.current.pollForUpdatesInterval).toBe(60000);
+        expect(settings.current.inactivityTimeout).toBe(900000);
         expect(settings.current.masterPasswordSalt).toBe('mvp_salt_fixed');
     });
 
     it('should mock loading settings from server', async () => {
         const mockSettings = {
             pollForUpdatesInterval: 30000,
-            inactivityTimeout: 120000
+            inactivityTimeout: 120000,
+            inactivityTimeoutTest: 3600000
         };
 
         // Mock fetch
@@ -28,6 +30,7 @@ describe('Settings Store', () => {
 
         expect(settings.current.pollForUpdatesInterval).toBe(30000);
         expect(settings.current.inactivityTimeout).toBe(120000);
+        expect(settings.current.inactivityTimeoutTest).toBe(3600000);
         // Preserves other defaults
         expect(settings.current.masterPasswordSalt).toBe('mvp_salt_fixed');
         expect(settings.loaded).toBe(true);

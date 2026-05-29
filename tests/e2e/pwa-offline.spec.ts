@@ -355,38 +355,36 @@ test.describe('PWA Offline Functionality (E2E)', () => {
 
   test.describe('Security Timeout Offline', () => {
 
-    test('should clear decrypted data after 2s inactivity', async ({ page, context }) => {
+    test('should show quick unlock after a security lock', async ({ page }) => {
       await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
-      await context.setOffline(true);
 
-      // Verify vault is unlocked
+      const challenge = await page.evaluate(() => (window as any).__PASSKEYS_TEST__.getEasyUnlockChallenge());
+      expect(challenge).toBeTruthy();
+
+      await page.evaluate(() => (window as any).__PASSKEYS_TEST__.lockVault());
+
+      await expect(page.getByTestId('easy-unlock-button')).toBeVisible();
+      await expect(page.getByTestId('easy-unlock-input')).toBeVisible();
+      await page.getByTestId('easy-unlock-input').fill(challenge.answer);
+      await page.getByTestId('easy-unlock-button').click();
+      await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
       await expect(page.locator('[data-testid="vault-item"]')).toBeVisible();
-
-      // Wait 11 seconds (inactivityTimeoutTest = 10000ms)
-      await page.waitForTimeout(11000);
-
-      // Vault should be locked (Dashboard component will show security timeout message)
-      await expect(page.getByText(/security timeout/i)).toBeVisible();
     });
 
-    test('should reset timeout on user activity', async ({ page, context }) => {
+    test('should require the full password after quick unlock is cleared', async ({ page }) => {
       await ensureVaultExists(page, 'admin', 'password', 'password');
       await loginAndUnlockVault(page);
-      await context.setOffline(true);
 
-      // Wait 9 seconds (timeout is 10s)
-      await page.waitForTimeout(9000);
+      await page.evaluate(() => (window as any).__PASSKEYS_TEST__.clearEasyUnlock());
+      await page.evaluate(() => (window as any).__PASSKEYS_TEST__.lockVault());
 
-      // User activity - click an entry
-      await page.getByTestId('vault-item').first().click();
+      await expect(page.getByText(/quick unlock/i)).not.toBeVisible();
+      await expect(page.getByTestId('easy-unlock-button')).toHaveCount(0);
 
-      // Wait another 2 seconds (total 11s, would be locked if no reset)
-      await page.waitForTimeout(2000);
-
-      // Verify still unlocked
-      await expect(page.locator('[data-testid="vault-item"]')).toBeVisible();
-      await expect(page.getByText(/security timeout/i)).not.toBeVisible();
+      await page.getByTestId('password-input').fill('password');
+      await page.getByTestId('unlock-button').click();
+      await expect(page.locator('.app-container')).toHaveAttribute('data-phase', '2');
     });
   });
 

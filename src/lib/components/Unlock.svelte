@@ -1,19 +1,34 @@
 <script lang="ts">
-    import PasswordInput from "./PasswordInput.svelte";
-    import { api } from "$lib/api";
-    import { i18n } from "$lib/stores/useI18n.svelte";
+  import PasswordInput from "./PasswordInput.svelte";
+  import { onMount } from "svelte";
+  import { i18n } from "$lib/stores/useI18n.svelte";
+  import type { EasyUnlockChallenge } from "$lib/vault/easyUnlock";
 
-    let password = $state("");
-    let showPassword = $state(false);
-    let loading = $state(false);
-    let error = $state("");
+  let password = $state("");
+  let easyAnswer = $state("");
+  let loading = $state(false);
+  let easyLoading = $state(false);
+  let error = $state("");
+  let easyInput = $state<HTMLInputElement | null>(null);
 
-    let { vaultExists, onUnlock, message } = $props();
-    const notice = $derived(
-        vaultExists
-            ? i18n.t("auth.unlock_vault_exists")
-            : i18n.t("auth.unlock_no_vault"),
-    );
+  let {
+    vaultExists,
+    onUnlock,
+    onEasyUnlock = null,
+    message,
+    easyUnlockChallenge = null,
+  }: {
+    vaultExists: boolean;
+    onUnlock: (password: string) => Promise<void>;
+    onEasyUnlock?: null | ((answer: string) => Promise<void>);
+    message?: string;
+    easyUnlockChallenge?: EasyUnlockChallenge | null;
+  } = $props();
+  const notice = $derived(
+    vaultExists
+      ? i18n.t("auth.unlock_vault_exists")
+      : i18n.t("auth.unlock_no_vault"),
+  );
 
     // Auto-clear error when user starts typing
     // This provides immediate feedback that they're addressing the issue
@@ -24,17 +39,43 @@
         }
     });
 
-    async function handleUnlock() {
-        loading = true;
-        error = ""; // Clear any previous error
-        try {
-            await onUnlock(password);
+  async function handleUnlock() {
+    loading = true;
+    error = ""; // Clear any previous error
+    try {
+      await onUnlock(password);
         } catch (e: any) {
             error = e.message || i18n.t("auth.unlock_failed");
-        } finally {
-            loading = false;
-        }
+    } finally {
+      loading = false;
     }
+  }
+
+  async function handleEasyUnlock() {
+    if (!onEasyUnlock || !easyUnlockChallenge) return;
+    easyLoading = true;
+    error = "";
+    try {
+      await onEasyUnlock(easyAnswer);
+    } catch (e: any) {
+      error = e.message || i18n.t("auth.unlock_failed");
+    } finally {
+      easyLoading = false;
+    }
+  }
+
+  function easyUnlockLabel(challenge: EasyUnlockChallenge) {
+    const position = challenge.position === "first"
+      ? i18n.t("auth.easy_unlock_first")
+      : i18n.t("auth.easy_unlock_last");
+    return `${position} ${challenge.length} ${i18n.t("auth.easy_unlock_letters")}`;
+  }
+
+  onMount(() => {
+    if (easyUnlockChallenge) {
+      easyInput?.focus();
+    }
+  });
 </script>
 
 <div class="card">
@@ -58,6 +99,32 @@
         <p class="error" role="alert" aria-live="polite">{error}</p>
     {/if}
 
+    {#if easyUnlockChallenge && onEasyUnlock}
+      <div class="easy-unlock">
+        <p>{i18n.t("auth.easy_unlock_intro")}</p>
+        <p class="easy-unlock-hint">{easyUnlockLabel(easyUnlockChallenge)}</p>
+        <form
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleEasyUnlock();
+          }}
+        >
+          <input
+            type="text"
+            bind:value={easyAnswer}
+            bind:this={easyInput}
+            placeholder={easyUnlockLabel(easyUnlockChallenge)}
+            autocomplete="off"
+            class="easy-unlock-input"
+            data-testid="easy-unlock-input"
+          />
+          <button type="submit" disabled={easyLoading} data-testid="easy-unlock-button">
+            {easyLoading ? i18n.t("auth.deriving_key") : i18n.t("auth.easy_unlock_button")}
+          </button>
+        </form>
+      </div>
+    {/if}
+
     <form
         onsubmit={(e) => {
             e.preventDefault();
@@ -66,7 +133,7 @@
     >
         <div class="input-group">
             <PasswordInput
-                autofocus={true}
+                autofocus={!easyUnlockChallenge}
                 placeholder={i18n.t("auth.unlock_placeholder")}
                 bind:value={password}
             />
@@ -100,5 +167,26 @@
     .unlock-notice.exists {
         border-left-color: #28a745;
         background: #f0fff4;
+    }
+    .easy-unlock {
+        margin-bottom: 1.5rem;
+        padding: 0.75rem;
+        border: 1px solid #cfe2ff;
+        background: #eef5ff;
+        border-radius: 4px;
+    }
+    .easy-unlock p {
+        margin: 0 0 0.75rem 0;
+    }
+    .easy-unlock-hint {
+        font-weight: 600;
+    }
+    .easy-unlock-input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
     }
 </style>

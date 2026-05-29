@@ -8,12 +8,16 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
 
+    function lockNow() {
+        state.encryptionKey.remove();
+        state.onLock();
+    }
+
     function resetTimer() {
         if (inactivityTimer) clearTimeout(inactivityTimer);
 
         inactivityTimer = setTimeout(() => {
-            state.encryptionKey.remove();
-            state.onLock();
+            lockNow();
         }, (browser && (window as any).__TESTING__)
             ? settings.current.inactivityTimeoutTest
             : settings.current.inactivityTimeout);
@@ -100,5 +104,5 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         }
     }
 
-    return { copyToClipboard, openSite, cleanup };
+    return { copyToClipboard, openSite, cleanup, lockNow };
 }

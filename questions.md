@@ -994,9 +994,15 @@ On a telephone screen in portrait mode, prefer the view list since, in
 the folder view, the content of a selected folder is on the right of
 the folders list and only very partially visible.
 
-## 118 back to 113
+## 118 back to 113 (Codex)
 
-
+We want to provide a way to easily unlock the vault during the first
+hour after unlocking. The inactivityTimeoutTest is therefore now set
+to 1 hour but after 15 minutes and before 1 hour, it should be
+possible to unlock the vault by asking the user to provide the first
+(or last) three (or four) letters of the vault password. This easiest
+way to unlock the vault will no longer be available after 1 hour of
+inactivity.
 
 
 # FUTURE
