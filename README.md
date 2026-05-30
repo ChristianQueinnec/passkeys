@@ -457,7 +457,7 @@ DATA_DIR=/app/data
 
 ## Project History
 
-Passkeys was developed collaboratively with AI assistance (Anthropic Claude and Antigravity) to explore modern web development practices and AI-assisted coding.
+Passkeys was developed collaboratively with AI assistance (Anthropic Claude, Antigravity, Codex, Mistral) to explore modern web development practices and AI-assisted coding.
 
 ### Development Approach
 

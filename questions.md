@@ -1010,7 +1010,7 @@ The token is stored in localStorage and that is not safe in case some
 external javascript runs in the page (ads for instance). Move token to
 a safe cookie and adapt the webapp and tests accordingly.
 
-## 120 Renewing authentication (Codex)
+## 120 Renewing authentication
 
 When unlocking the vault with a correct vault password and if the
 authentication token is obsolete then renew it automatically.
@@ -1046,16 +1046,65 @@ and continue with Gemini
   [Active Topic: Finalizing Token Renewal Implementation]
 ```
 
-fix `tests/e2e/vault_situations.spec.ts`
+and fix `tests/e2e/vault_situations.spec.ts`
+
+```
+✦ I have fixed the failing e2e tests in tests/e2e/vault_situations.spec.ts by
+  ensuring that authentication token renewal preserves the "remember me"
+  (persistent session) state.
+
+  Root Cause Analysis
+  The failure was caused by the new token renewal logic. When a user unlocked
+  their vault, a new JWT token was issued. However, the initial implementation
+  of the renewal endpoint always issued session-based cookies, even if the user
+  had originally logged in with "Trust this device" (persistent session). This
+  caused Playwright's persistent cookie check to fail because the renewed cookie
+  lacked an expiration date (expires: -1).
+
+  Changes Applied
+
+   1. JWT Metadata: Updated TokenPayload in src/lib/server/jwt.ts to include an
+      optional remember boolean flag.
+   2. Persistent Login: Updated the login endpoint
+      (src/routes/api/login/+server.ts) to embed the trustDevice state into the
+      JWT token.
+   3. Auth Payload Helper: Added getAuthPayload to src/lib/server/auth.ts to
+      allow the server to extract the full verified JWT payload, including the
+      persistence flag.
+   4. Preserved Renewal: Refactored the renewal endpoint
+      (src/routes/api/renew/+server.ts) to read the remember flag from the old
+      token and apply it to the new one, ensuring that persistent cookies remain
+      persistent after renewal.
+   5. Test Verification: 
+       * Updated unit tests for login and renew endpoints to reflect the new
+         persistence tracking.
+       * Verified that tests/e2e/vault_situations.spec.ts now passes
+         consistently.
+       * Confirmed all 221 unit tests and all e2e tests are passing.
+  The solution ensures a seamless and secure experience where users remain
+  logged in across page reloads on trusted devices, even after automatic token
+  renewal during vault unlock.
+
+  [Active Topic: Finalizing Token Renewal Implementation]
+```
+
+## 121 verify re-authentication
+
+Otherwise if the authentication token is obsolete, the client should
+force the user to reauthenticate after a call to server API rejected
+for bad authentication.
 
 
-Otherwise if the authentication token is obsolete, a failing call to
-some API entry points requiring authentication should force the user
-to reauthenticate.
+
+# 122 I18N check
 
 check security!
 
 Check whether i18n is complete for all texts seen by the UI user.
+
+pwa and icon
+
+update AGENTS.md and README.md
 
 
 ##
