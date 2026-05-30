@@ -19,6 +19,7 @@ interface TokenPayload {
     username: string;
     iat: number;
     exp: number;
+    remember?: boolean;
 }
 
 /**
@@ -54,7 +55,7 @@ function createSignature(data: string, secret: string): string {
 /**
  * Generate a JWT token for a user
  */
-export function generateToken(username: string): string {
+export function generateToken(username: string, remember: boolean = false): string {
     const now = Math.floor(Date.now() / 1000);
 
     const header = {
@@ -65,7 +66,8 @@ export function generateToken(username: string): string {
     const payload: TokenPayload = {
         username,
         iat: now,
-        exp: now + TOKEN_EXPIRY_SECONDS
+        exp: now + TOKEN_EXPIRY_SECONDS,
+        remember
     };
 
     const encodedHeader = base64UrlEncode(JSON.stringify(header));

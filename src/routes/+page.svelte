@@ -123,6 +123,13 @@
         const success = await vault.loadVault();
 
         if (success) {
+            // Automatically renew token if vault is unlocked successfully
+            try {
+                await api.renewToken();
+            } catch (e) {
+                console.warn("Token renewal failed during unlock", e);
+            }
+
             vault.rememberMasterPassword(masterPassword);
             // Upate vaultExists status after successful load just in case
             vaultExists = true;

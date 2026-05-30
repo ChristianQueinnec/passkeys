@@ -135,7 +135,7 @@ describe('API Login', () => {
         expect(response.status).toBe(200);
         expect(data.username).toBe('test');
         expect(data.csrfToken).toBe('mock-csrf-token');
-        expect(jwt.generateToken).toHaveBeenCalledWith('test');
+        expect(jwt.generateToken).toHaveBeenCalledWith('test', false);
         expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockToken);
         expect(cookies.set).toHaveBeenCalledWith(
             'passkeys_auth',

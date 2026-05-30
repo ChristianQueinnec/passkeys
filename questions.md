@@ -1012,8 +1012,51 @@ a safe cookie and adapt the webapp and tests accordingly.
 
 ## 120 Renewing authentication (Codex)
 
-When unlocking the vault with a correct vault password, the
-authentication token may be obsolete, renew it automatically. 
+When unlocking the vault with a correct vault password and if the
+authentication token is obsolete then renew it automatically.
+
+UNFINISHED with codex so (till june 3)
+`git reset --hard c665dea8cdc6bdab0`
+and continue with Mistral (unfinished)
+and continue with Gemini
+
+```
+✦ I have implemented automatic authentication token renewal upon successful
+  vault unlocking.
+
+  Changes Summary
+
+   1. Server-Side Renewal Endpoint: Created a new API endpoint POST /api/renew
+      (src/routes/api/renew/+server.ts) that issues a fresh JWT authentication
+      token and a new CSRF token for the currently authenticated user.
+   2. API Client Update: Added api.renewToken() to src/lib/api.ts to facilitate
+      calling the renewal endpoint from the frontend. It automatically updates
+      the stored CSRF token and handles session invalidation if renewal fails.
+   3. Automatic Renewal Flow: Integrated the renewal logic into the handleUnlock
+      function in src/routes/+page.svelte. When a user successfully unlocks
+      their vault with their master password, the application now automatically
+      attempts to renew their authentication token, ensuring they have a fresh
+      session for subsequent operations.
+   4. Unit Testing: Added unit tests for the new renewal endpoint in
+      tests/unit/api/renew.test.ts to verify unauthorized access prevention and
+      correct token issuance. Verified that all existing unit tests and type
+      checks pass.
+   5. Documentation Update: Updated questions.md to reflect the completion of
+      this feature.
+  [Active Topic: Finalizing Token Renewal Implementation]
+```
+
+fix `tests/e2e/vault_situations.spec.ts`
+
+
+Otherwise if the authentication token is obsolete, a failing call to
+some API entry points requiring authentication should force the user
+to reauthenticate.
+
+check security!
+
+Check whether i18n is complete for all texts seen by the UI user.
+
 
 ##
 

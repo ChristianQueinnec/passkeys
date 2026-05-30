@@ -93,6 +93,31 @@ export const api = {
         return data;
     },
 
+    async renewToken() {
+        const res = await fetch('/api/renew', {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            // If renewal fails, we might be truly unauthorized
+            this.username = null;
+            this.csrfToken = null;
+            if (browser) {
+                localStorage.removeItem('username');
+                sessionStorage.removeItem('username');
+            }
+            return null;
+        }
+
+        const data = await res.json() as LoginResponse;
+        this.username = data.username;
+        if (data.csrfToken) {
+            this.csrfToken = data.csrfToken;
+        }
+        return data;
+    },
+
     async getSession() {
         try {
             const res = await fetch('/api/session', {

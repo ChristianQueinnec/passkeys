@@ -64,7 +64,7 @@ export async function POST(event: RequestEvent) {
         await recordSuccess(ip);
 
         // Generate JWT token
-        const token = generateToken(sanitizedUsername);
+        const token = generateToken(sanitizedUsername, trustDevice);
 
         // Generate CSRF token (tied to the JWT session)
         const csrfToken = generateCSRFToken(token);

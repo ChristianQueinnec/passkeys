@@ -12,20 +12,10 @@ import logger from '$lib/server/logger';
  * Helper to validate JWT token and return authenticated user
  */
 export function getAuthUser(request: Request): User | null {
-    const token = getAuthTokenFromRequest(request);
-    if (!token) {
-        return null;
-    }
+    const payload = getAuthPayload(request);
+    if (!payload) return null;
 
     try {
-        const sanitizedToken = sanitizeJWTToken(token);
-
-        // Verify JWT token
-        const payload = verifyToken(sanitizedToken);
-        if (!payload) {
-            return null;
-        }
-
         // Get user from database
         const user = getUser(payload.username);
         if (!user) {
@@ -36,6 +26,27 @@ export function getAuthUser(request: Request): User | null {
         return user;
     } catch (e: any) {
         logger.error({ error: e.message }, 'Token validation error');
+        return null;
+    }
+}
+
+/**
+ * Helper to get verified JWT payload from request
+ */
+export function getAuthPayload(request: Request) {
+    const token = getAuthTokenFromRequest(request);
+    if (!token) {
+        return null;
+    }
+
+    try {
+        const sanitizedToken = sanitizeJWTToken(token);
+
+        // Verify JWT token
+        const payload = verifyToken(sanitizedToken);
+        return payload;
+    } catch (e: any) {
+        logger.error({ error: e.message }, 'Token payload extraction error');
         return null;
     }
 }
