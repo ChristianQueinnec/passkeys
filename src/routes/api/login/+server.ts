@@ -12,6 +12,7 @@ import type { RequestEvent } from './$types';
 import type { User } from '$lib/types';
 import type { LoginRequest, LoginResponse, ErrorResponse } from '$lib/server/requestTypes';
 import logger from '$lib/server/logger';
+import crypto from 'node:crypto';
 
 export async function POST(event: RequestEvent) {
     const { request, getClientAddress, cookies } = event;
@@ -63,11 +64,17 @@ export async function POST(event: RequestEvent) {
         // Reset rate limiter on successful login
         await recordSuccess(ip);
 
-        // Generate JWT token
-        const token = generateToken(sanitizedUsername, trustDevice);
+        // Mint a fresh stable session ID for this login.  It is embedded in the
+        // JWT and used as the CSRF map key.  Generating it here (rather than
+        // inside generateToken) lets us hand it directly to generateCSRFToken
+        // without having to re-parse the signed token.
+        const sid = crypto.randomUUID();
 
-        // Generate CSRF token (tied to the JWT session)
-        const csrfToken = generateCSRFToken(token);
+        // Generate JWT token (sid is embedded in the payload)
+        const token = generateToken(sanitizedUsername, trustDevice, sid);
+
+        // Generate CSRF token bound to the stable session ID
+        const csrfToken = generateCSRFToken(sid);
 
         cookies.set(AUTH_COOKIE_NAME, token, {
             httpOnly: true,

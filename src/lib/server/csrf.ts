@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import settings from './server-settings.json';
 import { getAuthTokenFromRequest } from './auth-cookie';
+import { verifyToken } from './jwt';
 
 // In-memory store for CSRF tokens (in production, use Redis or database)
 const csrfTokens = new Map<string, { token: string; expiresAt: number }>();
@@ -19,11 +20,14 @@ setInterval(() => {
 }, settings.csrf.cleanupIntervalMs);
 
 /**
- * Generate a CSRF token for a session
+ * Generate a CSRF token for a session.
+ * @param sid  The stable session ID extracted from the JWT payload (jwt.sid).
+ *             This value is preserved across token renewals so the CSRF token
+ *             does not need to be re-fetched by the client after a renewal.
  */
-export function generateCSRFToken(sessionId: string): string {
+export function generateCSRFToken(sid: string): string {
     const token = randomBytes(32).toString('hex');
-    csrfTokens.set(sessionId, {
+    csrfTokens.set(sid, {
         token,
         expiresAt: Date.now() + TOKEN_LIFETIME
     });
@@ -31,17 +35,19 @@ export function generateCSRFToken(sessionId: string): string {
 }
 
 /**
- * Validate a CSRF token
+ * Validate a CSRF token against a session ID.
+ * @param sid    Stable session ID from the JWT payload.
+ * @param token  Token value sent by the client in X-CSRF-Token header.
  */
-export function validateCSRFToken(sessionId: string, token: string): boolean {
-    const stored = csrfTokens.get(sessionId);
+export function validateCSRFToken(sid: string, token: string): boolean {
+    const stored = csrfTokens.get(sid);
 
     if (!stored) {
         return false;
     }
 
     if (stored.expiresAt < Date.now()) {
-        csrfTokens.delete(sessionId);
+        csrfTokens.delete(sid);
         return false;
     }
 
@@ -49,16 +55,27 @@ export function validateCSRFToken(sessionId: string, token: string): boolean {
 }
 
 /**
- * Remove a CSRF token (for logout)
+ * Remove a CSRF token (called on logout).
+ * @param sid  Stable session ID from the JWT payload.
  */
-export function removeCSRFToken(sessionId: string): void {
-    csrfTokens.delete(sessionId);
+export function removeCSRFToken(sid: string): void {
+    csrfTokens.delete(sid);
 }
 
 /**
- * Get session ID from request (using the auth cookie).
- * In this implementation, the JWT itself acts as the session ID for CSRF token mapping.
+ * Extract the stable session ID (sid) from the verified JWT in the request.
+ *
+ * The sid lives inside the signed JWT payload — it cannot be forged without
+ * knowing JWT_SECRET — so it is safe to use as the CSRF map key.
+ *
+ * Returns null if there is no auth cookie or the token is invalid/expired.
  */
 export function getSessionIdFromRequest(request: Request): string | null {
-    return getAuthTokenFromRequest(request);
+    const token = getAuthTokenFromRequest(request);
+    if (!token) return null;
+
+    const payload = verifyToken(token);
+    if (!payload) return null;
+
+    return payload.sid;
 }

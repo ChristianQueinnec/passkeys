@@ -23,24 +23,21 @@ vi.mock('$lib/server/jwt', () => ({
 // Helper to mock auth with JWT
 const mockAuth = (username: string | null) => {
     if (username) {
-        // Mock JWT verification
         vi.mocked(jwt.verifyToken).mockReturnValue({
             username,
+            sid: 'mock-session-id',
             iat: Math.floor(Date.now() / 1000),
             exp: Math.floor(Date.now() / 1000) + 86400
         });
 
-        // Mock user lookup
         vi.mocked(users.getUser).mockReturnValue({
             username,
             password: 'salt:hash'
         } as any);
 
-        // Mock CSRF
         vi.mocked(csrf.validateCSRFToken).mockReturnValue(true);
-        vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue('mock-session');
+        vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue('mock-session-id');
 
-        // Create valid JWT token format
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIn0.signature';
 
         return {
@@ -51,7 +48,6 @@ const mockAuth = (username: string | null) => {
         };
     }
 
-    // No auth
     vi.mocked(jwt.verifyToken).mockReturnValue(null);
     return { headers: new Headers() };
 };

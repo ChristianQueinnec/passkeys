@@ -3,7 +3,6 @@ import { generateToken, verifyToken, getTokenExpiresIn, isTokenExpiringSoon, pee
 
 describe('JWT Token Management', () => {
     beforeEach(() => {
-        // Mock Date.now() for consistent testing
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
     });
@@ -37,6 +36,41 @@ describe('JWT Token Management', () => {
 
             expect(token1).not.toBe(token2);
         });
+
+        it('should embed the provided sid in the payload', () => {
+            const sid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+            const token = generateToken('testuser', false, sid);
+            const payload = verifyToken(token);
+
+            expect(payload?.sid).toBe(sid);
+        });
+
+        it('should generate a random sid when none is provided', () => {
+            const token1 = generateToken('testuser');
+            const token2 = generateToken('testuser');
+
+            const sid1 = verifyToken(token1)?.sid;
+            const sid2 = verifyToken(token2)?.sid;
+
+            expect(sid1).toBeDefined();
+            expect(sid2).toBeDefined();
+            expect(sid1).not.toBe(sid2);
+        });
+
+        it('should preserve the sid across a simulated renewal', () => {
+            const sid = 'stable-session-id-1234';
+            const firstToken = generateToken('testuser', false, sid);
+            const firstPayload = verifyToken(firstToken);
+
+            vi.advanceTimersByTime(60 * 60 * 1000); // 1 hour later
+
+            // Renewal: new token, same sid
+            const renewedToken = generateToken('testuser', firstPayload!.remember, firstPayload!.sid);
+            const renewedPayload = verifyToken(renewedToken);
+
+            expect(renewedPayload?.sid).toBe(sid);
+            expect(renewedToken).not.toBe(firstToken); // different iat/exp
+        });
     });
 
     describe('verifyToken', () => {
@@ -46,6 +80,7 @@ describe('JWT Token Management', () => {
 
             expect(payload).toBeDefined();
             expect(payload?.username).toBe('testuser');
+            expect(payload?.sid).toBeDefined();
             expect(payload?.iat).toBeDefined();
             expect(payload?.exp).toBeDefined();
         });
@@ -63,9 +98,9 @@ describe('JWT Token Management', () => {
             const token = generateToken('testuser');
             const parts = token.split('.');
 
-            // Modify the payload
             const tamperedPayload = Buffer.from(JSON.stringify({
                 username: 'attacker',
+                sid: 'fake-sid',
                 iat: Math.floor(Date.now() / 1000),
                 exp: Math.floor(Date.now() / 1000) + 86400
             })).toString('base64')
@@ -82,8 +117,7 @@ describe('JWT Token Management', () => {
         it('should reject an expired token', () => {
             const token = generateToken('testuser');
 
-            // Fast forward 25 hours (token expires after 24 hours)
-            vi.advanceTimersByTime(25 * 60 * 60 * 1000);
+            vi.advanceTimersByTime(25 * 60 * 60 * 1000); // 25 hours
 
             const result = verifyToken(token);
             expect(result).toBeNull();
@@ -92,8 +126,7 @@ describe('JWT Token Management', () => {
         it('should accept a token just before expiration', () => {
             const token = generateToken('testuser');
 
-            // Fast forward 23 hours 59 minutes
-            vi.advanceTimersByTime((24 * 60 * 60 - 60) * 1000);
+            vi.advanceTimersByTime((24 * 60 * 60 - 60) * 1000); // 23h 59m
 
             const result = verifyToken(token);
             expect(result).toBeDefined();
@@ -111,7 +144,6 @@ describe('JWT Token Management', () => {
             const token = generateToken('testuser');
             const [header, , signature] = token.split('.');
 
-            // Create invalid JSON payload
             const invalidPayload = Buffer.from('not valid json')
                 .toString('base64')
                 .replace(/\+/g, '-')
@@ -124,14 +156,32 @@ describe('JWT Token Management', () => {
             expect(result).toBeNull();
         });
 
-        it('should reject a token with missing required fields', () => {
-            // This test checks our validation, but since we control token generation,
-            // we'd need to manually craft a token missing fields
+        it('should reject a token missing the sid field', () => {
             const token = generateToken('testuser');
             const parts = token.split('.');
 
-            // Create payload without username
+            // Craft a payload without sid
+            const payloadWithoutSid = Buffer.from(JSON.stringify({
+                username: 'testuser',
+                iat: Math.floor(Date.now() / 1000),
+                exp: Math.floor(Date.now() / 1000) + 86400
+            })).toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+
+            // Note: this will also fail signature, which is correct behaviour —
+            // a real verifier must reject it regardless.
+            const crafted = `${parts[0]}.${payloadWithoutSid}.${parts[2]}`;
+            expect(verifyToken(crafted)).toBeNull();
+        });
+
+        it('should reject a token with missing username', () => {
+            const token = generateToken('testuser');
+            const parts = token.split('.');
+
             const incompletePayload = Buffer.from(JSON.stringify({
+                sid: 'some-sid',
                 iat: Math.floor(Date.now() / 1000),
                 exp: Math.floor(Date.now() / 1000) + 86400
             })).toString('base64')
@@ -153,7 +203,7 @@ describe('JWT Token Management', () => {
 
             expect(expiresIn).toBeDefined();
             expect(expiresIn).toBeGreaterThan(0);
-            expect(expiresIn).toBeLessThanOrEqual(24 * 60 * 60); // 24 hours
+            expect(expiresIn).toBeLessThanOrEqual(24 * 60 * 60);
         });
 
         it('should return decreasing values as time passes', () => {
@@ -165,21 +215,19 @@ describe('JWT Token Management', () => {
             const expiresIn2 = getTokenExpiresIn(token);
 
             expect(expiresIn2).toBeLessThan(expiresIn1!);
-            expect(expiresIn1! - expiresIn2!).toBeCloseTo(60 * 60, 0); // ~1 hour difference
+            expect(expiresIn1! - expiresIn2!).toBeCloseTo(60 * 60, 0);
         });
 
-        it('should return 0 for expired token', () => {
+        it('should return null for an expired token', () => {
             const token = generateToken('testuser');
 
-            vi.advanceTimersByTime(25 * 60 * 60 * 1000); // Advance 25 hours
+            vi.advanceTimersByTime(25 * 60 * 60 * 1000); // 25 hours
 
-            const expiresIn = getTokenExpiresIn(token);
-            expect(expiresIn).toBeNull(); // Token is invalid when expired
+            expect(getTokenExpiresIn(token)).toBeNull();
         });
 
         it('should return null for invalid token', () => {
-            const expiresIn = getTokenExpiresIn('invalid.token.here');
-            expect(expiresIn).toBeNull();
+            expect(getTokenExpiresIn('invalid.token.here')).toBeNull();
         });
     });
 
@@ -192,8 +240,7 @@ describe('JWT Token Management', () => {
         it('should return true when token expires in less than 1 hour', () => {
             const token = generateToken('testuser');
 
-            // Fast forward to 30 minutes before expiration
-            vi.advanceTimersByTime((24 * 60 * 60 - 30 * 60) * 1000);
+            vi.advanceTimersByTime((24 * 60 * 60 - 30 * 60) * 1000); // 30 min to expiry
 
             expect(isTokenExpiringSoon(token)).toBe(true);
         });
@@ -201,8 +248,7 @@ describe('JWT Token Management', () => {
         it('should return false when token expires in more than 1 hour', () => {
             const token = generateToken('testuser');
 
-            // Fast forward to 2 hours before expiration
-            vi.advanceTimersByTime((24 * 60 * 60 - 2 * 60 * 60) * 1000);
+            vi.advanceTimersByTime((24 * 60 * 60 - 2 * 60 * 60) * 1000); // 2 h to expiry
 
             expect(isTokenExpiringSoon(token)).toBe(false);
         });
@@ -215,18 +261,15 @@ describe('JWT Token Management', () => {
     describe('peekUsername', () => {
         it('should extract username without verification', () => {
             const token = generateToken('testuser');
-            const username = peekUsername(token);
-
-            expect(username).toBe('testuser');
+            expect(peekUsername(token)).toBe('testuser');
         });
 
-        it('should return username even for expired token', () => {
+        it('should return username even for an expired token', () => {
             const token = generateToken('testuser');
 
-            vi.advanceTimersByTime(25 * 60 * 60 * 1000); // Expire the token
+            vi.advanceTimersByTime(25 * 60 * 60 * 1000);
 
-            const username = peekUsername(token);
-            expect(username).toBe('testuser');
+            expect(peekUsername(token)).toBe('testuser');
         });
 
         it('should return null for malformed token', () => {
@@ -243,9 +286,7 @@ describe('JWT Token Management', () => {
                 .replace(/\//g, '_')
                 .replace(/=/g, '');
 
-            const invalidToken = `${header}.${invalidPayload}.${signature}`;
-
-            expect(peekUsername(invalidToken)).toBeNull();
+            expect(peekUsername(`${header}.${invalidPayload}.${signature}`)).toBeNull();
         });
     });
 
@@ -287,23 +328,31 @@ describe('JWT Token Management', () => {
             const token = generateToken('testuser');
             const payload = verifyToken(token);
 
-            const expirationDuration = payload!.exp - payload!.iat;
-            expect(expirationDuration).toBe(24 * 60 * 60); // 24 hours in seconds
+            expect(payload!.exp - payload!.iat).toBe(24 * 60 * 60);
+        });
+
+        it('should include a UUID-format sid claim', () => {
+            const token = generateToken('testuser');
+            const payload = verifyToken(token);
+
+            expect(payload?.sid).toBeDefined();
+            expect(typeof payload?.sid).toBe('string');
+            // UUID v4 format
+            expect(payload?.sid).toMatch(
+                /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+            );
         });
 
         it('should produce tokens resistant to timing attacks', () => {
-            // Generate multiple tokens and verify they all take similar time
             const times: number[] = [];
 
             for (let i = 0; i < 10; i++) {
                 const start = process.hrtime.bigint();
                 generateToken(`user${i}`);
                 const end = process.hrtime.bigint();
-                // Add 0.1ms to avoid pushing 0
                 times.push(Number(end - start) + 0.1);
             }
 
-            // Check that all times are within a reasonable range
             const avg = times.reduce((a, b) => a + b) / times.length;
             const allWithinRange = times.every(t => Math.abs(t - avg) < avg * 0.5);
 

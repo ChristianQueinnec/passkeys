@@ -164,4 +164,18 @@ run.cursor :
 	${HOME}/.local/bin/agent --list-models
 	${HOME}/.local/bin/agent --trust --plan
 
+
+# Newer Claude not available on Linux, continue on Mac:
+continue.on.mac : copy.to.mac
+	ssh bijou make -C Passkeys do.continue.on.mac
+	@echo "run Claude"
+
+copy.to.mac :
+	rsync -avu . bibou:Passkeys/
+
+do.continue.on.mac :
+	rm -rf package-lock.json node_modules/
+	npm install
+	npx playwright install
+
 # }}}

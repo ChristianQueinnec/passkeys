@@ -1088,14 +1088,58 @@ and fix `tests/e2e/vault_situations.spec.ts`
   [Active Topic: Finalizing Token Renewal Implementation]
 ```
 
-## 121 verify re-authentication
+## 121 verify re-authentication (Gemini)
 
 Otherwise if the authentication token is obsolete, the client should
 force the user to reauthenticate after a call to server API is rejected
 for bad authentication.
 
+```
+✦ I have implemented the automatic reauthentication mechanism. 
 
+  Implementation Details:
+   1. Centralized 401 Handling: Modified api._handleResponse in src/lib/api.ts
+      to detect 401 Unauthorized status codes. When detected, it automatically
+      clears the local session state (username, csrfToken, and storage) and
+      triggers a new onUnauthorized callback.
+   2. API Client Update: Added an onUnauthorized callback property to the api
+      object.
+   3. UI Integration: In src/routes/+page.svelte, I hooked into the
+      api.onUnauthorized callback during onMount. When triggered, the UI now
+      automatically resets to the login phase (phase 0) and clears all sensitive
+      in-memory data (encryptionKey, vault data).
+   4. Endpoint Refactoring: Updated api.getSession() and api.renewToken() to
+      leverage the centralized error handling and session management logic.
+   5. Verified Correctness: 
+       * Unit tests pass (221 tests).
+       * E2E tests for authentication and logout pass.
+       * Manual verification confirmed that a 401 response from any protected
+         API endpoint now correctly kicks the user back to the login screen.
+  This ensures that the application gracefully handles session expiration or
+  invalidation by requiring the user to log in again before they can continue.
 
+  [Active Topic: Finalizing Token Renewal Implementation]
+```
+
+## 122 Code Security Review 
+
+Examine the code of the server API (in `src/routes/api`) and check for
+- Bugs: logic errors, off-by-one, null handling, race condition
+- Security: injection risk, auth issues, data exposure
+- Performance: N+1 queries, unnecessary loops, memory leaks
+- Maintainability: Naming, complexity, duplication
+- Edge cases: what inputs would break the webapp
+For each issue:
+- Severity: Critical / High / Medium / Low
+- Location: file, line number
+- What's wrong
+- proposed fix 
+Summarize your findings in the file named 
+`ProjectNotes/APIsecurityReport-20260530.md`
+
+Address critical issue #1 `CSRF token keyed on full JWT — token never rotates`
+fix `npm run test:unit -- --reporter=verbose`
+fix `svelte-check`
 
 
 # 122 I18N check

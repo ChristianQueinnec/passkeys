@@ -8,7 +8,8 @@ vi.mock('$lib/server/jwt', () => ({
     generateToken: vi.fn(),
 }));
 vi.mock('$lib/server/csrf', () => ({
-    generateCSRFToken: vi.fn().mockReturnValue('mock-csrf-token'),
+    generateCSRFToken: vi.fn(),
+    removeCSRFToken: vi.fn(),   // needed — renew calls removeCSRFToken(payload.sid)
 }));
 
 import * as renewHandler from '../../../src/routes/api/renew/+server';
@@ -36,9 +37,7 @@ describe('API Token Renewal', () => {
     it('should return 401 if not authenticated', async () => {
         vi.mocked(auth.getAuthPayload).mockReturnValue(null);
 
-        const request = new Request('http://localhost', {
-            method: 'POST'
-        });
+        const request = new Request('http://localhost', { method: 'POST' });
         const response = await renewHandler.POST(makeEvent(request));
         const data = await response.json();
 
@@ -47,7 +46,8 @@ describe('API Token Renewal', () => {
     });
 
     it('should renew token and CSRF on success', async () => {
-        const mockPayload = { username: 'testuser', remember: true } as any;
+        const mockSid = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+        const mockPayload = { username: 'testuser', remember: true, sid: mockSid } as any;
         const mockToken = 'new-mock-token';
         const mockCsrf = 'new-mock-csrf';
 
@@ -55,18 +55,23 @@ describe('API Token Renewal', () => {
         vi.mocked(jwt.generateToken).mockReturnValue(mockToken);
         vi.mocked(csrf.generateCSRFToken).mockReturnValue(mockCsrf);
 
-        const request = new Request('http://localhost', {
-            method: 'POST'
-        });
+        const request = new Request('http://localhost', { method: 'POST' });
         const response = await renewHandler.POST(makeEvent(request));
         const data = await response.json();
 
         expect(response.status).toBe(200);
         expect(data.username).toBe('testuser');
         expect(data.csrfToken).toBe(mockCsrf);
-        
-        expect(jwt.generateToken).toHaveBeenCalledWith('testuser', true);
-        expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockToken);
+
+        // Old CSRF entry must be evicted before the new one is written
+        expect(csrf.removeCSRFToken).toHaveBeenCalledWith(mockSid);
+
+        // New token carries the same sid so the session is stable across renewal
+        expect(jwt.generateToken).toHaveBeenCalledWith('testuser', true, mockSid);
+
+        // CSRF token is keyed on sid, not on the JWT string
+        expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockSid);
+
         expect(cookies.set).toHaveBeenCalledWith(
             'passkeys_auth',
             mockToken,

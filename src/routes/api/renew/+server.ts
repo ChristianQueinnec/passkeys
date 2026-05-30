@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { getAuthPayload } from '$lib/server/auth';
 import { generateToken } from '$lib/server/jwt';
-import { generateCSRFToken } from '$lib/server/csrf';
+import { generateCSRFToken, removeCSRFToken } from '$lib/server/csrf';
 import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import { handleServerError } from '$lib/server/error-handler';
@@ -20,12 +20,18 @@ export async function POST(event: RequestEvent) {
 
         logger.info({ username: payload.username }, 'Renewing token');
 
-        // Generate new JWT token, preserving the 'remember' status
         const remember = !!payload.remember;
-        const token = generateToken(payload.username, remember);
 
-        // Generate new CSRF token
-        const csrfToken = generateCSRFToken(token);
+        // Evict the CSRF entry for the outgoing session before we overwrite it,
+        // so that the old sid cannot be reused if it somehow outlives this renewal.
+        removeCSRFToken(payload.sid);
+
+        // Generate a new JWT, carrying the SAME sid so the client's existing
+        // CSRF token remains valid — no client-side re-fetch required.
+        const token = generateToken(payload.username, remember, payload.sid);
+
+        // Issue a fresh CSRF token bound to the (preserved) sid.
+        const csrfToken = generateCSRFToken(payload.sid);
 
         cookies.set(AUTH_COOKIE_NAME, token, {
             httpOnly: true,

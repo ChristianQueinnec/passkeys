@@ -55,7 +55,7 @@ describe('API Login', () => {
         const request = new Request('http://localhost', {
             method: 'POST',
             headers: makeHeaders(),
-            body: JSON.stringify({ username: 'test' }), // Missing password
+            body: JSON.stringify({ username: 'test' }),
         });
         const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
@@ -68,7 +68,7 @@ describe('API Login', () => {
         const request = new Request('http://localhost', {
             method: 'POST',
             headers: makeHeaders(),
-            body: JSON.stringify({ password: 'test' }), // Missing username
+            body: JSON.stringify({ password: 'test' }),
         });
         const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
@@ -115,7 +115,6 @@ describe('API Login', () => {
     it('should set auth cookie on success', async () => {
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QifQ.signature';
         vi.mocked(csrf.generateCSRFToken).mockReturnValue('mock-csrf-token');
-
         vi.mocked(users.getUser).mockReturnValue({
             username: 'test',
             password: 'salt123:hash456'
@@ -131,12 +130,23 @@ describe('API Login', () => {
         const response = await loginHandler.POST(makeEvent(request));
         const data = await response.json();
 
-
         expect(response.status).toBe(200);
         expect(data.username).toBe('test');
         expect(data.csrfToken).toBe('mock-csrf-token');
-        expect(jwt.generateToken).toHaveBeenCalledWith('test', false);
-        expect(csrf.generateCSRFToken).toHaveBeenCalledWith(mockToken);
+
+        // Login generates a UUID sid itself, passes it as the third arg to generateToken
+        // and also to generateCSRFToken — capture what was actually used.
+        const [calledUsername, calledRemember, calledSid] =
+            vi.mocked(jwt.generateToken).mock.calls[0];
+        expect(calledUsername).toBe('test');
+        expect(calledRemember).toBe(false);
+        // sid must be a valid UUID v4
+        expect(calledSid).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        );
+        // generateCSRFToken must receive the same sid (not the JWT token string)
+        expect(csrf.generateCSRFToken).toHaveBeenCalledWith(calledSid);
+
         expect(cookies.set).toHaveBeenCalledWith(
             'passkeys_auth',
             mockToken,
@@ -160,7 +170,6 @@ describe('API Login', () => {
 
         await loginHandler.POST(makeEvent(request));
 
-        // Should still call verifyPassword even though user doesn't exist
         expect(cryptoUtils.verifyPassword).toHaveBeenCalled();
     });
 

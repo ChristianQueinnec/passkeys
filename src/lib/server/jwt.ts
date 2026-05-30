@@ -17,6 +17,7 @@ const TOKEN_EXPIRY_SECONDS = 24 * 60 * 60; // 24 hours
 
 interface TokenPayload {
     username: string;
+    sid: string;      // stable session ID — survives token renewal, used as CSRF map key
     iat: number;
     exp: number;
     remember?: boolean;
@@ -53,9 +54,18 @@ function createSignature(data: string, secret: string): string {
 }
 
 /**
- * Generate a JWT token for a user
+ * Generate a JWT token for a user.
+ *
+ * @param username   Authenticated user.
+ * @param remember   Whether the user chose "trust this device".
+ * @param sid        Existing session ID to carry forward on renewal.
+ *                   Pass undefined (default) on first login to mint a fresh one.
  */
-export function generateToken(username: string, remember: boolean = false): string {
+export function generateToken(
+    username: string,
+    remember: boolean = false,
+    sid: string = crypto.randomUUID()
+): string {
     const now = Math.floor(Date.now() / 1000);
 
     const header = {
@@ -65,6 +75,7 @@ export function generateToken(username: string, remember: boolean = false): stri
 
     const payload: TokenPayload = {
         username,
+        sid,
         iat: now,
         exp: now + TOKEN_EXPIRY_SECONDS,
         remember
@@ -78,8 +89,8 @@ export function generateToken(username: string, remember: boolean = false): stri
 }
 
 /**
- * Verify and decode a JWT token
- * Returns the payload if valid, null if invalid or expired
+ * Verify and decode a JWT token.
+ * Returns the payload if valid, null if invalid or expired.
  */
 export function verifyToken(token: string): TokenPayload | null {
     try {
@@ -113,7 +124,7 @@ export function verifyToken(token: string): TokenPayload | null {
         }
 
         // Validate required fields
-        if (!payload.username || !payload.iat || !payload.exp) {
+        if (!payload.username || !payload.sid || !payload.iat || !payload.exp) {
             logger.warn('Invalid JWT payload structure');
             return null;
         }
@@ -126,8 +137,8 @@ export function verifyToken(token: string): TokenPayload | null {
 }
 
 /**
- * Get remaining time until token expiration in seconds
- * Returns null if token is invalid
+ * Get remaining time until token expiration in seconds.
+ * Returns null if token is invalid.
  */
 export function getTokenExpiresIn(token: string): number | null {
     const payload = verifyToken(token);
@@ -140,7 +151,7 @@ export function getTokenExpiresIn(token: string): number | null {
 }
 
 /**
- * Check if a token is about to expire (within 1 hour)
+ * Check if a token is about to expire (within 1 hour).
  */
 export function isTokenExpiringSoon(token: string): boolean {
     const expiresIn = getTokenExpiresIn(token);
@@ -152,8 +163,8 @@ export function isTokenExpiringSoon(token: string): boolean {
 }
 
 /**
- * Extract username from token without full verification
- * Useful for logging/debugging, but don't trust for auth!
+ * Extract username from token without full verification.
+ * Useful for logging/debugging — do not use for auth!
  */
 export function peekUsername(token: string): string | null {
     try {
