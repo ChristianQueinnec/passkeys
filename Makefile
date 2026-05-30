@@ -40,7 +40,11 @@ run.tests :
 	npm run check
 	npm run test:unit
 #	npm run test:e2e
+	m run.tests.e2e
+
+run.tests.e2e :
 	-rm -f /tmp/tests-e2e.txt
+	npm run test:e2e || \
 	for t in tests/e2e/*.spec.ts ; do \
 		./scripts/init.sh -t ; \
 		echo "			*** $$t ***" ; \
@@ -50,7 +54,10 @@ run.tests :
 	@echo; if [ -f /tmp/tests-e2e.txt ] ; then \
 		echo "*********************** Tests failures:" ; \
 		cat /tmp/tests-e2e.txt ; else \
-		echo "******* Successful end of all tests "; fi ; echo 
+		echo "******* Successful end of all tests "; fi ; echo
+
+run.tests.with.container :
+	export PASSKEYS_HOST=172.55.0.20 ; m run.tests.e2e
 
 REMOTE=pk.queinnec.org
 archive.container : tag.container import.remote.vaults
@@ -71,7 +78,11 @@ do.run.remote.container :
 	   docker network create --subnet 172.55.0.0/16 snipnet ; fi
 	PASSKEYS=$$(cat passkeys.id) docker compose up -d
 
-deploy : run.tests clean archive.container run.remote.container
+deploy : run.container \
+		run.tests.with.container \
+		clean \
+		archive.container \
+		run.remote.container
 
 clean :
 	-rm -f pass.*

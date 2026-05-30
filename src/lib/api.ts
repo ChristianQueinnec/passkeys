@@ -6,6 +6,7 @@ import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LoginRespon
 export const api = {
     username: browser ? (window.localStorage.getItem('username') || window.sessionStorage.getItem('username')) : null,
     csrfToken: null as string | null,
+    onUnauthorized: null as (() => void) | null,
     get storage() {
         if (!browser) return null;
         return window.localStorage.getItem('username') ? window.localStorage : window.sessionStorage;
@@ -27,6 +28,17 @@ export const api = {
 
     // Internal helper for response handling
     async _handleResponse<T>(res: Response, errorMessage: string): Promise<T> {
+        if (res.status === 401) {
+            this.username = null;
+            this.csrfToken = null;
+            if (browser) {
+                localStorage.removeItem('username');
+                sessionStorage.removeItem('username');
+            }
+            if (this.onUnauthorized) {
+                this.onUnauthorized();
+            }
+        }
         if (!res.ok) {
             let detail = '';
             try {
@@ -107,6 +119,9 @@ export const api = {
                 localStorage.removeItem('username');
                 sessionStorage.removeItem('username');
             }
+            if (res.status === 401 && this.onUnauthorized) {
+                this.onUnauthorized();
+            }
             return null;
         }
 
@@ -124,19 +139,15 @@ export const api = {
                 credentials: 'include'
             });
 
-            if (res.status === 401) {
-                this.username = null;
-                if (browser) {
-                    localStorage.removeItem('username');
-                    sessionStorage.removeItem('username');
-                }
-                return null;
-            }
+            if (res.status === 404) return null; // No session is not an error here
 
             const data = await this._handleResponse<SessionResponse>(res, 'Failed to get session');
             this.username = data.username;
             return data.username;
         } catch (e) {
+            if (e instanceof Error && e.message.includes('HTTP 401')) {
+                return null;
+            }
             throw e;
         }
     },

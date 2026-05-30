@@ -65,6 +65,15 @@
         // Load settings first
         await settings.load();
 
+        api.onUnauthorized = () => {
+            // UI level logout
+            username = "";
+            encryptionKey.remove();
+            vault.cleanup();
+            phase = 0;
+            showUserMenu = false;
+        };
+
         if (browser) {
             const prefersListView = window.matchMedia(
                 "(max-width: 768px) and (orientation: portrait)",

@@ -1091,16 +1091,18 @@ and fix `tests/e2e/vault_situations.spec.ts`
 ## 121 verify re-authentication
 
 Otherwise if the authentication token is obsolete, the client should
-force the user to reauthenticate after a call to server API rejected
+force the user to reauthenticate after a call to server API is rejected
 for bad authentication.
+
+
 
 
 
 # 122 I18N check
 
-check security!
-
 Check whether i18n is complete for all texts seen by the UI user.
+
+check security!
 
 pwa and icon
 
