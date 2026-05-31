@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import crypto from 'node:crypto';
-import { generateToken, verifyToken, getTokenExpiresIn, isTokenExpiringSoon, peekUsername } from '$lib/server/jwt';
+import { generateToken, verifyToken, getTokenExpiresIn, isTokenExpiringSoon, peekUsername, REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
 
 describe('JWT Token Management', () => {
     beforeEach(() => {
@@ -124,14 +124,33 @@ describe('JWT Token Management', () => {
             expect(result).toBeNull();
         });
 
-        it('should accept a token just before expiration', () => {
-            const token = generateToken('testuser');
+        it('should accept a token just before expiration (remember=true)', () => {
+            const token = generateToken('testuser', true);
 
-            vi.advanceTimersByTime((24 * 60 * 60 - 60) * 1000); // 23h 59m
+            vi.advanceTimersByTime((REMEMBER_EXPIRY_SECONDS - 60) * 1000); // 1 min before expiry
 
             const result = verifyToken(token);
             expect(result).toBeDefined();
             expect(result?.username).toBe('testuser');
+        });
+
+        it('should accept a session token just before its shorter expiration', () => {
+            const token = generateToken('testuser', false);
+
+            vi.advanceTimersByTime((SESSION_EXPIRY_SECONDS - 60) * 1000); // 1 min before expiry
+
+            const result = verifyToken(token);
+            expect(result).toBeDefined();
+            expect(result?.username).toBe('testuser');
+        });
+
+        it('should reject a session token after its shorter expiry (but before 24 h)', () => {
+            const token = generateToken('testuser', false);
+
+            // Advance past SESSION_EXPIRY but before REMEMBER_EXPIRY
+            vi.advanceTimersByTime((SESSION_EXPIRY_SECONDS + 60) * 1000);
+
+            expect(verifyToken(token)).toBeNull();
         });
 
         it('should reject a token with malformed structure', () => {
@@ -199,12 +218,20 @@ describe('JWT Token Management', () => {
 
     describe('getTokenExpiresIn', () => {
         it('should return time until expiration in seconds', () => {
-            const token = generateToken('testuser');
+            const token = generateToken('testuser', true);
             const expiresIn = getTokenExpiresIn(token);
 
             expect(expiresIn).toBeDefined();
             expect(expiresIn).toBeGreaterThan(0);
-            expect(expiresIn).toBeLessThanOrEqual(24 * 60 * 60);
+            expect(expiresIn).toBeLessThanOrEqual(REMEMBER_EXPIRY_SECONDS);
+        });
+
+        it('should return SESSION_EXPIRY_SECONDS for a non-remember token', () => {
+            const token = generateToken('testuser', false);
+            const expiresIn = getTokenExpiresIn(token);
+
+            expect(expiresIn).toBeGreaterThan(0);
+            expect(expiresIn).toBeLessThanOrEqual(SESSION_EXPIRY_SECONDS);
         });
 
         it('should return decreasing values as time passes', () => {
@@ -219,10 +246,18 @@ describe('JWT Token Management', () => {
             expect(expiresIn1! - expiresIn2!).toBeCloseTo(60 * 60, 0);
         });
 
-        it('should return null for an expired token', () => {
-            const token = generateToken('testuser');
+        it('should return null for an expired remember token', () => {
+            const token = generateToken('testuser', true);
 
-            vi.advanceTimersByTime(25 * 60 * 60 * 1000); // 25 hours
+            vi.advanceTimersByTime((REMEMBER_EXPIRY_SECONDS + 60) * 1000);
+
+            expect(getTokenExpiresIn(token)).toBeNull();
+        });
+
+        it('should return null for an expired session token', () => {
+            const token = generateToken('testuser', false);
+
+            vi.advanceTimersByTime((SESSION_EXPIRY_SECONDS + 60) * 1000);
 
             expect(getTokenExpiresIn(token)).toBeNull();
         });
@@ -238,20 +273,28 @@ describe('JWT Token Management', () => {
             expect(isTokenExpiringSoon(token)).toBe(false);
         });
 
-        it('should return true when token expires in less than 1 hour', () => {
-            const token = generateToken('testuser');
+        it('should return true when remember token expires in less than 1 hour', () => {
+            const token = generateToken('testuser', true);
 
-            vi.advanceTimersByTime((24 * 60 * 60 - 30 * 60) * 1000); // 30 min to expiry
+            vi.advanceTimersByTime((REMEMBER_EXPIRY_SECONDS - 30 * 60) * 1000); // 30 min to expiry
 
             expect(isTokenExpiringSoon(token)).toBe(true);
         });
 
-        it('should return false when token expires in more than 1 hour', () => {
-            const token = generateToken('testuser');
+        it('should return false when remember token expires in more than 1 hour', () => {
+            const token = generateToken('testuser', true);
 
-            vi.advanceTimersByTime((24 * 60 * 60 - 2 * 60 * 60) * 1000); // 2 h to expiry
+            vi.advanceTimersByTime((REMEMBER_EXPIRY_SECONDS - 2 * 60 * 60) * 1000); // 2 h to expiry
 
             expect(isTokenExpiringSoon(token)).toBe(false);
+        });
+
+        it('should return true for a session token expiring within 1 hour', () => {
+            const token = generateToken('testuser', false);
+
+            vi.advanceTimersByTime((SESSION_EXPIRY_SECONDS - 30 * 60) * 1000); // 30 min to expiry
+
+            expect(isTokenExpiringSoon(token)).toBe(true);
         });
 
         it('should return true for invalid token', () => {
@@ -325,11 +368,18 @@ describe('JWT Token Management', () => {
             expect(payload?.exp).toBeGreaterThan(payload?.iat!);
         });
 
-        it('should set expiration to 24 hours from issuance', () => {
-            const token = generateToken('testuser');
+        it('should set expiration to REMEMBER_EXPIRY_SECONDS when remember=true', () => {
+            const token = generateToken('testuser', true);
             const payload = verifyToken(token);
 
-            expect(payload!.exp - payload!.iat).toBe(24 * 60 * 60);
+            expect(payload!.exp - payload!.iat).toBe(REMEMBER_EXPIRY_SECONDS);
+        });
+
+        it('should set expiration to SESSION_EXPIRY_SECONDS when remember=false', () => {
+            const token = generateToken('testuser', false);
+            const payload = verifyToken(token);
+
+            expect(payload!.exp - payload!.iat).toBe(SESSION_EXPIRY_SECONDS);
         });
 
         it('should include a UUID-format sid claim', () => {

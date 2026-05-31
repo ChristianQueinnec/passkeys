@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
 import { sanitizeUsername, sanitizePassword, sanitizeRequestBody, validateObject } from '$lib/server/sanitizer';
-import { generateToken } from '$lib/server/jwt';
+import { generateToken, REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
 import { isBlocked, recordFailure, recordSuccess, getDelay } from '$lib/server/rate-limiter';
 import { handleServerError } from '$lib/server/error-handler';
 import { generateCSRFToken } from '$lib/server/csrf';
@@ -81,7 +81,11 @@ export async function POST(event: RequestEvent) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: trustDevice ? 24 * 60 * 60 : undefined
+            // maxAge is always set explicitly — matching the JWT exp exactly —
+            // so the cookie and the token always expire at the same wall-clock
+            // time.  Using undefined (session cookie) previously left the JWT
+            // valid for 24 h even after the browser closed.
+            maxAge: trustDevice ? REMEMBER_EXPIRY_SECONDS : SESSION_EXPIRY_SECONDS
         });
 
         return json({ username: sanitizedUsername, csrfToken } as LoginResponse,

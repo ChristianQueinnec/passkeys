@@ -13,7 +13,12 @@ const JWT_SECRET = process.env.JWT_SECRET || (() => {
     return secret;
 })();
 
-const TOKEN_EXPIRY_SECONDS = 24 * 60 * 60; // 24 hours
+// Token lifetimes.
+// Exported so login/renew can set cookie maxAge to the exact same value —
+// keeping the cookie and the JWT expiry in lockstep is the only way to
+// prevent a JWT from outliving its cookie (or vice-versa).
+export const REMEMBER_EXPIRY_SECONDS  = 24 * 60 * 60;  // 24 h  — "trust this device"
+export const SESSION_EXPIRY_SECONDS   =  2 * 60 * 60;  //  2 h  — session (no trust)
 
 interface TokenPayload {
     username: string;
@@ -58,6 +63,10 @@ function createSignature(data: string, secret: string): string {
  *
  * @param username   Authenticated user.
  * @param remember   Whether the user chose "trust this device".
+ *                   true  → REMEMBER_EXPIRY_SECONDS (24 h), persistent cookie
+ *                   false → SESSION_EXPIRY_SECONDS  ( 2 h), short-lived cookie
+ *                   The cookie maxAge at the call site MUST be set to the same
+ *                   value using the exported constants — never a bare literal.
  * @param sid        Existing session ID to carry forward on renewal.
  *                   Pass undefined (default) on first login to mint a fresh one.
  */
@@ -66,7 +75,8 @@ export function generateToken(
     remember: boolean = false,
     sid: string = crypto.randomUUID()
 ): string {
-    const now = Math.floor(Date.now() / 1000);
+    const now    = Math.floor(Date.now() / 1000);
+    const expiry = remember ? REMEMBER_EXPIRY_SECONDS : SESSION_EXPIRY_SECONDS;
 
     const header = {
         alg: 'HS256',
@@ -77,7 +87,7 @@ export function generateToken(
         username,
         sid,
         iat: now,
-        exp: now + TOKEN_EXPIRY_SECONDS,
+        exp: now + expiry,
         remember
     };
 

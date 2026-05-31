@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getAuthPayload, verifyCSRF } from '$lib/server/auth';
-import { generateToken } from '$lib/server/jwt';
+import { generateToken, REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
 import { generateCSRFToken, removeCSRFToken } from '$lib/server/csrf';
 import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
 import { HTTP_STATUS } from '$lib/server/http-codes';
@@ -45,7 +45,7 @@ export async function POST(event: RequestEvent) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: remember ? 24 * 60 * 60 : undefined
+            maxAge: remember ? REMEMBER_EXPIRY_SECONDS : SESSION_EXPIRY_SECONDS
         });
 
         return json({ username: payload.username, csrfToken } as LoginResponse,

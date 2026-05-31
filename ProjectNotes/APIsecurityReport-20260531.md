@@ -17,7 +17,7 @@
 | #5 | JWT signature comparison not timing-safe | ✅ **Fixed** — `timingSafeEqual` on decoded-to-`Buffer` signatures in `verifyToken`; length mismatch handled before the call |
 | #6 | `updateUserPassword` called without `await` | ✅ **Fixed** |
 | #7 | Test endpoint guard insufficient | ✅ **Fixed** — single `hooks.server.ts` guard; `NODE_ENV === 'test'` allowlist; bare 404 with no body |
-| #8 | Session cookie `maxAge` disagrees with JWT expiry | ❌ **Still open** |
+| #8 | Session cookie `maxAge` disagrees with JWT expiry | ✅ **Fixed** — exported `REMEMBER_EXPIRY_SECONDS`/`SESSION_EXPIRY_SECONDS` from `jwt.ts`; `generateToken` sets `exp` from these; both call sites use the same constants for `maxAge`; session login now gets an explicit short `maxAge` instead of `undefined` |
 | #9 | CSRF store is process-local | ❌ **Still open** — `csrfTokens` Map is still in-process memory |
 | #10 | `listVaults` fd leak on `readSync` throw | ✅ **Fixed** — `try/finally` now wraps `closeSync` |
 | #11 | Body fully loaded before size check | ❌ **Still open** — `request.text()` before length check in `sanitizeRequestBody` |
@@ -33,7 +33,7 @@
 | #21 | `GET /api/vault` double-parses JSON | ❌ **Still open** |
 | #22 | JWT `alg`/`typ` header not validated | ❌ **Still open** |
 
-**Summary:** 11 fixed, 1 partially fixed, 10 still open.
+**Summary:** 12 fixed, 1 partially fixed, 9 still open.
 
 ---
 
@@ -223,6 +223,7 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 - JWT secret absent in production fails silently (original report #3)
 - Rate-limiter file write race condition (original report #7)
 - Timing attack in login — dummy verification + incremental delay (original report #8)
+- Cookie `maxAge`/JWT `exp` misalignment (was #8) — single-source constants exported from `jwt.ts`; session login now sets an explicit short `maxAge` instead of `undefined`
 - JWT signature used plain `!==` (was #5) — replaced with `timingSafeEqual` on decoded Buffers in `verifyToken`
 - `verifyPassword` used plain `===` (was N1) — replaced with `timingSafeEqual`; malformed hash length returns `false` safely
 - Error messages expose internals (original report #6)

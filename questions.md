@@ -1157,11 +1157,11 @@ Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signatur
 
 Fix 'Session cookie maxAge disagrees with JWT expiry'
 
-# 123 I18N check
+# 123 I18N check (Gemini)
 
 Check whether i18n is complete for all texts seen by the UI user.
 
-## 124 localStorage safety
+## 124 localStorage safety (Gemini)
 
 Check the use of localStorage:
 - check that getItem of JSON stored objects are always safely parsed, 

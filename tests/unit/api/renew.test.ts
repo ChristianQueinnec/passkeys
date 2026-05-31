@@ -17,6 +17,7 @@ import * as renewHandler from '../../../src/routes/api/renew/+server';
 import * as auth from '$lib/server/auth';
 import * as jwt from '$lib/server/jwt';
 import * as csrf from '$lib/server/csrf';
+import { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
 
 const MOCK_SID     = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const MOCK_PAYLOAD = { username: 'testuser', remember: true, sid: MOCK_SID } as any;
@@ -159,23 +160,21 @@ describe('API Token Renewal', () => {
                     httpOnly: true,
                     sameSite: 'lax',
                     path: '/',
-                    maxAge: 24 * 60 * 60
+                    maxAge: REMEMBER_EXPIRY_SECONDS
                 })
             );
         });
 
-        it('omits maxAge when remember=false', async () => {
+        it('sets maxAge to SESSION_EXPIRY_SECONDS (not undefined) when remember=false', async () => {
             vi.mocked(auth.getAuthPayload).mockReturnValue(
                 { ...MOCK_PAYLOAD, remember: false }
             );
 
             await renewHandler.POST(makeEvent(makeRequest('valid-csrf')));
 
-            expect(cookies.set).toHaveBeenCalledWith(
-                'passkeys_auth',
-                MOCK_TOKEN,
-                expect.objectContaining({ maxAge: undefined })
-            );
+            const cookieOptions = vi.mocked(cookies.set).mock.calls[0][2] as any;
+            expect(cookieOptions.maxAge).toBe(SESSION_EXPIRY_SECONDS);
+            expect(cookieOptions.maxAge).not.toBeUndefined();
         });
     });
 });

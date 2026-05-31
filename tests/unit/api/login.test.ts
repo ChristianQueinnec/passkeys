@@ -26,6 +26,7 @@ import * as cryptoUtils from '$lib/server/crypto-utils';
 import * as jwt from '$lib/server/jwt';
 import * as rateLimiter from '$lib/server/rate-limiter';
 import * as csrf from '$lib/server/csrf';
+import { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
 
 describe('API Login', () => {
     const cookies = {
@@ -156,6 +157,45 @@ describe('API Login', () => {
                 path: '/'
             })
         );
+    });
+
+    it('should set maxAge to REMEMBER_EXPIRY_SECONDS when trustDevice=true', async () => {
+        const mockToken = 'mock.jwt.token';
+        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'salt:hash' } as any);
+        vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(true);
+        vi.mocked(jwt.generateToken).mockReturnValue(mockToken);
+
+        const request = new Request('http://localhost', {
+            method: 'POST',
+            headers: makeHeaders(),
+            body: JSON.stringify({ username: 'test', password: 'correctpass123', trustDevice: true }),
+        });
+        await loginHandler.POST(makeEvent(request));
+
+        expect(cookies.set).toHaveBeenCalledWith(
+            'passkeys_auth', mockToken,
+            expect.objectContaining({ maxAge: REMEMBER_EXPIRY_SECONDS })
+        );
+    });
+
+    it('should set maxAge to SESSION_EXPIRY_SECONDS (not undefined) when trustDevice=false', async () => {
+        // Previously maxAge was undefined for session logins, leaving the JWT
+        // valid long after the browser-session cookie was deleted.
+        const mockToken = 'mock.jwt.token';
+        vi.mocked(users.getUser).mockReturnValue({ username: 'test', password: 'salt:hash' } as any);
+        vi.mocked(cryptoUtils.verifyPassword).mockResolvedValue(true);
+        vi.mocked(jwt.generateToken).mockReturnValue(mockToken);
+
+        const request = new Request('http://localhost', {
+            method: 'POST',
+            headers: makeHeaders(),
+            body: JSON.stringify({ username: 'test', password: 'correctpass123', trustDevice: false }),
+        });
+        await loginHandler.POST(makeEvent(request));
+
+        const cookieOptions = vi.mocked(cookies.set).mock.calls[0][2] as any;
+        expect(cookieOptions.maxAge).toBe(SESSION_EXPIRY_SECONDS);
+        expect(cookieOptions.maxAge).not.toBeUndefined();
     });
 
     it('should verify password even if user does not exist (timing attack protection)', async () => {
