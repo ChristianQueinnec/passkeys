@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getAuthPayload } from '$lib/server/auth';
+import { getAuthPayload, verifyCSRF } from '$lib/server/auth';
 import { generateToken } from '$lib/server/jwt';
 import { generateCSRFToken, removeCSRFToken } from '$lib/server/csrf';
 import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
@@ -17,6 +17,13 @@ export async function POST(event: RequestEvent) {
         if (!payload) {
             return json({ error: 'Unauthorized' }, { status: HTTP_STATUS.UNAUTHORIZED });
         }
+
+        // CSRF must be verified before the token is renewed.  Because this
+        // endpoint issues a new JWT (and therefore a new CSRF token), an
+        // unprotected renewal would let any cross-site page silently extend
+        // a victim's session indefinitely.
+        const csrfError = verifyCSRF(request);
+        if (csrfError) return csrfError;
 
         logger.info({ username: payload.username }, 'Renewing token');
 

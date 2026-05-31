@@ -52,6 +52,33 @@ export function getAuthPayload(request: Request) {
 }
 
 /**
+ * Verify the CSRF token in a request without requiring a full User lookup.
+ * Used by endpoints (e.g. /api/renew) that need CSRF protection but obtain
+ * their auth payload through a different path.
+ *
+ * Returns null on success, or an error Response on failure.
+ */
+export function verifyCSRF(request: Request): Response | null {
+    const csrfTokenRaw = request.headers.get('X-CSRF-Token');
+    const sessionId = getSessionIdFromRequest(request);
+
+    if (!csrfTokenRaw || !sessionId) {
+        return json({ error: 'Missing CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
+    }
+
+    try {
+        const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
+        if (!validateCSRFToken(sessionId, csrfToken)) {
+            return json({ error: 'Invalid CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
+        }
+    } catch {
+        return json({ error: 'Invalid CSRF token format' }, { status: HTTP_STATUS.FORBIDDEN });
+    }
+
+    return null;
+}
+
+/**
  * Combined helper for authentication and CSRF validation
  * Returns User if successful, or Response (error) if not
  */
@@ -65,21 +92,8 @@ export async function verifyRequest(
     }
 
     if (options.csrf) {
-        const csrfTokenRaw = request.headers.get('X-CSRF-Token');
-        const sessionId = getSessionIdFromRequest(request);
-
-        if (!csrfTokenRaw || !sessionId) {
-            return json({ error: 'Missing CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
-        }
-
-        try {
-            const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
-            if (!validateCSRFToken(sessionId, csrfToken)) {
-                return json({ error: 'Invalid CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
-            }
-        } catch (sanitizeError: any) {
-            return json({ error: 'Invalid CSRF token format' }, { status: HTTP_STATUS.FORBIDDEN });
-        }
+        const csrfError = verifyCSRF(request);
+        if (csrfError) return csrfError;
     }
 
     return user;

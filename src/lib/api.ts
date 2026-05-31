@@ -106,9 +106,11 @@ export const api = {
     },
 
     async renewToken() {
+        const headers = await this._getHeaders(true);
         const res = await fetch('/api/renew', {
             method: 'POST',
-            credentials: 'include'
+            credentials: 'include',
+            headers
         });
 
         if (!res.ok) {
