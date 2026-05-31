@@ -52,7 +52,7 @@ describe('API Token Renewal', () => {
             const data = await response.json();
 
             expect(response.status).toBe(401);
-            expect(data.error).toBe('Unauthorized');
+            expect(data.error).toBe('auth.unauthorized');
             // CSRF must not be checked if JWT is absent
             expect(auth.verifyCSRF).not.toHaveBeenCalled();
         });

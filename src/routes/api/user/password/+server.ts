@@ -34,7 +34,7 @@ export async function POST({ request }: RequestEvent) {
         const isValid = await verifyPassword(sanitizedOldPassword, hash, salt);
 
         if (!isValid) {
-            return json({ error: 'Invalid current password' } as ErrorResponse, { status: HTTP_STATUS.FORBIDDEN });
+            return json({ error: 'auth.incorrect_login_password' } as ErrorResponse, { status: HTTP_STATUS.FORBIDDEN });
         }
 
         // Update password

@@ -68,7 +68,10 @@
     const position = challenge.position === "first"
       ? i18n.t("auth.easy_unlock_first")
       : i18n.t("auth.easy_unlock_last");
-    return `${position} ${challenge.length} ${i18n.t("auth.easy_unlock_letters")}`;
+    return i18n.t("auth.easy_unlock_label", {
+        position,
+        length: challenge.length.toString()
+    });
   }
 
   onMount(() => {

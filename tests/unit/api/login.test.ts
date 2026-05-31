@@ -90,7 +90,7 @@ describe('API Login', () => {
         const data = await response.json();
 
         expect(response.status).toBe(401);
-        expect(data.error).toBe('Invalid credentials');
+        expect(data.error).toBe('auth.invalid_credentials');
     });
 
     it('should return 401 if password invalid', async () => {
@@ -109,7 +109,7 @@ describe('API Login', () => {
         const data = await response.json();
 
         expect(response.status).toBe(401);
-        expect(data.error).toBe('Invalid credentials');
+        expect(data.error).toBe('auth.invalid_credentials');
     });
 
     it('should set auth cookie on success', async () => {

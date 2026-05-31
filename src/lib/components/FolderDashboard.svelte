@@ -283,7 +283,7 @@
                                 </span>
                                 <span class="folder-name">{node.name}</span>
                                 <span class="entry-count"
-                                    >({countAllEntries(node)})</span
+                                    >{i18n.t("vault.entry_count", { count: countAllEntries(node).toString() })}</span
                                 >
                             </button>
                         </div>

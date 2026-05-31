@@ -2,6 +2,7 @@
     import { toasts } from "$lib/stores/useToasts.svelte";
     import { flip } from "svelte/animate";
     import { fly } from "svelte/transition";
+    import { i18n } from "$lib/stores/useI18n.svelte";
 
     function getIcon(type: string) {
         switch (type) {
@@ -35,7 +36,7 @@
             <button
                 class="close-btn"
                 onclick={() => toasts.remove(toast.id)}
-                aria-label="Close"
+                aria-label={i18n.t("common.close")}
                 data-testid="toast-close"
             >
                 <svg

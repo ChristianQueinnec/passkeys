@@ -15,7 +15,7 @@ export async function POST(event: RequestEvent) {
     try {
         const payload = getAuthPayload(request);
         if (!payload) {
-            return json({ error: 'Unauthorized' }, { status: HTTP_STATUS.UNAUTHORIZED });
+            return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.UNAUTHORIZED });
         }
 
         // CSRF must be verified before the token is renewed.  Because this

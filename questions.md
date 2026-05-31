@@ -1156,11 +1156,15 @@ Fix issue #4 No CSRF on /api/renew (now unblocked since issue #1 is fixed)
 Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signature !== expectedSignature` is still plain `!==`'
 
 
-# 122 I18N check
+
+# 123 I18N check
 
 Check whether i18n is complete for all texts seen by the UI user.
 
-check security!
+
+
+
+# FUTURE
 
 pwa and icon
 

@@ -13,6 +13,9 @@
         oldPasswordId = "old-password",
         newPasswordId = "new-password",
         confirmPasswordId = "confirm-password",
+        oldPasswordLabelKey = "auth.old_password",
+        newPasswordLabelKey = "auth.new_password",
+        confirmPasswordLabelKey = "auth.confirm_new_password",
     }: {
         oldPassword?: string;
         newPassword?: string;
@@ -24,6 +27,9 @@
         oldPasswordId?: string;
         newPasswordId?: string;
         confirmPasswordId?: string;
+        oldPasswordLabelKey?: string;
+        newPasswordLabelKey?: string;
+        confirmPasswordLabelKey?: string;
     } = $props();
 
     $effect(() => {
@@ -42,21 +48,21 @@
 
 <div class="confirmed-password-input">
     <div class="field">
-        <label for={oldPasswordId}>{i18n.t("auth.old_password")}:</label>
+        <label for={oldPasswordId}>{i18n.t(oldPasswordLabelKey)}:</label>
         <PasswordInput
             bind:value={oldPassword}
             id={oldPasswordId}
-            placeholder={i18n.t("auth.old_password")}
+            placeholder={i18n.t(oldPasswordLabelKey)}
             dataTestId={oldPasswordTestId}
         />
     </div>
 
     <div class="field">
-        <label for={newPasswordId}>{i18n.t("auth.new_password")}:</label>
+        <label for={newPasswordId}>{i18n.t(newPasswordLabelKey)}:</label>
         <PasswordInput
             bind:value={newPassword}
             id={newPasswordId}
-            placeholder={i18n.t("auth.new_password")}
+            placeholder={i18n.t(newPasswordLabelKey)}
             autocomplete="new-password"
             dataTestId={newPasswordTestId}
         />
@@ -64,12 +70,12 @@
 
     <div class="field">
         <label for={confirmPasswordId}
-            >{i18n.t("auth.confirm_new_password")}:</label
+            >{i18n.t(confirmPasswordLabelKey)}:</label
         >
         <PasswordInput
             bind:value={confirmPassword}
             id={confirmPasswordId}
-            placeholder={i18n.t("auth.confirm_new_password")}
+            placeholder={i18n.t(confirmPasswordLabelKey)}
             autocomplete="new-password"
             dataTestId={confirmPasswordTestId}
         />

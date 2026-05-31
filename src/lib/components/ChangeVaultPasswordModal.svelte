@@ -41,12 +41,8 @@
     async function handleSubmit() {
         error = "";
 
-        if (error) {
-            return;
-        }
-
         if (newPassword.length < 1) {
-            error = "New password cannot be empty";
+            error = i18n.t("auth.password_empty");
             return;
         }
 
@@ -73,7 +69,7 @@
                         oldKeyDerived,
                     );
                 } catch (e) {
-                    throw new Error("Incorrect current vault password");
+                    throw new Error(i18n.t("vault.incorrect_password"));
                 }
             } else {
                 // Even if no data, we should at least check if we can match the current key export
@@ -96,7 +92,7 @@
             onClose();
         } catch (e: any) {
             console.error(e);
-            error = e.message || "An error occurred";
+            error = e.message || i18n.t("common.error");
         } finally {
             isProcessing = false;
         }
@@ -117,6 +113,9 @@
             oldPasswordId="old-vault-pass"
             newPasswordId="new-vault-pass"
             confirmPasswordId="confirm-vault-pass"
+            oldPasswordLabelKey="vault.old_master_password"
+            newPasswordLabelKey="vault.new_master_password"
+            confirmPasswordLabelKey="vault.confirm_new_master_password"
         />
 
         {#if error}
@@ -133,7 +132,7 @@
                 data-testid="submit-change-vault-password"
             >
                 {isProcessing
-                    ? i18n.t("common.save") + "..."
+                    ? i18n.t("app.loading")
                     : i18n.t("common.save")}
             </button>
         </div>

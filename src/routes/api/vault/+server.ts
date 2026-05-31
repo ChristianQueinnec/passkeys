@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
     try {
         const vault = getLatestVault(user.username);
-        if (!vault) return json({ error: 'Not found' } as ErrorResponse, { status: HTTP_STATUS.NOT_FOUND });
+        if (!vault) return json({ error: 'common.not_found' } as ErrorResponse, { status: HTTP_STATUS.NOT_FOUND });
         return json(JSON.parse(vault));
     } catch (e: any) {
         return handleServerError(e, { username: user.username, operation: 'Vault GET' }, 'Failed to retrieve vault');

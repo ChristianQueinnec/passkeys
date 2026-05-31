@@ -19,7 +19,7 @@ export async function POST(event: RequestEvent) {
     const ip = getClientAddress();
 
     if (isBlocked(ip)) {
-        return json({ error: 'Too many failed attempts. Please try again later.' } as ErrorResponse, { status: HTTP_STATUS.TOO_MANY_REQUESTS });
+        return json({ error: 'auth.too_many_attempts' } as ErrorResponse, { status: HTTP_STATUS.TOO_MANY_REQUESTS });
     }
 
     try {
@@ -58,7 +58,7 @@ export async function POST(event: RequestEvent) {
             const delay = getDelay(ip);
             // Add incremental delay to prevent brute force
             await new Promise(resolve => setTimeout(resolve, Math.max(100, delay)));
-            return json({ error: 'Invalid credentials' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
+            return json({ error: 'auth.invalid_credentials' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
         }
 
         // Reset rate limiter on successful login

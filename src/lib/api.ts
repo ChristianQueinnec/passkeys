@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import type { CSRFTokenResponse, DeleteVaultResponse, ErrorResponse, LoginResponse, NewerVaultResponse, PasswordChangeResponse, SaveVaultResponse, SessionResponse, VaultDescription } from './server/requestTypes';
+import { i18n } from './stores/useI18n.svelte';
 
 // Client-side API wrapper (updated for SvelteKit relative paths)
 
@@ -43,7 +44,9 @@ export const api = {
             let detail = '';
             try {
                 const err = await res.json() as ErrorResponse;
-                detail = err.error ? `: ${err.error}` : '';
+                // If the error message from server is a translation key, translate it
+                const serverError = err.error ? i18n.t(err.error) : '';
+                detail = serverError ? `: ${serverError}` : '';
             } catch {
                 detail = `: HTTP ${res.status}`;
             }
@@ -78,7 +81,9 @@ export const api = {
 
         if (!res.ok) {
             const err = await res.json() as ErrorResponse;
-            throw new Error(err.error || 'Login failed');
+            // Translate server error if possible
+            const serverMsg = err.error ? i18n.t(err.error) : i18n.t('api.login_failed');
+            throw new Error(serverMsg);
         }
 
         const data = await res.json() as LoginResponse;
@@ -143,7 +148,7 @@ export const api = {
 
             if (res.status === 404) return null; // No session is not an error here
 
-            const data = await this._handleResponse<SessionResponse>(res, 'Failed to get session');
+            const data = await this._handleResponse<SessionResponse>(res, i18n.t('api.session_failed'));
             this.username = data.username;
             return data.username;
         } catch (e) {
@@ -178,7 +183,7 @@ export const api = {
             headers: await this._getHeaders()
         });
         if (res.status === 404) return null;
-        return this._handleResponse<VaultDescription>(res, 'Failed to get vault');
+        return this._handleResponse<VaultDescription>(res, i18n.t('api.vault_failed'));
     },
 
     async getLatestVaultMetadata() {
@@ -186,7 +191,7 @@ export const api = {
             credentials: 'include',
             headers: await this._getHeaders()
         });
-        return this._handleResponse<NewerVaultResponse>(res, 'Failed to get metadata');
+        return this._handleResponse<NewerVaultResponse>(res, i18n.t('api.metadata_failed'));
     },
 
     async saveVault(content: string) {
@@ -200,7 +205,7 @@ export const api = {
             },
             body: JSON.stringify({ content })
         });
-        return this._handleResponse<SaveVaultResponse>(res, 'Failed to save vault');
+        return this._handleResponse<SaveVaultResponse>(res, i18n.t('api.save_failed'));
     },
 
     async getVaultHistory() {
@@ -208,7 +213,7 @@ export const api = {
             credentials: 'include',
             headers: await this._getHeaders()
         });
-        return this._handleResponse<VaultDescription[]>(res, 'Failed to list history');
+        return this._handleResponse<VaultDescription[]>(res, i18n.t('api.history_failed'));
     },
 
     async changePassword(oldPassword: string, newPassword: string) {
@@ -223,7 +228,7 @@ export const api = {
             body: JSON.stringify({ oldPassword, newPassword })
         });
 
-        const data = await this._handleResponse<PasswordChangeResponse>(res, 'Failed to update password');
+        const data = await this._handleResponse<PasswordChangeResponse>(res, i18n.t('api.password_failed'));
         await this.getCSRFToken();
         return data;
     },
@@ -235,7 +240,7 @@ export const api = {
 
         if (res.status === 404) return false;
 
-        const data = await this._handleResponse<NewerVaultResponse>(res, 'Failed to check vault existence');
+        const data = await this._handleResponse<NewerVaultResponse>(res, i18n.t('api.vault_exists_failed'));
         return !!data.mtime;
     },
 
@@ -246,6 +251,6 @@ export const api = {
             credentials: 'include',
             headers
         });
-        return this._handleResponse<DeleteVaultResponse>(res, 'Failed to delete vault');
+        return this._handleResponse<DeleteVaultResponse>(res, i18n.t('api.delete_failed'));
     }
 };

@@ -9,14 +9,14 @@ export async function GET({ request }: RequestEvent) {
     // Verify authentication before generating CSRF token
     const user = getAuthUser(request);
     if (!user) {
-        return json({ error: 'Unauthorized' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
+        return json({ error: 'auth.unauthorized' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
     }
 
     // Get session ID from the auth cookie
     const sessionId = getSessionIdFromRequest(request);
 
     if (!sessionId) {
-        return json({ error: 'Not authenticated' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
+        return json({ error: 'auth.unauthorized' } as ErrorResponse, { status: HTTP_STATUS.UNAUTHORIZED });
     }
 
     const csrfToken = generateCSRFToken(sessionId);
