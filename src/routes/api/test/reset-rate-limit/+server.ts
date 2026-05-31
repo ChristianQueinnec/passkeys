@@ -1,20 +1,14 @@
-import { json } from '@sveltejs/kit';
+import { json, type RequestHandler } from '@sveltejs/kit';
 import { clearAll, setTestMode } from '$lib/server/rate-limiter';
 
-export async function GET() {
-    if (process.env.NODE_ENV !== 'development' && process.env.RATE_LIMIT_TEST_MODE !== 'true') {
-        return json({ success: false, method: 'GET', message: 'This endpoint is only available in development or test mode' });
-    }
+// Environment guard is enforced upstream in hooks.server.ts.
+// This handler only runs when NODE_ENV === 'test'.
+
+async function handleResetRateLimit() {
     await clearAll();
     setTestMode(true);
-    return json({ success: true, method: 'GET', message: 'Rate limit reset' });
+    return json({ success: true, message: 'Rate limit reset' });
 }
 
-export async function POST() {
-    if (process.env.NODE_ENV !== 'development' && process.env.RATE_LIMIT_TEST_MODE !== 'true') {
-        return json({ success: false, method: 'POST', message: 'This endpoint is only available in development or test mode' });
-    }
-    await clearAll();
-    setTestMode(true);
-    return json({ success: true, method: 'POST', message: 'Rate limit reset' });
-}
+export const GET: RequestHandler = () => handleResetRateLimit();
+export const POST: RequestHandler = () => handleResetRateLimit();

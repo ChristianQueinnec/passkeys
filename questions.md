@@ -1146,6 +1146,8 @@ Address critical issue #2 'Password migration writes file without lock'
 Address issue #3 'getUserDir creates the directory for any sanitised username'
 fix tests/unit/server/storage.test.ts
 
+Address issue #7 `test/*` endpoints, Guard uses `NODE_ENV` — insufficient for staging/Docker 
+
 
 
 # 122 I18N check

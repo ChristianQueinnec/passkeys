@@ -1,4 +1,3 @@
-import { browser } from "$app/environment";
 import fs from 'node:fs';
 import path from 'node:path';
 import lockfile from 'proper-lockfile';
@@ -17,7 +16,6 @@ interface IpStats {
 let inMemoryStats: Map<string, IpStats> | null = null;
 
 function ensureDataDir() {
-    if (browser) return;
     const dir = path.dirname(STATS_FILE);
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -32,7 +30,6 @@ function ensureDataDir() {
 }
 
 function loadStatsFromDisk(): Record<string, IpStats> {
-    if (browser) return {};
     ensureDataDir();
     try {
         if (fs.existsSync(STATS_FILE)) {
@@ -54,7 +51,7 @@ function getInMemoryStats(): Map<string, IpStats> {
 }
 
 async function persistStatsToDisk() {
-    if (browser || !inMemoryStats) return;
+    if (!inMemoryStats) return;
 
     // We use lockfile to ensure only one process/thread writes to the file at a time
     // Even with in-memory cache, multiple SvelteKit processes might share the same data file
@@ -88,7 +85,9 @@ function normalizeIp(ip: string): string {
 }
 
 const MAX_FAILURES = settings.rateLimit.maxFailures;
-let isTestMode = process.env.RATE_LIMIT_TEST_MODE === 'true';
+// Test mode is active when NODE_ENV=test (set by playwright.config.ts for E2E
+// runs). This uses shorter timeouts and block durations so tests don't stall.
+let isTestMode = process.env.NODE_ENV === 'test';
 
 const CONSTANTS = {
     PROD: {
@@ -114,8 +113,7 @@ export function setTestMode(enabled: boolean) {
 // Prune stale entries from memory
 const PRUNE_INTERVAL = settings.rateLimit.pruneIntervalMs;
 const STALE_THRESHOLD = settings.rateLimit.staleThresholdMs;
-if (!browser) {
-    setInterval(() => {
+setInterval(() => {
         const stats = getInMemoryStats();
         const now = Date.now();
         let changed = false;
@@ -129,13 +127,11 @@ if (!browser) {
             persistStatsToDisk().catch(e => logger.error({ error: e.message }, 'Failed to persist pruned stats'));
         }
     }, PRUNE_INTERVAL);
-}
 
 /**
  * Checks if an IP is currently blocked.
  */
 export function isBlocked(ip: string): boolean {
-    if (browser) return false;
     const normalizedIp = normalizeIp(ip);
     const stats = getInMemoryStats().get(normalizedIp);
     if (stats && stats.blockedUntil > Date.now()) {
@@ -148,7 +144,6 @@ export function isBlocked(ip: string): boolean {
  * Gets the calculated delay for an IP in milliseconds.
  */
 export function getDelay(ip: string): number {
-    if (browser) return 0;
     const normalizedIp = normalizeIp(ip);
     const stats = getInMemoryStats().get(normalizedIp);
     const failureCount = stats ? stats.failures : 0;
@@ -166,7 +161,6 @@ export function getDelay(ip: string): number {
  * Records a failed login attempt for an IP.
  */
 export async function recordFailure(ip: string) {
-    if (browser) return;
     const normalizedIp = normalizeIp(ip);
     const statsMap = getInMemoryStats();
     let stats = statsMap.get(normalizedIp);
@@ -190,7 +184,6 @@ export async function recordFailure(ip: string) {
  * Resets the rate limiter for an IP (on success).
  */
 export async function recordSuccess(ip: string) {
-    if (browser) return;
     const normalizedIp = normalizeIp(ip);
     const statsMap = getInMemoryStats();
     if (statsMap.has(normalizedIp)) {
@@ -203,7 +196,6 @@ export async function recordSuccess(ip: string) {
  * Clears all rate limiting stats.
  */
 export async function clearAll() {
-    if (browser) return;
     inMemoryStats = new Map();
     await persistStatsToDisk();
 }
