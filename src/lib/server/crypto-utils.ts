@@ -19,10 +19,19 @@ export const hashPasswordSync = (password: string, salt: string) => {
     return derivedKey.toString('hex');
 };
 
-// Verify a password
-export const verifyPassword = async (password: string, hash: string, salt: string) => {
+// Verify a password using a constant-time comparison to prevent timing
+// oracle attacks.  Plain === short-circuits on the first differing byte,
+// leaking how many bytes of the hash match the guess.
+export const verifyPassword = async (password: string, hash: string, salt: string): Promise<boolean> => {
     const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-    return hash === derivedKey.toString('hex');
+    const hashBuf = Buffer.from(hash, 'hex');
+
+    // timingSafeEqual throws if lengths differ.  A mismatch here means the
+    // stored hash is malformed — treat it as a verification failure rather
+    // than an unhandled exception.
+    if (derivedKey.length !== hashBuf.length) return false;
+
+    return crypto.timingSafeEqual(derivedKey, hashBuf);
 };
 
 // Helper to generate a new entry for users.json (dev tool)

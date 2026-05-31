@@ -1153,6 +1153,7 @@ Write your conclusions in `ProjectNotes/APIsecurityReport-20260531.md`
 
 Fix issue #4 No CSRF on /api/renew (now unblocked since issue #1 is fixed)
 
+Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signature !== expectedSignature` is still plain `!==`'
 
 
 # 122 I18N check

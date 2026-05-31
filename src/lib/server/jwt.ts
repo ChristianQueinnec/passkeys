@@ -102,13 +102,22 @@ export function verifyToken(token: string): TokenPayload | null {
 
         const [encodedHeader, encodedPayload, signature] = parts;
 
-        // Verify signature
+        // Verify signature using a constant-time comparison to prevent
+        // timing oracle attacks.  Plain !== short-circuits on the first
+        // differing character, leaking how many bytes match.
         const expectedSignature = createSignature(
             `${encodedHeader}.${encodedPayload}`,
             JWT_SECRET
         );
 
-        if (signature !== expectedSignature) {
+        const sigBuf      = Buffer.from(signature,         'base64');
+        const expectedBuf = Buffer.from(expectedSignature, 'base64');
+
+        // timingSafeEqual requires equal-length buffers.  A valid HS256
+        // signature is always 32 bytes (43 base64url chars), so a length
+        // mismatch means the token is definitely invalid.
+        if (sigBuf.length !== expectedBuf.length ||
+            !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
             logger.warn('Invalid JWT signature');
             return null;
         }

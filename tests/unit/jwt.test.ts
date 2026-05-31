@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import crypto from 'node:crypto';
 import { generateToken, verifyToken, getTokenExpiresIn, isTokenExpiringSoon, peekUsername } from '$lib/server/jwt';
 
 describe('JWT Token Management', () => {
@@ -341,6 +342,29 @@ describe('JWT Token Management', () => {
             expect(payload?.sid).toMatch(
                 /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
             );
+        });
+
+        it('should use timingSafeEqual for signature comparison', () => {
+            // Spy on the real timingSafeEqual so we can confirm it is called
+            // during verification (not plain !==).
+            const tse = vi.spyOn(crypto, 'timingSafeEqual');
+
+            const token = generateToken('testuser');
+            verifyToken(token);
+
+            expect(tse).toHaveBeenCalledOnce();
+            tse.mockRestore();
+        });
+
+        it('should reject a tampered signature without leaking via a thrown error', () => {
+            // timingSafeEqual throws when buffer lengths differ — confirm we
+            // handle that gracefully and return null rather than propagating.
+            const token = generateToken('testuser');
+            const [h, p] = token.split('.');
+            // A single-character signature has a different decoded length
+            // from a real 43-char HS256 signature.
+            const result = verifyToken(`${h}.${p}.x`);
+            expect(result).toBeNull();
         });
 
         it('should produce tokens resistant to timing attacks', () => {

@@ -13,8 +13,8 @@
 | #1 | CSRF token keyed on full JWT | ✅ **Fixed** — stable `sid` in JWT payload; CSRF map keyed on `sid` |
 | #2 | Password migration writes file without lock | ✅ **Fixed** — `migrateUsersFile()` locked, once-only at startup; hot path is now a pure read |
 | #3 | `getUserDir` creates directory on reads | ✅ **Fixed** — `getUserDir`/`ensureUserDir` split; only `saveVault` creates the directory |
-| #4 | Token renewal has no CSRF check | ❌ **Still open** — `renew/+server.ts` calls `getAuthPayload` only; no CSRF token verified |
-| #5 | JWT signature comparison not timing-safe | ❌ **Still open** — `signature !== expectedSignature` is still plain `!==` |
+| #4 | Token renewal has no CSRF check | ✅ **Fixed** — `verifyCSRF()` helper added to `auth.ts`; called in `renew/+server.ts` after JWT validation, before any token is issued; client `renewToken()` now sends `X-CSRF-Token` header |
+| #5 | JWT signature comparison not timing-safe | ✅ **Fixed** — `timingSafeEqual` on decoded-to-`Buffer` signatures in `verifyToken`; length mismatch handled before the call |
 | #6 | `updateUserPassword` called without `await` | ✅ **Fixed** |
 | #7 | Test endpoint guard insufficient | ✅ **Fixed** — single `hooks.server.ts` guard; `NODE_ENV === 'test'` allowlist; bare 404 with no body |
 | #8 | Session cookie `maxAge` disagrees with JWT expiry | ❌ **Still open** |
@@ -33,7 +33,7 @@
 | #21 | `GET /api/vault` double-parses JSON | ❌ **Still open** |
 | #22 | JWT `alg`/`typ` header not validated | ❌ **Still open** |
 
-**Summary:** 8 fixed, 1 partially fixed, 13 still open.
+**Summary:** 11 fixed, 1 partially fixed, 10 still open.
 
 ---
 
@@ -41,48 +41,9 @@
 
 ---
 
-### N1 · HIGH · `verifyPassword` uses non-constant-time string comparison
-**File:** `src/lib/server/crypto-utils.ts:21`
+### N1 · HIGH · `verifyPassword` — ✅ Fixed
 
-```typescript
-export const verifyPassword = async (password: string, hash: string, salt: string) => {
-    const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-    return hash === derivedKey.toString('hex');   // ← plain === on strings
-};
-```
-
-This is the same class of timing oracle as issue #5 in the JWT verifier. `===` on strings short-circuits on the first differing byte. An attacker who can make many login attempts at low latency can statistically distinguish a correct prefix from a wrong one, enabling an incremental offline attack against the stored hash.
-
-The fix for login's rate-limiter slows individual attempts, but rate-limiting is per-IP and resets on success, so a distributed attacker is not fully stopped.
-
-**Proposed fix:**
-```typescript
-import { timingSafeEqual } from 'node:crypto';
-
-export const verifyPassword = async (password: string, hash: string, salt: string) => {
-    const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
-    const hashBuffer = Buffer.from(hash, 'hex');
-    if (derivedKey.length !== hashBuffer.length) return false;
-    return timingSafeEqual(derivedKey, hashBuffer);
-};
-```
-
----
-
-### N2 · HIGH · `renew/+server.ts` has no CSRF protection (same as original #4, still unresolved)
-
-This was reported as #4 on 2026-05-30. The code has not changed. Repeated here for priority visibility because fixing issue #1 (sid) was listed as a prerequisite — that prerequisite is now met, so this is unblocked and should be addressed immediately.
-
-`POST /api/renew` extends the session of any user whose browser visits a page that silently POSTs to it (CSRF). Because the auth cookie has `sameSite: 'lax'`, cross-site top-level navigations include the cookie. A malicious link clicked by the victim extends their session indefinitely.
-
-**Proposed fix:**
-```typescript
-// renew/+server.ts
-const result = await verifyRequest(request, { csrf: true });
-if (result instanceof Response) return result;
-const user = result;
-// carry sid forward from user's current JWT payload
-```
+`verifyPassword` in `crypto-utils.ts` now uses `timingSafeEqual(derivedKey, Buffer.from(hash,'hex'))`. A length mismatch (malformed stored hash) returns `false` before the call rather than propagating a thrown exception.
 
 ---
 
@@ -126,21 +87,16 @@ return parsed as User[];
 
 ---
 
-### N5 · MEDIUM · `SameSite=Lax` cookie + no CSRF on `/api/renew` widens CSRF surface
-**File:** `src/routes/api/login/+server.ts:75`, `src/routes/api/renew/+server.ts`
+### N5 · MEDIUM · `SameSite=Lax` cookie leaves other mutation endpoints reachable via top-level navigation
+**File:** `src/routes/api/login/+server.ts:75`
 
-The auth cookie is set with `sameSite: 'lax'`. `Lax` blocks cross-site subresource requests (images, iframes, XHR) but allows the cookie to be sent on **top-level cross-site navigations** — i.e., when the user clicks a link or submits a `<form method="POST">` from another origin.
+The auth cookie is set with `sameSite: 'lax'`. `Lax` blocks cross-site subresource requests (images, iframes, XHR) but allows the cookie to be sent on **top-level cross-site navigations** — i.e., when the user clicks a link or a page auto-submits a `<form method="POST">` from another origin.
 
-`POST /api/renew` accepts the cookie and issues a new session without verifying a CSRF token. The combination means:
-1. Attacker hosts a page with `<form action="https://passkeys.example/api/renew" method="POST"><input type="submit"></form>` auto-submitted via JS.
-2. Victim visits the page; browser sends the auth cookie; session is extended.
-3. The attacker now knows the victim's session will remain active longer than intended.
+With `/api/renew` now protected by CSRF, the immediate risk there is closed. However `sameSite: 'lax'` still applies to every other cookie-authenticated endpoint; any future endpoint added without a CSRF check would be immediately exploitable. `SameSite=Strict` would eliminate this class of attack at the browser level with no code changes needed per endpoint.
 
-Changing to `sameSite: 'strict'` would close this entirely, at the cost of requiring re-login when arriving via an external link. Adding CSRF to `/api/renew` (issue #4 / N2) is the minimal fix.
-
-**Proposed fix (pick one or both):**
-- Change `sameSite: 'lax'` to `sameSite: 'strict'` — strongest protection, no CSRF possible.
-- Add CSRF check to `/api/renew` (see N2) — retains `lax` behaviour for UX.
+**Proposed fix:**
+- Change `sameSite: 'lax'` to `sameSite: 'strict'` on all auth cookie `set` calls — strongest protection, zero per-endpoint CSRF checks needed.
+- Cost: users arriving at the app via an external link will find themselves logged out and must re-authenticate once.
 
 ---
 
@@ -217,9 +173,7 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 
 | ID | File | Issue |
 |----|------|-------|
-| #4 / N2 | `renew/+server.ts` | POST renew has no CSRF check — prerequisite (#1) now fixed |
-| #5 | `jwt.ts` | JWT signature uses `!==` not `timingSafeEqual` |
-| N1 | `crypto-utils.ts` | `verifyPassword` uses `===` not `timingSafeEqual` |
+| #9 | `csrf.ts` | CSRF token store is process-local — broken with multiple workers |
 
 ### High
 
@@ -227,7 +181,7 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 |----|------|-------|
 | N3 | `login/+server.ts`, `rate-limiter.ts` | Rate-limiting by socket IP fails behind a reverse proxy |
 | #9 | `csrf.ts` | CSRF token store is process-local — broken with multiple workers |
-| N5 | `login/+server.ts`, `renew/+server.ts` | `SameSite=Lax` + no CSRF on renew widens CSRF surface |
+| N5 | `login/+server.ts` | `SameSite=Lax` leaves future endpoints vulnerable; consider `Strict` |
 | N6 | `Dockerfile` | Build-time `JWT_SECRET=building` baked into image layer |
 
 ### Medium
@@ -260,6 +214,7 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 - CSRF keyed on raw JWT (was #1)
 - Password migration race condition (was #2)
 - `getUserDir` side-effect directory creation (was #3)
+- Token renewal had no CSRF check (was #4) — `verifyCSRF()` helper introduced; `renew/+server.ts` and client `renewToken()` updated
 - Missing `await` on `updateUserPassword` (was #6)
 - Test endpoint guard insufficient (was #7)
 - `listVaults` file descriptor leak (was #10)
@@ -268,6 +223,8 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 - JWT secret absent in production fails silently (original report #3)
 - Rate-limiter file write race condition (original report #7)
 - Timing attack in login — dummy verification + incremental delay (original report #8)
+- JWT signature used plain `!==` (was #5) — replaced with `timingSafeEqual` on decoded Buffers in `verifyToken`
+- `verifyPassword` used plain `===` (was N1) — replaced with `timingSafeEqual`; malformed hash length returns `false` safely
 - Error messages expose internals (original report #6)
 
 ---
