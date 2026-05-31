@@ -38,7 +38,7 @@ export async function POST({ request }: RequestEvent) {
         }
 
         // Update password
-        const updatedUser = updateUserPassword(user.username, sanitizedNewPassword);
+        const updatedUser = await updateUserPassword(user.username, sanitizedNewPassword);
         if (!updatedUser) {
             throw new Error('Failed to update password');
         }

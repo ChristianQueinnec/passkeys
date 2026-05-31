@@ -1141,6 +1141,8 @@ Address critical issue #1 `CSRF token keyed on full JWT — token never rotates`
 fix `npm run test:unit -- --reporter=verbose`
 fix `svelte-check`
 
+address critical issue #2 'Password migration writes file without lock'
+
 
 # 122 I18N check
 
