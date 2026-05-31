@@ -55,6 +55,7 @@ run.tests.e2e :
 		echo "*********************** Tests failures:" ; \
 		cat /tmp/tests-e2e.txt ; else \
 		echo "******* Successful end of all tests "; fi ; echo
+	-git tag -a "tests-OK" -m "$$(date)" 
 
 run.tests.with.container :
 	export PASSKEYS_HOST=172.55.0.20 ; m run.tests.e2e

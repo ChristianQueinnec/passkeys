@@ -1141,7 +1141,11 @@ Address critical issue #1 `CSRF token keyed on full JWT — token never rotates`
 fix `npm run test:unit -- --reporter=verbose`
 fix `svelte-check`
 
-address critical issue #2 'Password migration writes file without lock'
+Address critical issue #2 'Password migration writes file without lock'
+
+Address issue #3 'getUserDir creates the directory for any sanitised username'
+fix tests/unit/server/storage.test.ts
+
 
 
 # 122 I18N check
