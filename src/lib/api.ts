@@ -33,8 +33,12 @@ export const api = {
             this.username = null;
             this.csrfToken = null;
             if (browser) {
-                localStorage.removeItem('username');
-                sessionStorage.removeItem('username');
+                try {
+                    localStorage.removeItem('username');
+                    sessionStorage.removeItem('username');
+                } catch (e) {
+                    console.warn('Failed to clear storage after 401', e);
+                }
             }
             if (this.onUnauthorized) {
                 this.onUnauthorized();
@@ -98,9 +102,12 @@ export const api = {
             const storage = trustDevice === true ? window.localStorage : window.sessionStorage;
             const other = trustDevice === true ? window.sessionStorage : window.localStorage;
 
-            other.removeItem('username');
-
-            if (this.username) storage.setItem('username', this.username);
+            try {
+                other.removeItem('username');
+                if (this.username) storage.setItem('username', this.username);
+            } catch (e) {
+                console.warn('Failed to update storage during login', e);
+            }
         }
 
         // Only fetch if we didn't get it in the login response
@@ -123,8 +130,12 @@ export const api = {
             this.username = null;
             this.csrfToken = null;
             if (browser) {
-                localStorage.removeItem('username');
-                sessionStorage.removeItem('username');
+                try {
+                    localStorage.removeItem('username');
+                    sessionStorage.removeItem('username');
+                } catch (e) {
+                    console.warn('Failed to clear storage after failed renewal', e);
+                }
             }
             if (res.status === 401 && this.onUnauthorized) {
                 this.onUnauthorized();
@@ -163,8 +174,12 @@ export const api = {
         this.username = null;
         this.csrfToken = null;
         if (browser) {
-            localStorage.removeItem('username');
-            sessionStorage.removeItem('username');
+            try {
+                localStorage.removeItem('username');
+                sessionStorage.removeItem('username');
+            } catch (e) {
+                console.warn('Failed to clear storage during logout', e);
+            }
         }
 
         try {

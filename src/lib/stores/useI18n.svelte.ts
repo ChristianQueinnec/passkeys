@@ -22,7 +22,11 @@ class I18nStore {
         if (translations[lang]) {
             this.language = lang;
             if (browser) {
-                localStorage.setItem('app_language', lang);
+                try {
+                    localStorage.setItem('app_language', lang);
+                } catch (e) {
+                    console.warn('Failed to save language preference', e);
+                }
             }
         }
     }

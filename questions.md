@@ -1155,12 +1155,17 @@ Fix issue #4 No CSRF on /api/renew (now unblocked since issue #1 is fixed)
 
 Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signature !== expectedSignature` is still plain `!==`'
 
-
+Fix 'Session cookie maxAge disagrees with JWT expiry'
 
 # 123 I18N check
 
 Check whether i18n is complete for all texts seen by the UI user.
 
+## 124 localStorage safety
+
+Check the use of localStorage:
+- check that getItem of JSON stored objects are always safely parsed, 
+- check that setItem are safely executed
 
 
 
@@ -1176,12 +1181,6 @@ update AGENTS.md and README.md
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
 
-
-## 120 localStorage safety
-
-Check the use of localStorage:
-- check that getItem of JSON stored objects are correctly parsed, 
-- check that setItem are correctly executed
 
 
 # FUTURE

@@ -38,9 +38,17 @@
       password = "";
     }
     if (trustDevice) {
-      localStorage.setItem("passkeys_device_preference", "safe");
+      try {
+        localStorage.setItem("passkeys_device_preference", "safe");
+      } catch (e) {
+        console.warn("Failed to save device preference", e);
+      }
     } else if (isRememberedPreference) {
-      localStorage.setItem("passkeys_device_preference", "unsafe");
+      try {
+        localStorage.setItem("passkeys_device_preference", "unsafe");
+      } catch (e) {
+        console.warn("Failed to save device preference", e);
+      }
     } else {
       localStorage.removeItem("passkeys_device_preference");
     }

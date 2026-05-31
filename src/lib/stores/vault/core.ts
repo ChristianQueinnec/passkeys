@@ -19,10 +19,14 @@ export function createVaultCore(state: VaultState, crypto: VaultCrypto) {
             if (vaultContent) {
                 state.offlineMode = false;
                 if (!Array.isArray(vaultContent)) {
-                    api.storage?.setItem(
-                        "offline_vault",
-                        JSON.stringify(vaultContent),
-                    );
+                    try {
+                        api.storage?.setItem(
+                            "offline_vault",
+                            JSON.stringify(vaultContent),
+                        );
+                    } catch (e) {
+                        console.warn("Failed to save vault to offline storage", e);
+                    }
                 }
                 console.log(
                     `Vault loaded from server in ${Date.now() - start}ms`,
@@ -36,8 +40,15 @@ export function createVaultCore(state: VaultState, crypto: VaultCrypto) {
             const offline = api.storage?.getItem("offline_vault") ||
                 (browser ? window.localStorage.getItem("offline_vault") : null);
             if (offline) {
-                vaultContent = JSON.parse(offline);
-                state.offlineMode = true;
+                try {
+                    vaultContent = JSON.parse(offline);
+                    state.offlineMode = true;
+                } catch (e) {
+                    console.error("Failed to parse offline vault", e);
+                    toasts.error(i18n.t("vault.load_offline_error"));
+                    state.isLoading = false;
+                    return;
+                }
             } else {
                 toasts.error(i18n.t("vault.load_offline_error"));
                 state.isLoading = false;
@@ -148,7 +159,11 @@ export function createVaultCore(state: VaultState, crypto: VaultCrypto) {
             }
 
             state.encryptedVaultData = payload.data;
-            api.storage?.setItem("offline_vault", JSON.stringify(payload));
+            try {
+                api.storage?.setItem("offline_vault", JSON.stringify(payload));
+            } catch (e) {
+                console.warn("Failed to update offline storage", e);
+            }
         } catch (e) {
             if (!state.offlineMode) {
                 toasts.error(i18n.t("vault.save_error"));
