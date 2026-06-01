@@ -53,7 +53,7 @@ run.tests.e2e :
 		echo "FAILURE $$t" >> /tmp/tests-e2e.txt ; done
 	@echo; if [ -f /tmp/tests-e2e.txt ] ; then \
 		echo "*********************** Tests failures:" ; \
-		cat /tmp/tests-e2e.txt ; else \
+		cat /tmp/tests-e2e.txt ; exit 1 ; else \
 		echo "******* Successful end of all tests "; fi ; echo
 	-git tag -a "tests-OK-$$(date +%Y%m%d_%H%M%S)" -m "$$(date)" 
 

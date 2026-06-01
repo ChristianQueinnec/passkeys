@@ -5,7 +5,8 @@ import {
     sanitizeJWTToken,
     sanitizeFilename,
     sanitizeVaultContent,
-    sanitizeCSRFToken
+    sanitizeCSRFToken,
+    sanitizeRequestBody
 } from '../../src/lib/server/sanitizer';
 
 describe('Input Sanitization', () => {
@@ -173,33 +174,121 @@ describe('Input Sanitization', () => {
     });
 
     describe('sanitizeVaultContent', () => {
-        it('should accept valid JSON strings', () => {
-            const content = JSON.stringify({ entries: [], folders: [] });
+
+        // -- Shape 1: ciphered vault { iv, cipher } ----------------------------
+
+        it('accepts a valid ciphered vault', () => {
+            const vault = { iv: 'abc123', cipher: 'encrypteddata' };
+            const content = JSON.stringify(vault);
             expect(sanitizeVaultContent(content)).toBe(content);
         });
 
-        it('should accept large valid JSON', () => {
-            const largeVault = { entries: new Array(1000).fill({ title: 'Test' }) };
-            const content = JSON.stringify(largeVault);
+        it('accepts a ciphered vault with extra fields', () => {
+            // The schema requires iv + cipher; additional keys are allowed.
+            const vault = { iv: 'abc', cipher: 'xyz', date: '2024-01-01' };
+            const content = JSON.stringify(vault);
             expect(sanitizeVaultContent(content)).toBe(content);
         });
 
-        it('should reject non-string values', () => {
-            expect(() => sanitizeVaultContent({ entries: [] })).toThrow('Vault content must be a string');
+        it('rejects a ciphered vault with empty iv', () => {
+            const content = JSON.stringify({ iv: '', cipher: 'data' });
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects a ciphered vault with empty cipher', () => {
+            const content = JSON.stringify({ iv: 'abc', cipher: '' });
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an object missing iv', () => {
+            const content = JSON.stringify({ cipher: 'data' });
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an object missing cipher', () => {
+            // Previously this passed because `if (vault)` was always true for objects.
+            const content = JSON.stringify({ iv: 'abc' });
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an empty object', () => {
+            // Previously this passed — any truthy JSON was accepted.
+            expect(() => sanitizeVaultContent('{}')).toThrow('Vault content has unexpected structure');
+        });
+
+        // -- Shape 2: unciphered import array ----------------------------------
+
+        it('accepts a valid unciphered import array', () => {
+            const entries = [
+                { title: 'Entry One', username: 'alice', password: 'secret' },
+                { title: 'Entry Two' }
+            ];
+            const content = JSON.stringify(entries);
+            expect(sanitizeVaultContent(content)).toBe(content);
+        });
+
+        it('accepts an unciphered import array with only title on each entry', () => {
+            const content = JSON.stringify([{ title: 'Minimal' }]);
+            expect(sanitizeVaultContent(content)).toBe(content);
+        });
+
+        it('rejects an empty array', () => {
+            // An empty array carries no entries and is structurally ambiguous.
+            expect(() => sanitizeVaultContent('[]')).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an array where an entry is missing title', () => {
+            const content = JSON.stringify([{ username: 'alice' }]);
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an array where an entry has an empty title', () => {
+            const content = JSON.stringify([{ title: '' }]);
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects an array where an entry is a primitive', () => {
+            const content = JSON.stringify(['not-an-object']);
+            expect(() => sanitizeVaultContent(content)).toThrow('Vault content has unexpected structure');
+        });
+
+        // -- Rejected primitives and arbitrary JSON ----------------------------
+
+        it('rejects a bare string JSON value', () => {
+            // Previously `"hello"` passed because JSON.parse returns a truthy string.
+            expect(() => sanitizeVaultContent('"hello"')).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects a bare numeric JSON value', () => {
+            expect(() => sanitizeVaultContent('42')).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects a bare boolean', () => {
+            expect(() => sanitizeVaultContent('true')).toThrow('Vault content has unexpected structure');
+        });
+
+        it('rejects null JSON', () => {
+            expect(() => sanitizeVaultContent('null')).toThrow('Vault content has unexpected structure');
+        });
+
+        // -- Non-JSON / size checks (unchanged behaviour) ----------------------
+
+        it('rejects non-string input', () => {
+            expect(() => sanitizeVaultContent({ iv: 'a', cipher: 'b' })).toThrow('Vault content must be a string');
             expect(() => sanitizeVaultContent(123)).toThrow('Vault content must be a string');
         });
 
-        it('should reject invalid JSON', () => {
+        it('rejects invalid JSON', () => {
             expect(() => sanitizeVaultContent('not json')).toThrow('Vault content must be valid JSON');
             expect(() => sanitizeVaultContent('{"invalid": }')).toThrow('Vault content must be valid JSON');
         });
 
-        it('should reject empty content', () => {
+        it('rejects empty content', () => {
             expect(() => sanitizeVaultContent('')).toThrow('Vault content size is invalid');
         });
 
-        it('should reject content that is too large', () => {
-            const veryLargeContent = 'a'.repeat(11 * 1024 * 1024); // 11MB
+        it('rejects content that is too large', () => {
+            const veryLargeContent = 'a'.repeat(11 * 1024 * 1024);
             expect(() => sanitizeVaultContent(veryLargeContent)).toThrow('Vault content size is invalid');
         });
     });
@@ -230,6 +319,142 @@ describe('Input Sanitization', () => {
 
         it('should reject tokens with invalid characters', () => {
             expect(() => sanitizeCSRFToken('invalid_token_with_special!chars')).toThrow('Invalid CSRF token format');
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    describe('sanitizeRequestBody', () => {
+
+        function makeRequest(body: string | null, headers: Record<string, string> = {}): Request {
+            const defaultHeaders: Record<string, string> = body !== null
+                ? { 'content-type': 'application/json', ...headers }
+                : { ...headers };
+            return new Request('http://localhost', {
+                method: 'POST',
+                headers: defaultHeaders,
+                body: body ?? undefined
+            });
+        }
+
+        // -- Content-Type checks ------------------------------------------------
+
+        it('accepts a POST with application/json content-type', async () => {
+            const result = await sanitizeRequestBody(makeRequest('{"key":"value"}'));
+            expect(result).toEqual({ key: 'value' });
+        });
+
+        it('throws on POST with missing content-type', async () => {
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                body: '{"key":"value"}'
+            });
+            await expect(sanitizeRequestBody(req)).rejects.toThrow('Content-Type must be application/json');
+        });
+
+        it('throws on POST with wrong content-type', async () => {
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                headers: { 'content-type': 'text/plain' },
+                body: 'hello'
+            });
+            await expect(sanitizeRequestBody(req)).rejects.toThrow('Content-Type must be application/json');
+        });
+
+        it('does not check content-type for GET requests', async () => {
+            const req = new Request('http://localhost', { method: 'GET' });
+            const result = await sanitizeRequestBody(req);
+            expect(result).toEqual({});
+        });
+
+        // -- Empty body ---------------------------------------------------------
+
+        it('returns empty object for null body', async () => {
+            const req = new Request('http://localhost', { method: 'GET' });
+            const result = await sanitizeRequestBody(req);
+            expect(result).toEqual({});
+        });
+
+        it('returns empty object for empty body string', async () => {
+            const result = await sanitizeRequestBody(makeRequest(''));
+            expect(result).toEqual({});
+        });
+
+        // -- Size enforcement ---------------------------------------------------
+
+        it('rejects body when Content-Length header exceeds maxSize (fast-path, no bytes read)', async () => {
+            // Content-Length is larger than the 10-byte limit.
+            // The streaming reader must never be called because the fast-path fires first.
+            const req = makeRequest('{"k":1}', { 'content-length': '11' });
+            await expect(sanitizeRequestBody(req, 10)).rejects.toThrow('Request body too large');
+        });
+
+        it('rejects body during streaming when actual bytes exceed maxSize', async () => {
+            // No Content-Length header — only the streaming check applies.
+            const bigBody = JSON.stringify({ data: 'x'.repeat(200) }); // well over 10 bytes
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: bigBody
+            });
+            await expect(sanitizeRequestBody(req, 10)).rejects.toThrow('Request body too large');
+        });
+
+        it('rejects body when Content-Length is honest but exceeds limit', async () => {
+            const body = JSON.stringify({ x: 1 });
+            const req = makeRequest(body, { 'content-length': String(body.length) });
+            await expect(sanitizeRequestBody(req, body.length - 1)).rejects.toThrow('Request body too large');
+        });
+
+        it('accepts body exactly at maxSize limit', async () => {
+            // A 1-byte JSON body: the digit 1.
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: '1'
+            });
+            // maxSize = 1 byte: should pass (totalBytes === maxSize, not >)
+            const result = await sanitizeRequestBody(req, 1);
+            expect(result).toBe(1);
+        });
+
+        it('rejects body one byte over the limit', async () => {
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: '12'
+            });
+            await expect(sanitizeRequestBody(req, 1)).rejects.toThrow('Request body too large');
+        });
+
+        it('ignores a spoofed low Content-Length and still enforces the streaming limit', async () => {
+            // Attacker claims 5 bytes but sends 200.  The streaming check must catch it.
+            const bigBody = 'x'.repeat(200);
+            const req = new Request('http://localhost', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'content-length': '5'   // lie
+                },
+                body: bigBody
+            });
+            await expect(sanitizeRequestBody(req, 10)).rejects.toThrow('Request body too large');
+        });
+
+        // -- JSON parsing -------------------------------------------------------
+
+        it('throws on invalid JSON', async () => {
+            await expect(sanitizeRequestBody(makeRequest('{bad json}'))).rejects.toThrow('Invalid JSON in request body');
+        });
+
+        it('parses nested objects correctly', async () => {
+            const payload = { user: { name: 'alice', roles: ['admin'] } };
+            const result = await sanitizeRequestBody(makeRequest(JSON.stringify(payload)));
+            expect(result).toEqual(payload);
+        });
+
+        it('parses arrays correctly', async () => {
+            const result = await sanitizeRequestBody(makeRequest('[1,2,3]'));
+            expect(result).toEqual([1, 2, 3]);
         });
     });
 });

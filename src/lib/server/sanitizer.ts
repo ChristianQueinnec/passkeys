@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import logger from './logger';
 import settings from './server-settings.json';
 
@@ -131,10 +130,22 @@ export function sanitizeFilename(filename: unknown, extension?: string): string 
 }
 
 /**
- * Sanitize vault content (encrypted JSON string)
- * - Must be a valid JSON string
- * - Reasonable size limits (10MB max)
- * - Must be a string
+ * Sanitize vault content.
+ *
+ * A vault stored on the server is always one of two shapes:
+ *
+ * 1. Ciphered vault   — { iv: string, cipher: string }
+ *    Produced by the client after encrypting the entry array.
+ *    Both fields must be non-empty strings.
+ *
+ * 2. Unciphered import — PasswordEntry[]
+ *    A plain array used only during an initial KeePass import before the
+ *    client re-encrypts and overwrites it.  Every element must be an object
+ *    with at minimum a non-empty string `title`.
+ *
+ * Anything else (bare primitive, empty object, random JSON) is rejected.
+ * This replaces the previous `if (vault)` check that accepted any truthy
+ * JSON value — including `"hello"`, `42`, `{}`, and `[]`.
  */
 export function sanitizeVaultContent(content: unknown): string {
     if (typeof content !== 'string') {
@@ -145,17 +156,44 @@ export function sanitizeVaultContent(content: unknown): string {
         throw new Error('Vault content size is invalid');
     }
 
-    // Validate that it's valid JSON
-    let vault;
+    let vault: unknown;
     try {
         vault = JSON.parse(content);
-    } catch (e) {
+    } catch {
         throw new Error('Vault content must be valid JSON');
     }
-    if (vault /*&& vault.iv && vault.content*/) {
+
+    if (isCipheredVault(vault) || isUncipheredImport(vault)) {
         return content;
     }
-    throw new Error('Vault content is incorrect JSON');
+
+    throw new Error('Vault content has unexpected structure');
+}
+
+/** Shape 1: ciphered vault — { iv: string, cipher: string } */
+function isCipheredVault(v: unknown): boolean {
+    return (
+        typeof v === 'object' &&
+        v !== null &&
+        !Array.isArray(v) &&
+        typeof (v as any).iv === 'string'     && (v as any).iv.length > 0 &&
+        typeof (v as any).cipher === 'string' && (v as any).cipher.length > 0
+    );
+}
+
+/** Shape 2: unciphered import — non-empty array of PasswordEntry-like objects */
+function isUncipheredImport(v: unknown): boolean {
+    return (
+        Array.isArray(v) &&
+        v.length > 0 &&
+        v.every(
+            (e: unknown) =>
+                typeof e === 'object' &&
+                e !== null &&
+                typeof (e as any).title === 'string' &&
+                (e as any).title.length > 0
+        )
+    );
 }
 
 /**
@@ -185,10 +223,14 @@ export function sanitizeCSRFToken(token: unknown): string {
 }
 
 /**
- * Validate and sanitize request body as JSON
- * - Ensures body is valid JSON
- * - Returns parsed object
- * - Enforces size limit
+ * Validate and sanitize request body as JSON.
+ *
+ * Defence-in-depth against oversized bodies:
+ * 1. Fast-path: reject immediately if Content-Length header exceeds maxSize.
+ *    (Cannot be relied on alone — header may be absent or spoofed low.)
+ * 2. Streaming: read body in chunks, counting bytes as we go.  Abort and
+ *    throw as soon as the running total exceeds maxSize.  This caps memory
+ *    allocation to exactly maxSize bytes regardless of what the client sends.
  */
 export async function sanitizeRequestBody(
     request: Request,
@@ -202,20 +244,57 @@ export async function sanitizeRequestBody(
         }
     }
 
-    try {
-        const text = await request.text();
-        if (text.length === 0) return {};
-
-        if (text.length > maxSize) {
+    // Fast-path: Content-Length present and already too large — reject before
+    // reading a single byte.  An attacker may omit or under-report this header
+    // so we still enforce the limit during streaming below.
+    const contentLengthHeader = request.headers.get('content-length');
+    if (contentLengthHeader !== null) {
+        const declared = parseInt(contentLengthHeader, 10);
+        if (!isNaN(declared) && declared > maxSize) {
             throw new Error('Request body too large');
         }
+    }
 
-        return JSON.parse(text);
-    } catch (e) {
-        if (e instanceof SyntaxError) {
-            throw new Error('Invalid JSON in request body');
+    // Empty body (no stream) — treat as empty object.
+    if (!request.body) return {};
+
+    // Stream the body, counting bytes, aborting at maxSize.
+    const reader = request.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            totalBytes += value.byteLength;
+            if (totalBytes > maxSize) {
+                // Cancel the stream so the connection is closed cleanly.
+                await reader.cancel();
+                throw new Error('Request body too large');
+            }
+            chunks.push(value);
         }
-        throw e;
+    } finally {
+        // releaseLock allows the underlying stream to be GC'd even if we threw.
+        reader.releaseLock();
+    }
+
+    if (totalBytes === 0) return {};
+
+    // Assemble chunks into a single string.
+    const combined = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+    const text = new TextDecoder().decode(combined);
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        throw new Error('Invalid JSON in request body');
     }
 }
 

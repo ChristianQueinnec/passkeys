@@ -20,8 +20,8 @@
 | #8 | Session cookie `maxAge` disagrees with JWT expiry | ✅ **Fixed** — exported `REMEMBER_EXPIRY_SECONDS`/`SESSION_EXPIRY_SECONDS` from `jwt.ts`; `generateToken` sets `exp` from these; both call sites use the same constants for `maxAge`; session login now gets an explicit short `maxAge` instead of `undefined` |
 | #9 | CSRF store is process-local | ❌ **Still open** — `csrfTokens` Map is still in-process memory |
 | #10 | `listVaults` fd leak on `readSync` throw | ✅ **Fixed** — `try/finally` now wraps `closeSync` |
-| #11 | Body fully loaded before size check | ❌ **Still open** — `request.text()` before length check in `sanitizeRequestBody` |
-| #12 | `sanitizeVaultContent` accepts any truthy JSON | ❌ **Still open** — commented-out schema checks remain |
+| #11 | Body fully loaded before size check | ✅ **Fixed** — `Content-Length` fast-path rejection added; body now streamed via `ReadableStream` reader with byte counter; throws and cancels stream at `maxSize` before full allocation |
+| #12 | `sanitizeVaultContent` accepts any truthy JSON | ✅ **Fixed** — strict schema enforced: ciphered vault `{ iv: string, cipher: string }` or unciphered import `PasswordEntry[]`; primitives, empty objects, `{}`, `[]`, bare strings/numbers all rejected; unused `import { json }` removed |
 | #13 | Logout has no auth or CSRF protection | ❌ **Still open** |
 | #14 | `getUsers()` disk read on every request | ⚠️ **Partially fixed** — migration removed from hot path; `getUsers()` still does `readFileSync` + `JSON.parse` on every authenticated request |
 | #15 | Request path logged verbatim — log injection | ❌ **Still open** (mitigated in prod by pino's JSON serialisation; still raw in pino-pretty dev mode) |
@@ -33,7 +33,7 @@
 | #21 | `GET /api/vault` double-parses JSON | ❌ **Still open** |
 | #22 | JWT `alg`/`typ` header not validated | ❌ **Still open** |
 
-**Summary:** 12 fixed, 1 partially fixed, 9 still open.
+**Summary:** 14 fixed, 1 partially fixed, 7 still open.
 
 ---
 
@@ -224,6 +224,8 @@ Two concurrent `saveVault` calls in the same millisecond produce the same filena
 - Rate-limiter file write race condition (original report #7)
 - Timing attack in login — dummy verification + incremental delay (original report #8)
 - Cookie `maxAge`/JWT `exp` misalignment (was #8) — single-source constants exported from `jwt.ts`; session login now sets an explicit short `maxAge` instead of `undefined`
+- Body fully loaded before size check (was #11) — streaming read with byte counter; `Content-Length` fast-path; memory capped to `maxSize` bytes
+- `sanitizeVaultContent` accepted any truthy JSON (was #12) — strict two-shape schema: ciphered `{ iv, cipher }` or unciphered import array; old field name `content` corrected to `cipher` per `types.ts`
 - JWT signature used plain `!==` (was #5) — replaced with `timingSafeEqual` on decoded Buffers in `verifyToken`
 - `verifyPassword` used plain `===` (was N1) — replaced with `timingSafeEqual`; malformed hash length returns `false` safely
 - Error messages expose internals (original report #6)

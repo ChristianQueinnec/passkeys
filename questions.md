@@ -1121,7 +1121,7 @@ for bad authentication.
   [Active Topic: Finalizing Token Renewal Implementation]
 ```
 
-## 122 Code Security Review 
+## 122 Code Security Review (Claude)
 
 Examine the code of the server API (in `src/routes/api`) and check for
 - Bugs: logic errors, off-by-one, null handling, race condition
@@ -1158,6 +1158,10 @@ Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signatur
 Fix 'Session cookie maxAge disagrees with JWT expiry'
 Fix tests/unit/api/login.test.ts and tests/unit/api/renew.test.ts
 Fix tests/e2e/trust_device.spec.ts and tests/e2e/vault_situations.spec.ts
+
+Fix 'Body fully loaded before size check'
+
+Fix `sanitizeVaultContent` accepts any truthy JSON
 
 # 123 I18N check (Gemini)
 
