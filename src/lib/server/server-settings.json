@@ -14,10 +14,6 @@
         "pruneIntervalMs": 3600000,
         "staleThresholdMs": 86400000
     },
-    "csrf": {
-        "tokenLifetimeMs": 3600000,
-        "cleanupIntervalMs": 300000
-    },
     "sanitization": {
         "maxVaultSize": 10485760,
         "maxRequestBodySize": 10485760
