@@ -5,9 +5,14 @@ vi.mock('$lib/server/auth', () => ({
     getAuthPayload: vi.fn(),
     verifyCSRF: vi.fn(),
 }));
-vi.mock('$lib/server/jwt', () => ({
-    generateToken: vi.fn(),
-}));
+vi.mock('$lib/server/jwt', async (importActual) => {
+    const real = await importActual<typeof import('$lib/server/jwt')>();
+    return {
+        generateToken: vi.fn(),
+        REMEMBER_EXPIRY_SECONDS: real.REMEMBER_EXPIRY_SECONDS,
+        SESSION_EXPIRY_SECONDS:  real.SESSION_EXPIRY_SECONDS,
+    };
+});
 vi.mock('$lib/server/csrf', () => ({
     generateCSRFToken: vi.fn(),
     removeCSRFToken: vi.fn(),
@@ -17,7 +22,8 @@ import * as renewHandler from '../../../src/routes/api/renew/+server';
 import * as auth from '$lib/server/auth';
 import * as jwt from '$lib/server/jwt';
 import * as csrf from '$lib/server/csrf';
-import { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
+
+const { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } = jwt;
 
 const MOCK_SID     = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const MOCK_PAYLOAD = { username: 'testuser', remember: true, sid: MOCK_SID } as any;

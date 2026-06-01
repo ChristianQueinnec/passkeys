@@ -1156,6 +1156,8 @@ Fix issue #4 No CSRF on /api/renew (now unblocked since issue #1 is fixed)
 Fix 'JWT signature comparison not timing-safe | ❌ **Still open** — `signature !== expectedSignature` is still plain `!==`'
 
 Fix 'Session cookie maxAge disagrees with JWT expiry'
+Fix tests/unit/api/login.test.ts and tests/unit/api/renew.test.ts
+Fix tests/e2e/trust_device.spec.ts and tests/e2e/vault_situations.spec.ts
 
 # 123 I18N check (Gemini)
 

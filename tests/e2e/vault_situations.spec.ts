@@ -174,7 +174,12 @@ test.describe('Vault Situations: Unsafe Device', () => {
         const cookies = await page.context().cookies();
         const authCookie = cookies.find(cookie => cookie.name === authCookieName);
         expect(authCookie).toBeTruthy();
-        expect(authCookie?.expires).toBe(-1);
+        // Unsafe-device login now sets a short-lived persistent cookie
+        // (SESSION_EXPIRY_SECONDS = 2 h) rather than a session cookie, so that
+        // the JWT and the cookie expire at the same wall-clock time.
+        const now = Date.now() / 1000;
+        expect(authCookie?.expires).toBeGreaterThan(0);
+        expect(authCookie?.expires).toBeLessThan(now + 24 * 60 * 60);
 
         // Offline vault should not be in localStorage for offline access
         await page.reload();

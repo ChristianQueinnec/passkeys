@@ -13,9 +13,14 @@ vi.mock('$lib/server/users', () => ({
 vi.mock('$lib/server/crypto-utils', () => ({
     verifyPassword: vi.fn(),
 }));
-vi.mock('$lib/server/jwt', () => ({
-    generateToken: vi.fn(),
-}));
+vi.mock('$lib/server/jwt', async (importActual) => {
+    const real = await importActual<typeof import('$lib/server/jwt')>();
+    return {
+        generateToken: vi.fn(),
+        REMEMBER_EXPIRY_SECONDS: real.REMEMBER_EXPIRY_SECONDS,
+        SESSION_EXPIRY_SECONDS:  real.SESSION_EXPIRY_SECONDS,
+    };
+});
 vi.mock('$lib/server/csrf', () => ({
     generateCSRFToken: vi.fn().mockReturnValue('mock-csrf-token'),
 }));
@@ -26,7 +31,8 @@ import * as cryptoUtils from '$lib/server/crypto-utils';
 import * as jwt from '$lib/server/jwt';
 import * as rateLimiter from '$lib/server/rate-limiter';
 import * as csrf from '$lib/server/csrf';
-import { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
+
+const { REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } = jwt;
 
 describe('API Login', () => {
     const cookies = {
