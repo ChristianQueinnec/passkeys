@@ -1,72 +1,76 @@
-import { randomBytes } from 'node:crypto';
-import settings from './server-settings.json';
+import { timingSafeEqual } from 'node:crypto';
+import { computeCSRFToken } from './jwt';
 import { getAuthTokenFromRequest } from './auth-cookie';
 import { verifyToken } from './jwt';
 
-// In-memory store for CSRF tokens (in production, use Redis or database)
-const csrfTokens = new Map<string, { token: string; expiresAt: number }>();
-
-// Token lifetime
-const TOKEN_LIFETIME = settings.csrf.tokenLifetimeMs;
-
-// Cleanup expired tokens
-setInterval(() => {
-    const now = Date.now();
-    for (const [sessionId, data] of csrfTokens.entries()) {
-        if (data.expiresAt < now) {
-            csrfTokens.delete(sessionId);
-        }
-    }
-}, settings.csrf.cleanupIntervalMs);
+/**
+ * Stateless CSRF token implementation using HMAC double-submit.
+ *
+ * ## Why stateless?
+ * The previous implementation stored tokens in a process-local Map.  In any
+ * multi-worker deployment (SvelteKit adapter-node with workers > 1, or even
+ * two concurrent `vite dev` processes) Worker A's Map is invisible to Worker B,
+ * causing every cross-worker CSRF check to return 403.
+ *
+ * ## How it works
+ * The CSRF token is HMAC-SHA256(JWT_SECRET, "csrf:" + sid), returned as hex.
+ * Any process that knows JWT_SECRET can recompute and verify the token without
+ * shared state or network round-trips.  This is the standard OWASP-recommended
+ * stateless CSRF pattern.
+ *
+ * ## Security properties
+ * - An attacker without the auth cookie cannot obtain or predict the sid, so
+ *   they cannot compute the token.
+ * - Comparison uses timingSafeEqual — no timing oracle.
+ * - The "csrf:" prefix domain-separates this HMAC from JWT signatures that
+ *   use the same key.
+ * - Token lifetime is implicitly bounded by the JWT's own exp: once the JWT
+ *   expires, getSessionIdFromRequest returns null and validation fails.
+ * - removeCSRFToken is a no-op — there is nothing to remove.
+ */
 
 /**
- * Generate a CSRF token for a session.
- * @param sid  The stable session ID extracted from the JWT payload (jwt.sid).
- *             This value is preserved across token renewals so the CSRF token
- *             does not need to be re-fetched by the client after a renewal.
+ * Generate (or re-derive) the CSRF token for a session.
+ * Deterministic: calling it twice with the same sid returns the same value.
+ * @param sid  The stable session ID from the JWT payload.
  */
 export function generateCSRFToken(sid: string): string {
-    const token = randomBytes(32).toString('hex');
-    csrfTokens.set(sid, {
-        token,
-        expiresAt: Date.now() + TOKEN_LIFETIME
-    });
-    return token;
+    return computeCSRFToken(sid);
 }
 
 /**
- * Validate a CSRF token against a session ID.
+ * Validate a CSRF token against a session ID using constant-time comparison.
  * @param sid    Stable session ID from the JWT payload.
  * @param token  Token value sent by the client in X-CSRF-Token header.
  */
 export function validateCSRFToken(sid: string, token: string): boolean {
-    const stored = csrfTokens.get(sid);
+    const expected = computeCSRFToken(sid);
 
-    if (!stored) {
-        return false;
-    }
+    // Both values are 64-char hex strings (32 bytes); lengths always match.
+    // timingSafeEqual requires equal-length Buffers — guard anyway.
+    const expectedBuf = Buffer.from(expected, 'hex');
+    const tokenBuf    = Buffer.from(token,    'hex');
 
-    if (stored.expiresAt < Date.now()) {
-        csrfTokens.delete(sid);
-        return false;
-    }
+    if (expectedBuf.length !== tokenBuf.length) return false;
 
-    return stored.token === token;
+    return timingSafeEqual(expectedBuf, tokenBuf);
 }
 
 /**
- * Remove a CSRF token (called on logout).
- * @param sid  Stable session ID from the JWT payload.
+ * No-op — stateless tokens have nothing to remove.
+ * Kept for API compatibility with callers (login, renew, logout).
  */
-export function removeCSRFToken(sid: string): void {
-    csrfTokens.delete(sid);
+export function removeCSRFToken(_sid: string): void {
+    // Intentional no-op: stateless HMAC tokens are not stored anywhere.
+    // Invalidation is handled by JWT expiry — when the JWT expires,
+    // getSessionIdFromRequest returns null and all CSRF checks fail.
 }
 
 /**
  * Extract the stable session ID (sid) from the verified JWT in the request.
  *
  * The sid lives inside the signed JWT payload — it cannot be forged without
- * knowing JWT_SECRET — so it is safe to use as the CSRF map key.
+ * knowing JWT_SECRET — so it is safe to use as the CSRF derivation input.
  *
  * Returns null if there is no auth cookie or the token is invalid/expired.
  */

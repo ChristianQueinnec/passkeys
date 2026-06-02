@@ -12,7 +12,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const user = result;
 
     try {
-        const vaults = listVaults(user.username);
+        const vaults = await listVaults(user.username);
         return json(vaults, { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { username: user.username, operation: 'Vault history GET' }, 'Failed to retrieve vault history');
@@ -39,8 +39,7 @@ export const DELETE: RequestHandler = async ({ request, url }) => {
 
         const { filename } = historyReq;
 
-        // Delete vault
-        deleteVault(user.username, filename);
+        await deleteVault(user.username, filename);
         return json({ success: true } as DeleteVaultResponse, { status: HTTP_STATUS.OK });
     } catch (e: any) {
         return handleServerError(e, { username: peekUsernameFromRequest(request), operation: 'Vault history DELETE' }, 'Failed to delete vault history');

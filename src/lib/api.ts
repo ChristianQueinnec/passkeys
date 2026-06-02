@@ -183,9 +183,11 @@ export const api = {
         }
 
         try {
+            const headers = await this._getHeaders(true);
             await fetch('/api/logout', {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers
             });
         } catch (e) {
             console.error('Failed to logout cleanly:', e);

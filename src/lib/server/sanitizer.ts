@@ -20,14 +20,14 @@ export function sanitizeUsername(username: unknown): string {
         throw new Error('Username must be a string');
     }
 
-    const trimmed = username.trim();
+    const trimmed = username.trim().toLowerCase();
 
     if (trimmed.length < 1 || trimmed.length > 50) {
         throw new Error('Username must be between 1 and 50 characters');
     }
 
-    // Allow alphanumeric, underscore, hyphen, and dot, @ to allow emails
-    const usernameRegex = /^[a-zA-Z0-9._@-]+$/;
+    // After lowercasing, only lowercase alphanumeric and ._@- are valid.
+    const usernameRegex = /^[a-z0-9._@-]+$/;
     if (!usernameRegex.test(trimmed)) {
         throw new Error('Username contains invalid characters');
     }
@@ -209,12 +209,9 @@ export function sanitizeCSRFToken(token: unknown): string {
 
     const trimmed = token.trim();
 
-    if (trimmed.length < 32 || trimmed.length > 128) {
-        throw new Error('Invalid CSRF token format');
-    }
-
-    // UUID-like format: alphanumeric and dash
-    const csrfRegex = /^[a-zA-Z0-9-]+$/;
+    // CSRF tokens are exactly 64 lowercase hex characters (HMAC-SHA256 = 32 bytes).
+    // The regex is the sole length+format gate.
+    const csrfRegex = /^[0-9a-f]{64}$/;
     if (!csrfRegex.test(trimmed)) {
         throw new Error('Invalid CSRF token format');
     }

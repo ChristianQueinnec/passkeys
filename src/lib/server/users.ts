@@ -8,16 +8,31 @@ import settings from './server-settings.json';
 
 const USERS_FILE = path.join(process.cwd(), settings.storage.dataDir, settings.storage.usersFile);
 
+// Module-level cache.  Populated on first read; invalidated by any write.
+// Eliminates the synchronous disk read + JSON parse on every authenticated
+// request (getUser → getUsers was hitting disk on every API call).
+let usersCache: User[] | null = null;
+
+function invalidateCache(): void {
+    usersCache = null;
+}
+
 /**
  * Read and parse users.json.  Pure read — no writes, no side-effects.
  * Callers that need to write must acquire the lock themselves before calling.
  */
 export const getUsers = (): User[] => {
+    if (usersCache !== null) return usersCache;
     if (!fs.existsSync(USERS_FILE)) {
         return [];
     }
     const content = fs.readFileSync(USERS_FILE, 'utf-8');
-    return JSON.parse(content) as User[];
+    const parsed = JSON.parse(content);
+    if (!Array.isArray(parsed)) {
+        throw new Error('users.json is malformed: expected an array');
+    }
+    usersCache = parsed as User[];
+    return usersCache;
 };
 
 export const getUser = (username: string): User | undefined => {
@@ -49,7 +64,11 @@ export const migrateUsersFile = async (): Promise<void> => {
         // Re-read inside the lock so we see the committed state, not a
         // potentially stale snapshot from before we acquired it.
         const content = fs.readFileSync(USERS_FILE, 'utf-8');
-        const users: User[] = JSON.parse(content);
+        const parsed = JSON.parse(content);
+        if (!Array.isArray(parsed)) {
+            throw new Error('users.json is malformed: expected an array');
+        }
+        const users: User[] = parsed;
 
         let modified = false;
         for (const user of users) {
@@ -62,6 +81,7 @@ export const migrateUsersFile = async (): Promise<void> => {
 
         if (modified) {
             fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+            invalidateCache();
             logger.info('users.json migration complete');
         }
     } finally {
@@ -92,6 +112,7 @@ export const updateUserPassword = async (username: string, newPassword: string):
 
         users[userIndex].password = createHashedEntrySync(newPassword);
         fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+        invalidateCache();
         return users[userIndex];
     } finally {
         await release!();

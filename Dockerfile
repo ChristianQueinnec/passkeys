@@ -5,11 +5,14 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN export JWT_SECRET=building ; \
+# The build does not need a real JWT_SECRET — the value is only used at
+# runtime when a request is handled.  Using a placeholder here avoids baking
+# a known secret into an image layer that is visible via `docker history`.
+RUN export JWT_SECRET=not-used-at-build-time ; \
     export NODE_ENV=production ; \
     npm run build
 #RUN npm prune --omit=dev
-RUN export JWT_SECRET=building ; \
+RUN export JWT_SECRET=not-used-at-build-time ; \
     export NODE_ENV=production ; \
     npm ci --omit=dev
 
@@ -28,8 +31,8 @@ COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/package.json .
 
-RUN echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
-
+# JWT_SECRET is generated at container startup in docker-entrypoint.sh,
+# not here — writing it in a RUN layer would bake it into the image.
 # Create data directory for volume mount
 RUN mkdir -p data && \
     chown -R ${UID}:${GID} data

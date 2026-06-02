@@ -1163,6 +1163,8 @@ Fix 'Body fully loaded before size check'
 
 Fix `sanitizeVaultContent` accepts any truthy JSON
 
+fix CSRF store is process-local 
+
 # 123 I18N check (Gemini)
 
 Check whether i18n is complete for all texts seen by the UI user.

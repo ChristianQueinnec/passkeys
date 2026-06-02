@@ -40,9 +40,13 @@ const isTestRouteAllowed = (): boolean =>
 export const handle: Handle = async ({ event, resolve }) => {
     const start = Date.now();
 
+    // Sanitise the path before logging to prevent log injection via
+    // newlines or control characters embedded in the URL.
+    const safePath = event.url.pathname.replace(/[\r\n\t\x00-\x1f\x7f]/g, '_');
+
     logger.info({
         method: event.request.method,
-        path: event.url.pathname,
+        path: safePath,
     }, 'Incoming request');
 
     // Block all /api/test/* requests unless we are explicitly in test mode.
@@ -65,7 +69,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     logger.info({
         method: event.request.method,
-        path: event.url.pathname,
+        path: safePath,
         status: response.status,
         duration: `${duration}ms`,
     }, 'Response sent');

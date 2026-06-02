@@ -11,9 +11,9 @@ async function handleCleanupVault({ url }: { url: URL }) {
     }
 
     try {
-        const vaults = listVaults(username);
+        const vaults = await listVaults(username);
         for (const vault of vaults) {
-            deleteVault(username, vault.name);
+            await deleteVault(username, vault.name);
         }
         return json({ success: true, count: vaults.length });
     } catch (e: any) {

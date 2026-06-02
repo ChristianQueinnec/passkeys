@@ -59,6 +59,23 @@ function createSignature(data: string, secret: string): string {
 }
 
 /**
+ * Compute a stateless CSRF token for the given session ID.
+ *
+ * Uses HMAC-SHA256 keyed with JWT_SECRET so any process that knows the
+ * secret can verify the token without shared state.  The "csrf:" prefix
+ * domain-separates this HMAC from any other use of the same key.
+ *
+ * This function is intentionally kept internal to jwt.ts so JWT_SECRET is
+ * never exported.  csrf.ts calls it via this thin wrapper.
+ */
+export function computeCSRFToken(sid: string): string {
+    return crypto
+        .createHmac('sha256', JWT_SECRET)
+        .update('csrf:' + sid)
+        .digest('hex');
+}
+
+/**
  * Generate a JWT token for a user.
  *
  * @param username   Authenticated user.
@@ -111,6 +128,19 @@ export function verifyToken(token: string): TokenPayload | null {
         }
 
         const [encodedHeader, encodedPayload, signature] = parts;
+
+        // Validate header before touching the signature — reject alg:none
+        // and any unexpected algorithm before any crypto work is done.
+        let header: { alg?: string; typ?: string };
+        try {
+            header = JSON.parse(base64UrlDecode(encodedHeader));
+        } catch {
+            return null;
+        }
+        if (header.alg !== 'HS256' || header.typ !== 'JWT') {
+            logger.warn({ alg: header.alg, typ: header.typ }, 'Unexpected JWT header — rejected');
+            return null;
+        }
 
         // Verify signature using a constant-time comparison to prevent
         // timing oracle attacks.  Plain !== short-circuits on the first

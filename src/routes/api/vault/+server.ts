@@ -12,9 +12,14 @@ export const GET: RequestHandler = async ({ request }) => {
     const user = result;
 
     try {
-        const vault = getLatestVault(user.username);
+        const vault = await getLatestVault(user.username);
         if (!vault) return json({ error: 'common.not_found' } as ErrorResponse, { status: HTTP_STATUS.NOT_FOUND });
-        return json(JSON.parse(vault));
+        // Return the raw string directly — no parse+re-stringify round-trip that
+        // could silently alter the data (large integers, undefined values, etc.).
+        return new Response(vault, {
+            status: HTTP_STATUS.OK,
+            headers: { 'Content-Type': 'application/json' }
+        });
     } catch (e: any) {
         return handleServerError(e, { username: user.username, operation: 'Vault GET' }, 'Failed to retrieve vault');
     }
