@@ -56,7 +56,7 @@ describe('verifyCSRF', () => {
 
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
-            expect(await result!.json()).toMatchObject({ error: 'Missing CSRF token' });
+            expect(await result!.json()).toMatchObject({ error: 'auth.unauthorized' });
         });
 
         it('X-CSRF-Token header is an empty string', async () => {
@@ -75,7 +75,7 @@ describe('verifyCSRF', () => {
 
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
-            expect(await result!.json()).toMatchObject({ error: 'Missing CSRF token' });
+            expect(await result!.json()).toMatchObject({ error: 'auth.unauthorized' });
         });
 
         it('both header and session id are absent', async () => {
@@ -94,7 +94,7 @@ describe('verifyCSRF', () => {
 
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
-            expect(await result!.json()).toMatchObject({ error: 'Invalid CSRF token' });
+            expect(await result!.json()).toMatchObject({ error: 'auth.unauthorized' });
         });
 
         it('sanitizeCSRFToken throws (malformed token format)', async () => {
@@ -106,7 +106,7 @@ describe('verifyCSRF', () => {
 
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
-            expect(await result!.json()).toMatchObject({ error: 'Invalid CSRF token format' });
+            expect(await result!.json()).toMatchObject({ error: 'auth.unauthorized' });
             // validateCSRFToken must NOT be called when sanitisation throws
             expect(csrf.validateCSRFToken).not.toHaveBeenCalled();
         });
