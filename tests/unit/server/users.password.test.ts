@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import lockfile from 'proper-lockfile';
-import { updateUserPassword } from '$lib/server/users';
+import { updateUserPassword, resetCacheForTesting } from '$lib/server/users';
 import type { User } from '$lib/types';
 
 vi.mock('fs');
@@ -14,6 +14,7 @@ vi.mock('proper-lockfile', () => ({
 describe('updateUserPassword', () => {
     beforeEach(() => {
         vi.resetAllMocks();
+        resetCacheForTesting();
         vi.mocked(lockfile.lock).mockResolvedValue(() => Promise.resolve());
     });
 

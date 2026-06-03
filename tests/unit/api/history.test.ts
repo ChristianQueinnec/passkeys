@@ -43,7 +43,7 @@ const mockAuth = (username: string | null) => {
         return {
             headers: new Headers({
                 'cookie': `passkeys_auth=${mockToken}`,
-                'X-CSRF-Token': 'mock-csrf-token-at-least-32-chars-long'
+                'X-CSRF-Token': 'a'.repeat(64)   // 64-char hex — matches /^[0-9a-f]{64}$/
             })
         };
     }
@@ -72,7 +72,7 @@ describe('API History', () => {
                 { name: 'v1.vault', size: 100, mtime: new Date('2023-01-01').toISOString(), isCiphered: true }
             ]
         }];
-        vi.mocked(storage.listVaults).mockReturnValue(mockVaults as any);
+        vi.mocked(storage.listVaults).mockResolvedValue(mockVaults as any);
 
         const response = await historyHandler.GET({ request } as any);
         const data = await response.json();
@@ -139,9 +139,7 @@ describe('API History', () => {
         const url = new URL('http://localhost/api/vault/history?filename=test.vault');
         const request = new Request(url, { method: 'DELETE', headers });
 
-        vi.mocked(storage.deleteVault).mockImplementation(() => {
-            throw new Error('Storage error');
-        });
+        vi.mocked(storage.deleteVault).mockRejectedValue(new Error('Storage error'));
 
         const response = await historyHandler.DELETE({ request, url } as any);
         expect(response.status).toBe(500);

@@ -1163,7 +1163,10 @@ Fix 'Body fully loaded before size check'
 
 Fix `sanitizeVaultContent` accepts any truthy JSON
 
-fix CSRF store is process-local 
+fix CSRF store is process-local
+
+
+fix tests/unit/api/history.test.ts and tests/unit/server/users.password.test.ts and tests/unit/sanitizer.test.ts and tests/unit/server/storage.test.ts
 
 # 123 I18N check (Gemini)
 

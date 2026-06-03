@@ -294,31 +294,52 @@ describe('Input Sanitization', () => {
     });
 
     describe('sanitizeCSRFToken', () => {
-        it('should accept valid CSRF tokens', () => {
-            const token = 'a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6';
-            expect(sanitizeCSRFToken(token)).toBe(token);
+        // Valid token: exactly 64 lowercase hex characters (HMAC-SHA256 output).
+        const VALID_TOKEN = 'a'.repeat(64);
+        const VALID_TOKEN_MIXED = 'abcdef0123456789'.repeat(4); // 64 chars, all valid hex
+
+        it('should accept a valid 64-char hex token', () => {
+            expect(sanitizeCSRFToken(VALID_TOKEN)).toBe(VALID_TOKEN);
+            expect(sanitizeCSRFToken(VALID_TOKEN_MIXED)).toBe(VALID_TOKEN_MIXED);
         });
 
-        it('should trim whitespace', () => {
-            const token = '  a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6  ';
-            expect(sanitizeCSRFToken(token)).toBe('a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6');
+        it('should trim surrounding whitespace before validating', () => {
+            expect(sanitizeCSRFToken('  ' + VALID_TOKEN + '  ')).toBe(VALID_TOKEN);
         });
 
         it('should reject non-string values', () => {
             expect(() => sanitizeCSRFToken(123)).toThrow('CSRF token must be a string');
+            expect(() => sanitizeCSRFToken(null)).toThrow('CSRF token must be a string');
         });
 
-        it('should reject tokens that are too short', () => {
-            expect(() => sanitizeCSRFToken('short')).toThrow('Invalid CSRF token format');
+        it('should reject tokens shorter than 64 chars', () => {
+            expect(() => sanitizeCSRFToken('abc')).toThrow('Invalid CSRF token format');
+            expect(() => sanitizeCSRFToken('a'.repeat(63))).toThrow('Invalid CSRF token format');
         });
 
-        it('should reject tokens that are too long', () => {
-            const longToken = 'a'.repeat(129);
-            expect(() => sanitizeCSRFToken(longToken)).toThrow('Invalid CSRF token format');
+        it('should reject tokens longer than 64 chars', () => {
+            expect(() => sanitizeCSRFToken('a'.repeat(65))).toThrow('Invalid CSRF token format');
+            expect(() => sanitizeCSRFToken('a'.repeat(129))).toThrow('Invalid CSRF token format');
         });
 
-        it('should reject tokens with invalid characters', () => {
-            expect(() => sanitizeCSRFToken('invalid_token_with_special!chars')).toThrow('Invalid CSRF token format');
+        it('should reject tokens with uppercase hex characters', () => {
+            // HMAC-SHA256 hex output is always lowercase; uppercase is never valid.
+            expect(() => sanitizeCSRFToken('A'.repeat(64))).toThrow('Invalid CSRF token format');
+            expect(() => sanitizeCSRFToken('ABCDEF0123456789'.repeat(4))).toThrow('Invalid CSRF token format');
+        });
+
+        it('should reject tokens with non-hex characters', () => {
+            expect(() => sanitizeCSRFToken('g'.repeat(64))).toThrow('Invalid CSRF token format');
+            expect(() => sanitizeCSRFToken('z'.repeat(64))).toThrow('Invalid CSRF token format');
+        });
+
+        it('should reject UUID-format tokens (dashes not allowed)', () => {
+            // The old regex accepted UUID format; the new one does not.
+            const uuid = 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2';
+            // 64 lowercase hex — this should pass
+            expect(sanitizeCSRFToken(uuid)).toBe(uuid);
+            // UUID with dashes — should fail
+            expect(() => sanitizeCSRFToken('a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6')).toThrow('Invalid CSRF token format');
         });
     });
 

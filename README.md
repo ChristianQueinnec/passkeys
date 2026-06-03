@@ -489,7 +489,7 @@ While this project was primarily a learning exercise, contributions are welcome:
 
 ## License
 
-[Specify your license here - MIT, GPL, etc.]
+This project is licensed under the GPL-3.0 License - see the [gpl-3.0.txt](gpl-3.0.txt) file for details.
 
 ---
 
@@ -506,6 +506,11 @@ While this project was primarily a learning exercise, contributions are welcome:
 - **Issues**: Report bugs via GitHub Issues
 - **Questions**: See [questions.md](questions.md) for common questions
 - **Documentation**: Check the docs/ directory for detailed guides
+
+---
+
+**Note**: This is a personal project designed for learning and exploration. While security best practices have been followed, please review the code thoroughly before using for sensitive data in production environments.
+tation**: Check the docs/ directory for detailed guides
 
 ---
 

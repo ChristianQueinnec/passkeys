@@ -17,6 +17,10 @@ function invalidateCache(): void {
     usersCache = null;
 }
 
+export function resetCacheForTesting(): void {
+    usersCache = null;
+}
+
 /**
  * Read and parse users.json.  Pure read — no writes, no side-effects.
  * Callers that need to write must acquire the lock themselves before calling.

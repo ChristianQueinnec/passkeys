@@ -44,7 +44,8 @@ will be ultimately deployed as a Docker container mounting the `data`
 directory where are stored information files.
 
 The `Passkeys` webapp can be installed as a PWA (Progressive Web
-Application) with its appropriate favicon.
+Application) with its appropriate favicon. Full internationalization
+is provided for English and French users.
 
 ## Client side
 
@@ -56,12 +57,19 @@ to decipher that file. It must be possible to see temporarily the
 vault or login password. Report explicitly if the vault cannot be
 deciphered.
 
+Authentication tokens are automatically renewed when the vault is
+successfully unlocked. If an API call is rejected with a 401 
+Unauthorized error (e.g., due to session expiration), the client 
+automatically forces reauthentication by clearing sensitive data and 
+returning to the login screen.
+
 if on a safe device, when the client receives a vault, it stores it
 persistently but still ciphered in the browser so it may be used in
-case of missing Internet connectivity. Of course, reusing that stored
-vault requires vault key. Report to the user that the vault might be
-out of date and allow to synchronize with the new version held in the
-server.
+case of missing Internet connectivity. Storage operations are 
+resilient to corruption or environmental restrictions. Of course, 
+reusing that stored vault requires vault key. Report to the user that 
+the vault might be out of date and allow to synchronize with the new 
+version held in the server.
 
 On an unsafe device, the vault and authentication information should
 not be stored persistently.
