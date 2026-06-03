@@ -164,7 +164,7 @@ describe('API Token Renewal', () => {
                 MOCK_TOKEN,
                 expect.objectContaining({
                     httpOnly: true,
-                    sameSite: 'lax',
+                    sameSite: 'strict',
                     path: '/',
                     maxAge: REMEMBER_EXPIRY_SECONDS
                 })

@@ -159,7 +159,7 @@ describe('API Login', () => {
             mockToken,
             expect.objectContaining({
                 httpOnly: true,
-                sameSite: 'lax',
+                sameSite: 'strict',
                 path: '/'
             })
         );

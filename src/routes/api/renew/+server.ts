@@ -43,7 +43,7 @@ export async function POST(event: RequestEvent) {
         cookies.set(AUTH_COOKIE_NAME, token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'strict',
             path: '/',
             maxAge: remember ? REMEMBER_EXPIRY_SECONDS : SESSION_EXPIRY_SECONDS
         });

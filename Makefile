@@ -88,20 +88,23 @@ deploy : run.container \
 clean :
 	-rm -f pass.*
 	-rm -f *data/queinnec/init.vault
+	-rm -f *data/queinnec/new.vault
 	-rm -f *~
 	-rm -f *.log
 
 server.htpasswd : 
 	htpasswd -c server.htpasswd queinnec
 
+# {{{
 # Refresh passwords from Keepass to Passkeys
-#    Keepass   export as csv into Passkeys/pass.csv
-#    m pass.json run.remote.container
+#    Keepass   export as csv into ~/pass.csv
+#    m install.new.vault run.remote.container clean
 #    open https://pk.queinnec.org/
 #       synchronize
 #       remove init.vault
 
-pass.json : pass.csv
+pass.json : ../pass.csv
+	mv ../pass.csv .
 	cd KeePass2Passkeys/ && make work
 	mv pass.json realdata/${USER}/init.vault
 	rm -f pass.json pass.csv
@@ -130,6 +133,7 @@ static/favicon-512.png : static/favicon.svg
 static/favicon-192.png : static/favicon.svg
 	cd static/ && convert -geometry 192x192 favicon.svg favicon-192.png
 
+# }}}
 
 # ############################## AI
 

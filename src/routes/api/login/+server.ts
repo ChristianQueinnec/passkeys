@@ -79,7 +79,7 @@ export async function POST(event: RequestEvent) {
         cookies.set(AUTH_COOKIE_NAME, token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            sameSite: 'strict',
             path: '/',
             // maxAge is always set explicitly — matching the JWT exp exactly —
             // so the cookie and the token always expire at the same wall-clock

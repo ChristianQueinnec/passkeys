@@ -1171,7 +1171,7 @@ fix other issues from `ProjectNotes/APIsecurityReport-20260531.md` UNFINISHED
   tests/e2e/unlock_guidance.spec.ts
   tests/unit/api/auth-csrf.test.ts
 
-# 123 I18N check (Gemini)
+## 123 I18N check (Gemini)
 
 Check whether i18n is complete for all texts seen by the UI user. 
 
@@ -1184,6 +1184,85 @@ Check the use of localStorage:
 ## 125 update README (Gemini)
 
 update AGENTS.md and README.md
+
+## 126 Check security status (Gemini)
+
+Assess the state of the security of the server API with respect to
+`ProjectNotes/APIsecurityReport-20260531.md`
+
+```
+✦ L'évaluation de la sécurité de l'API serveur, basée sur le rapport
+  ProjectNotes/APIsecurityReport-20260531.md, confirme que tous les problèmes de
+  code identifiés ont été résolus. L'état actuel de la sécurité est solide, avec
+  des mécanismes de défense robustes mis en place.
+
+  Points clés de la validation
+
+   1. Protection CSRF (Double-Submit HMAC) :
+       * Le système est désormais stateless (#9), éliminant les problèmes de
+         sessions multi-processus.
+       * Le jeton CSRF est dérivé par HMAC-SHA256 du sid (stable session ID)
+         contenu dans le JWT, garantissant qu'un attaquant ne peut ni le prédire
+         ni le falsifier sans la clé secrète.
+       * La validation utilise timingSafeEqual pour contrer les attaques
+         temporelles.
+
+   2. Sécurisation des JWT :
+       * Validation stricte des en-têtes (alg: HS256 et typ: JWT) avant tout
+         traitement (#22), rejetant ainsi les attaques de type alg:none.
+       * Comparaison de signature sécurisée contre les attaques temporelles.
+       * Synchronisation stricte entre l'expiration du cookie (maxAge) et celle
+         du jeton (exp) (#8).
+
+   3. Gestion du Stockage et Entrées/Sorties :
+       * Toutes les opérations de stockage des coffres (storage.ts) ont été
+         réécrites en asynchrone (fs/promises), débloquant la boucle
+         d'événements (#16).
+       * Protection contre la traversée de chemin (path traversal) renforcée
+         dans getUserDir.
+       * Correction des fuites de descripteurs de fichiers dans listVaults
+         (#10).
+       * Ajout d'un suffixe aléatoire de 4 octets aux noms de fichiers des
+         coffres pour éviter les collisions (#17).
+
+   4. Assainissement et Validation (Sanitizer) :
+       * sanitizeVaultContent valide désormais strictement la structure JSON
+         (coffre chiffré ou import KeePass) au lieu d'accepter n'importe quel
+         JSON valide (#12).
+       * Les noms d'utilisateurs sont systématiquement mis en minuscules pour
+         éviter les divergences de systèmes de fichiers case-sensitive (#N8).
+       * Lecture en flux (streaming) des corps de requêtes avec vérification de
+         taille en temps réel, empêchant l'épuisement de la mémoire par des
+         requêtes massives (#11).
+
+   5. Audit des logs et Points de test :
+       * Les chemins des requêtes sont assainis (remplacement des caractères de
+         contrôle par _) avant d'être loggués, prévenant l'injection de logs
+         (#15).
+       * Les points de terminaison de test (/api/test/*) sont strictement
+         protégés par une vérification NODE_ENV === 'test', les rendant
+         inaccessibles en production ou staging (#7).
+
+  Éléments restant ouverts (Notes de déploiement)
+
+  Deux points mineurs restent identifiés comme des préoccupations de déploiement
+  plutôt que des failles de code :
+
+   * N3 (Limitation de débit) : Derrière un proxy inverse (nginx, Docker),
+     getClientAddress() peut retourner l'IP du proxy. Il est recommandé de
+     configurer l'en-tête X-Forwarded-For uniquement si le proxy est de
+     confiance, ou de déporter la limitation de débit au niveau du proxy.
+   * N5 (SameSite=Lax) : Bien que tous les points de mutation soient protégés
+     contre le CSRF, passer à SameSite=Strict pour le cookie d'authentification
+     offrirait une défense en profondeur supplémentaire.
+
+  Conclusion : L'API présente un excellent niveau de sécurité. L'implémentation
+  est conforme aux standards modernes (OWASP) et les vulnérabilités critiques
+  précédemment rapportées ont été traitées avec rigueur.
+```
+
+Modifying SameSite=Lax to SameSite=Strict fails tests/unit/api/login.test.ts
+and tests/unit/api/renew.test.ts  fix them
 
 # FUTURE
 
