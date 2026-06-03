@@ -1171,11 +1171,11 @@ fix other issues from `ProjectNotes/APIsecurityReport-20260531.md` UNFINISHED
   tests/e2e/unlock_guidance.spec.ts
   tests/unit/api/auth-csrf.test.ts
 
-# 123 I18N check
+# 123 I18N check (Gemini)
 
 Check whether i18n is complete for all texts seen by the UI user. 
 
-## 124 localStorage safety
+## 124 localStorage safety (Gemini)
 
 Check the use of localStorage:
 - check that getItem of JSON stored objects are always safely parsed,
