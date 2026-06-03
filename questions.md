@@ -1092,7 +1092,7 @@ and fix `tests/e2e/vault_situations.spec.ts`
 
 Otherwise if the authentication token is obsolete, the client should
 force the user to reauthenticate after a call to server API is rejected
-for bad authentication.
+for bad authentication. | ✅ **Done**
 
 ```
 ✦ I have implemented the automatic reauthentication mechanism. 
@@ -1163,22 +1163,27 @@ Fix 'Body fully loaded before size check'
 
 Fix `sanitizeVaultContent` accepts any truthy JSON
 
-fix CSRF store is process-local
+fix CSRF store is process-local 
 
+fix other issues from `ProjectNotes/APIsecurityReport-20260531.md` UNFINISHED
 
-fix tests/unit/api/history.test.ts and tests/unit/server/users.password.test.ts and tests/unit/sanitizer.test.ts and tests/unit/server/storage.test.ts
+(With Gemini) fix tests/e2e/history.spec.ts
+  tests/e2e/unlock_guidance.spec.ts
+  tests/unit/api/auth-csrf.test.ts
 
-# 123 I18N check (Gemini)
+# 123 I18N check
 
-Check whether i18n is complete for all texts seen by the UI user.
+Check whether i18n is complete for all texts seen by the UI user. 
 
-## 124 localStorage safety (Gemini)
+## 124 localStorage safety
 
 Check the use of localStorage:
-- check that getItem of JSON stored objects are always safely parsed, 
+- check that getItem of JSON stored objects are always safely parsed,
 - check that setItem are safely executed
 
+## 125 update README (Gemini)
 
+update AGENTS.md and README.md
 
 # FUTURE
 
@@ -1200,33 +1205,12 @@ icon for desktop shortcut
 
 
 
-## Code Security Review
-
-Examine the code of the server API (in `src/routes/api`) and check for
-- Bugs: logic errors, off-by-one, null handling, race condition
-- Security: injection risk, auth issues, data exposure
-- Performance: N+1 queries, unnecessary loops, memory leaks
-- Maintainability: Naming, complexity, duplication
-- Edge cases: what inputs would break the webapp
-For each issue:
-- Severity: Critical / High / Medium / Low
-- Location: file, line number
-- What's wrong
-- proposed fix 
-Summarize your findings in the file named 
-`ProjectNotes/APIsecurityReport-20260209.md`
-
-
-
 
 
 
 # Potential FUTURE
 
 bypass Login page if coming from authenticated nginx proxy ?
-
-ask for a small part of the vault password to re-unlock it once
-authenticated.
 
 blob for vault rather than base64
 

@@ -170,14 +170,17 @@ export function sanitizeVaultContent(content: unknown): string {
     throw new Error('Vault content has unexpected structure');
 }
 
-/** Shape 1: ciphered vault — { iv: string, cipher: string } */
+/** Shape 1: ciphered vault — { iv: string, cipher: string } or wrapped in { date, data } */
 function isCipheredVault(v: unknown): boolean {
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+
+    // Support both wrapped format { date, data: { iv, cipher } }
+    // and flat format { iv, cipher }
+    const target = (v as any).data && typeof (v as any).data === 'object' ? (v as any).data : v;
+
     return (
-        typeof v === 'object' &&
-        v !== null &&
-        !Array.isArray(v) &&
-        typeof (v as any).iv === 'string'     && (v as any).iv.length > 0 &&
-        typeof (v as any).cipher === 'string' && (v as any).cipher.length > 0
+        typeof target.iv === 'string'     && target.iv.length > 0 &&
+        typeof target.cipher === 'string' && target.cipher.length > 0
     );
 }
 

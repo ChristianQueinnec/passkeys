@@ -60,7 +60,8 @@ create_test_users () {
   {"username":"history_test", "password":"password"},
   {"username":"deletion_test", "password":"password"},
   {"username":"pass_change_test", "password":"password"},
-  {"username":"vault_change_test", "password":"password"}
+  {"username":"vault_change_test", "password":"password"},
+  {"username":"no_vault_user", "password":"password"}
 ]
 EOF
     chmod 600 data/users.json

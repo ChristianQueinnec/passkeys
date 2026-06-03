@@ -63,16 +63,16 @@ export function verifyCSRF(request: Request): Response | null {
     const sessionId = getSessionIdFromRequest(request);
 
     if (!csrfTokenRaw || !sessionId) {
-        return json({ error: 'Missing CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
+        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
     }
 
     try {
         const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
         if (!validateCSRFToken(sessionId, csrfToken)) {
-            return json({ error: 'Invalid CSRF token' }, { status: HTTP_STATUS.FORBIDDEN });
+            return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
         }
     } catch {
-        return json({ error: 'Invalid CSRF token format' }, { status: HTTP_STATUS.FORBIDDEN });
+        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
     }
 
     return null;
