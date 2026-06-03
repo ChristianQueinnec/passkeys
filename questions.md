@@ -1200,12 +1200,33 @@ icon for desktop shortcut
 
 
 
+## Code Security Review
+
+Examine the code of the server API (in `src/routes/api`) and check for
+- Bugs: logic errors, off-by-one, null handling, race condition
+- Security: injection risk, auth issues, data exposure
+- Performance: N+1 queries, unnecessary loops, memory leaks
+- Maintainability: Naming, complexity, duplication
+- Edge cases: what inputs would break the webapp
+For each issue:
+- Severity: Critical / High / Medium / Low
+- Location: file, line number
+- What's wrong
+- proposed fix 
+Summarize your findings in the file named 
+`ProjectNotes/APIsecurityReport-20260209.md`
+
+
+
 
 
 
 # Potential FUTURE
 
 bypass Login page if coming from authenticated nginx proxy ?
+
+ask for a small part of the vault password to re-unlock it once
+authenticated.
 
 blob for vault rather than base64
 
