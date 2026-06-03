@@ -1264,6 +1264,8 @@ Assess the state of the security of the server API with respect to
 Modifying SameSite=Lax to SameSite=Strict fails tests/unit/api/login.test.ts
 and tests/unit/api/renew.test.ts  fix them
 
+N3 fixed in main11 nginx
+
 # FUTURE
 
 pwa and icon

@@ -79,10 +79,10 @@ do.run.remote.container :
 	   docker network create --subnet 172.55.0.0/16 snipnet ; fi
 	PASSKEYS=$$(cat passkeys.id) docker compose up -d
 
-deploy : run.container \
+deploy : archive.container \
+		run.container \
 		run.tests.with.container \
 		clean \
-		archive.container \
 		run.remote.container
 
 clean :
