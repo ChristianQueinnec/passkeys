@@ -17,6 +17,7 @@ export class VaultState {
     showHistoryModal = $state(false);
     historyFiles = $state<HistoryItem[]>([]);
     dirtySecrets = $state<Map<string, PasswordEntry>>(new Map());
+    clipboardRemainingTime = $state<number | null>(null);
     easyUnlockChallenge = $state<EasyUnlockChallenge | null>(null);
     encryptionKey: EncryptionKey;
     onLock: () => void;

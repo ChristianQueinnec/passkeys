@@ -12,8 +12,9 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { settings } from "$lib/stores/useSettings.svelte";
     import { toasts } from "$lib/stores/useToasts.svelte";
-    import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
     import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
+    import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
+    import ClipboardProgressBar from "$lib/components/ClipboardProgressBar.svelte";
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
     import { EncryptionKey } from "$lib/vaultkey";
 
@@ -242,6 +243,8 @@
         reader.readAsText(file);
     }
 </script>
+
+<ClipboardProgressBar remainingTime={vault.clipboardRemainingTime} />
 
 <div class="app-container" data-phase={phase}>
     <div class="header">

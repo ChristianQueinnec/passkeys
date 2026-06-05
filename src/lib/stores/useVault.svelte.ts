@@ -93,6 +93,9 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         get easyUnlockChallenge() {
             return state.easyUnlockChallenge;
         },
+        get clipboardRemainingTime() {
+            return state.clipboardRemainingTime;
+        },
 
         // Setters
         setItems: (newItems: PasswordEntry[]) => {

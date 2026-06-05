@@ -6,9 +6,15 @@ import type { VaultCrypto } from "./crypto";
 
 export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
+    let clipboardInterval: ReturnType<typeof setInterval> | null = null;
     let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
 
     function lockNow() {
+        if (clipboardInterval) {
+            clearInterval(clipboardInterval);
+            clipboardInterval = null;
+        }
+        state.clipboardRemainingTime = null;
         state.encryptionKey.remove();
         state.onLock();
     }
@@ -38,6 +44,7 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
                 window.removeEventListener(event, resetTimer),
             );
             if (inactivityTimer) clearTimeout(inactivityTimer);
+            if (clipboardInterval) clearInterval(clipboardInterval);
         };
     });
 
@@ -66,6 +73,28 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
+        if (clipboardInterval) {
+            clearInterval(clipboardInterval);
+        }
+
+        const duration = (window as any).__TESTING__
+            ? 1000
+            : settings.current.clipboardTimeout;
+
+        state.clipboardRemainingTime = duration;
+        const startTime = Date.now();
+
+        clipboardInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            state.clipboardRemainingTime = Math.max(0, duration - elapsed);
+            if (state.clipboardRemainingTime === 0) {
+                if (clipboardInterval) {
+                    clearInterval(clipboardInterval);
+                    clipboardInterval = null;
+                }
+            }
+        }, 100);
+
         clipboardTimeout = setTimeout(async () => {
             try {
                 await navigator.clipboard.writeText("");
@@ -73,9 +102,12 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
                 console.error("Failed to clear clipboard", e);
             }
             clipboardTimeout = null;
-        }, (window as any).__TESTING__
-            ? 1000
-            : settings.current.clipboardTimeout);
+            state.clipboardRemainingTime = null;
+            if (clipboardInterval) {
+                clearInterval(clipboardInterval);
+                clipboardInterval = null;
+            }
+        }, duration);
     }
 
     async function openSite(itemId: string) {
