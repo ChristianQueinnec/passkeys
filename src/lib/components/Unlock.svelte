@@ -113,7 +113,7 @@
           }}
         >
           <input
-            type="text"
+            type="password"
             bind:value={easyAnswer}
             bind:this={easyInput}
             placeholder={easyUnlockLabel(easyUnlockChallenge)}

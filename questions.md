@@ -1271,19 +1271,17 @@ N3 fixed in main11 nginx
 When copying to the clipboard, display an horizontal bar showing how
 many seconds remain before the clipboard is reset. 
 
-## 127 Shortcut Icon
+## 127 Shortcut Icon (Gemini)
 
 On a smartphone (android or iphone), when installing a shortcut to the
 host running the Passkeys webapp, set the icon of the shortcut to be
-the favicon.
+the favicon. **Unsure!**
 
 
 
 
 
 # FUTURE
-
-pwa and icon
 
 update AGENTS.md and README.md
 
