@@ -1,10 +1,7 @@
-import { json } from '@sveltejs/kit';
 import { getUser } from '$lib/server/users';
-import { sanitizeJWTToken, sanitizeCSRFToken } from '$lib/server/sanitizer';
-import { validateCSRFToken, getSessionIdFromRequest } from '$lib/server/csrf';
+import { sanitizeJWTToken } from '$lib/server/sanitizer';
 import { verifyToken } from '$lib/server/jwt';
 import { getAuthTokenFromRequest } from '$lib/server/auth-cookie';
-import { HTTP_STATUS } from './http-codes';
 import type { User } from '$lib/types';
 import logger from '$lib/server/logger';
 
@@ -49,54 +46,6 @@ export function getAuthPayload(request: Request) {
         logger.error({ error: e.message }, 'Token payload extraction error');
         return null;
     }
-}
-
-/**
- * Verify the CSRF token in a request without requiring a full User lookup.
- * Used by endpoints (e.g. /api/renew) that need CSRF protection but obtain
- * their auth payload through a different path.
- *
- * Returns null on success, or an error Response on failure.
- */
-export function verifyCSRF(request: Request): Response | null {
-    const csrfTokenRaw = request.headers.get('X-CSRF-Token');
-    const sessionId = getSessionIdFromRequest(request);
-
-    if (!csrfTokenRaw || !sessionId) {
-        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
-    }
-
-    try {
-        const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
-        if (!validateCSRFToken(sessionId, csrfToken)) {
-            return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
-        }
-    } catch {
-        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
-    }
-
-    return null;
-}
-
-/**
- * Combined helper for authentication and CSRF validation
- * Returns User if successful, or Response (error) if not
- */
-export async function verifyRequest(
-    request: Request,
-    options: { csrf?: boolean } = {}
-): Promise<User | Response> {
-    const user = getAuthUser(request);
-    if (!user) {
-        return json({ error: 'Unauthorized' }, { status: HTTP_STATUS.UNAUTHORIZED });
-    }
-
-    if (options.csrf) {
-        const csrfError = verifyCSRF(request);
-        if (csrfError) return csrfError;
-    }
-
-    return user;
 }
 
 /**

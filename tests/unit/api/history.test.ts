@@ -15,6 +15,7 @@ vi.mock('$lib/server/users', () => ({
 vi.mock('$lib/server/csrf', () => ({
     validateCSRFToken: vi.fn(),
     getSessionIdFromRequest: vi.fn(),
+    verifyCSRF: vi.fn(),
 }));
 vi.mock('$lib/server/jwt', () => ({
     verifyToken: vi.fn(),
@@ -37,6 +38,7 @@ const mockAuth = (username: string | null) => {
 
         vi.mocked(csrf.validateCSRFToken).mockReturnValue(true);
         vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue('mock-session-id');
+        vi.mocked(csrf.verifyCSRF).mockReturnValue(null);
 
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIn0.signature';
 
@@ -102,7 +104,7 @@ describe('API History', () => {
 
     it('DELETE should return 403 if CSRF token invalid', async () => {
         const { headers } = mockAuth('testuser');
-        vi.mocked(csrf.validateCSRFToken).mockReturnValue(false);
+        vi.mocked(csrf.verifyCSRF).mockReturnValue(new Response(null, { status: 403 }));
 
         const url = new URL('http://localhost/api/vault/history?filename=old.vault');
         const request = new Request(url, { method: 'DELETE', headers });

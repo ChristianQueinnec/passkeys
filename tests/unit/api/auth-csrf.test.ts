@@ -5,18 +5,17 @@ vi.mock('$lib/server/sanitizer', () => ({
     sanitizeJWTToken:  vi.fn((t: string) => t),
     sanitizeCSRFToken: vi.fn((t: string) => t),
 }));
-vi.mock('$lib/server/csrf', () => ({
-    validateCSRFToken:      vi.fn(),
-    getSessionIdFromRequest: vi.fn(),
+vi.mock('$lib/server/jwt', () => ({
+    computeCSRFToken: vi.fn(() => 'a'.repeat(64)),
+    verifyToken: vi.fn(() => ({ sid: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee' })),
 }));
-vi.mock('$lib/server/jwt',         () => ({ verifyToken: vi.fn() }));
 vi.mock('$lib/server/auth-cookie', () => ({ getAuthTokenFromRequest: vi.fn() }));
 
-import { verifyCSRF } from '$lib/server/auth';
-import * as csrf from '$lib/server/csrf';
+import { verifyCSRF } from '$lib/server/csrf';
 import * as sanitizer from '$lib/server/sanitizer';
+import * as authCookie from '$lib/server/auth-cookie';
+import * as jwt from '$lib/server/jwt';
 
-const VALID_SID   = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const VALID_TOKEN = 'a'.repeat(64); // 64-char hex passes sanitizeCSRFToken
 
 function makeRequest(csrfHeader?: string): Request {
@@ -28,8 +27,10 @@ function makeRequest(csrfHeader?: string): Request {
 describe('verifyCSRF', () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue(VALID_SID);
-        vi.mocked(csrf.validateCSRFToken).mockReturnValue(true);
+        vi.mocked(jwt.computeCSRFToken).mockReturnValue(VALID_TOKEN);
+        vi.mocked(jwt.verifyToken).mockReturnValue({ sid: 'session-id' } as any);
+        vi.mocked(sanitizer.sanitizeCSRFToken).mockImplementation((t: unknown) => t as string);
+        vi.mocked(authCookie.getAuthTokenFromRequest).mockReturnValue('valid-token');
     });
 
     // -------------------------------------------------------------------------
@@ -45,7 +46,7 @@ describe('verifyCSRF', () => {
 
             verifyCSRF(makeRequest(VALID_TOKEN));
 
-            expect(csrf.validateCSRFToken).toHaveBeenCalledWith(VALID_SID, sanitised);
+            expect(sanitizer.sanitizeCSRFToken).toHaveBeenCalledWith(VALID_TOKEN);
         });
     });
 
@@ -61,7 +62,6 @@ describe('verifyCSRF', () => {
 
         it('X-CSRF-Token header is an empty string', async () => {
             // empty string is falsy — treated same as absent
-            vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue(VALID_SID);
             const result = verifyCSRF(makeRequest(''));
 
             expect(result).not.toBeNull();
@@ -69,7 +69,7 @@ describe('verifyCSRF', () => {
         });
 
         it('session id cannot be extracted from the request', async () => {
-            vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue(null);
+            vi.mocked(authCookie.getAuthTokenFromRequest).mockReturnValue(null);
 
             const result = verifyCSRF(makeRequest(VALID_TOKEN));
 
@@ -79,7 +79,7 @@ describe('verifyCSRF', () => {
         });
 
         it('both header and session id are absent', async () => {
-            vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue(null);
+            vi.mocked(authCookie.getAuthTokenFromRequest).mockReturnValue(null);
 
             const result = verifyCSRF(makeRequest());
 
@@ -88,9 +88,7 @@ describe('verifyCSRF', () => {
         });
 
         it('token does not match the stored value', async () => {
-            vi.mocked(csrf.validateCSRFToken).mockReturnValue(false);
-
-            const result = verifyCSRF(makeRequest(VALID_TOKEN));
+            const result = verifyCSRF(makeRequest('b'.repeat(64)));
 
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
@@ -107,8 +105,6 @@ describe('verifyCSRF', () => {
             expect(result).not.toBeNull();
             expect(result!.status).toBe(403);
             expect(await result!.json()).toMatchObject({ error: 'auth.unauthorized' });
-            // validateCSRFToken must NOT be called when sanitisation throws
-            expect(csrf.validateCSRFToken).not.toHaveBeenCalled();
         });
     });
 

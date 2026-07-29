@@ -1,4 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
+import { json } from '@sveltejs/kit';
+import { sanitizeCSRFToken } from '$lib/server/sanitizer';
+import { HTTP_STATUS } from './http-codes';
 import { computeCSRFToken } from './jwt';
 import { getAuthTokenFromRequest } from './auth-cookie';
 import { verifyToken } from './jwt';
@@ -54,6 +57,27 @@ export function validateCSRFToken(sid: string, token: string): boolean {
     if (expectedBuf.length !== tokenBuf.length) return false;
 
     return timingSafeEqual(expectedBuf, tokenBuf);
+}
+
+/** Verify the CSRF token in a request without requiring a User lookup. */
+export function verifyCSRF(request: Request): Response | null {
+    const csrfTokenRaw = request.headers.get('X-CSRF-Token');
+    const sessionId = getSessionIdFromRequest(request);
+
+    if (!csrfTokenRaw || !sessionId) {
+        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
+    }
+
+    try {
+        const csrfToken = sanitizeCSRFToken(csrfTokenRaw);
+        if (!validateCSRFToken(sessionId, csrfToken)) {
+            return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
+        }
+    } catch {
+        return json({ error: 'auth.unauthorized' }, { status: HTTP_STATUS.FORBIDDEN });
+    }
+
+    return null;
 }
 
 /**

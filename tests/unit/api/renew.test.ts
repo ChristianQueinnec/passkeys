@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('$lib/server/auth', () => ({
     getAuthUser: vi.fn(),
     getAuthPayload: vi.fn(),
-    verifyCSRF: vi.fn(),
 }));
 vi.mock('$lib/server/jwt', async (importActual) => {
     const real = await importActual<typeof import('$lib/server/jwt')>();
@@ -16,6 +15,7 @@ vi.mock('$lib/server/jwt', async (importActual) => {
 vi.mock('$lib/server/csrf', () => ({
     generateCSRFToken: vi.fn(),
     removeCSRFToken: vi.fn(),
+    verifyCSRF: vi.fn(),
 }));
 
 import * as renewHandler from '../../../src/routes/api/renew/+server';
@@ -37,7 +37,7 @@ describe('API Token Renewal', () => {
         vi.resetAllMocks();
         cookies.set.mockClear();
         // Default: CSRF check passes
-        vi.mocked(auth.verifyCSRF).mockReturnValue(null);
+        vi.mocked(csrf.verifyCSRF).mockReturnValue(null);
     });
 
     function makeRequest(csrfHeader?: string) {
@@ -61,7 +61,7 @@ describe('API Token Renewal', () => {
             expect(response.status).toBe(401);
             expect(data.error).toBe('auth.unauthorized');
             // CSRF must not be checked if JWT is absent
-            expect(auth.verifyCSRF).not.toHaveBeenCalled();
+            expect(csrf.verifyCSRF).not.toHaveBeenCalled();
         });
     });
 
@@ -69,7 +69,7 @@ describe('API Token Renewal', () => {
     describe('CSRF protection', () => {
         it('returns 403 when the CSRF token is missing', async () => {
             vi.mocked(auth.getAuthPayload).mockReturnValue(MOCK_PAYLOAD);
-            vi.mocked(auth.verifyCSRF).mockReturnValue(
+            vi.mocked(csrf.verifyCSRF).mockReturnValue(
                 new Response(JSON.stringify({ error: 'Missing CSRF token' }), { status: 403 })
             );
 
@@ -86,7 +86,7 @@ describe('API Token Renewal', () => {
 
         it('returns 403 when the CSRF token is invalid', async () => {
             vi.mocked(auth.getAuthPayload).mockReturnValue(MOCK_PAYLOAD);
-            vi.mocked(auth.verifyCSRF).mockReturnValue(
+            vi.mocked(csrf.verifyCSRF).mockReturnValue(
                 new Response(JSON.stringify({ error: 'Invalid CSRF token' }), { status: 403 })
             );
 
@@ -100,17 +100,17 @@ describe('API Token Renewal', () => {
 
         it('calls verifyCSRF after a valid JWT, before issuing a new token', async () => {
             vi.mocked(auth.getAuthPayload).mockReturnValue(MOCK_PAYLOAD);
-            vi.mocked(auth.verifyCSRF).mockReturnValue(null);  // pass
+            vi.mocked(csrf.verifyCSRF).mockReturnValue(null);  // pass
             vi.mocked(jwt.generateToken).mockReturnValue(MOCK_TOKEN);
             vi.mocked(csrf.generateCSRFToken).mockReturnValue(MOCK_CSRF);
 
             await renewHandler.POST(makeEvent(makeRequest('valid-csrf')));
 
             // verifyCSRF must be called exactly once
-            expect(auth.verifyCSRF).toHaveBeenCalledOnce();
+            expect(csrf.verifyCSRF).toHaveBeenCalledOnce();
 
             // Verify call order: CSRF check before token generation
-            const csrfOrder     = vi.mocked(auth.verifyCSRF).mock.invocationCallOrder[0];
+            const csrfOrder     = vi.mocked(csrf.verifyCSRF).mock.invocationCallOrder[0];
             const generateOrder = vi.mocked(jwt.generateToken).mock.invocationCallOrder[0];
             expect(csrfOrder).toBeLessThan(generateOrder);
         });
@@ -120,7 +120,7 @@ describe('API Token Renewal', () => {
     describe('Successful renewal', () => {
         beforeEach(() => {
             vi.mocked(auth.getAuthPayload).mockReturnValue(MOCK_PAYLOAD);
-            vi.mocked(auth.verifyCSRF).mockReturnValue(null);
+            vi.mocked(csrf.verifyCSRF).mockReturnValue(null);
             vi.mocked(jwt.generateToken).mockReturnValue(MOCK_TOKEN);
             vi.mocked(csrf.generateCSRFToken).mockReturnValue(MOCK_CSRF);
         });

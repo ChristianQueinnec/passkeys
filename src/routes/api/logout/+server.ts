@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
-import { verifyRequest } from '$lib/server/auth';
+import { verifyRequest } from '$lib/server/request-verification';
 import { removeCSRFToken } from '$lib/server/csrf';
 import { getAuthPayload } from '$lib/server/auth';
 import { HTTP_STATUS } from '$lib/server/http-codes';

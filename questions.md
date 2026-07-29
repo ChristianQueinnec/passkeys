@@ -1321,7 +1321,7 @@ may be stored, more persistently, in indexed db.
 
 # FUTURE
 
-
+generate new passwords
 
 
 

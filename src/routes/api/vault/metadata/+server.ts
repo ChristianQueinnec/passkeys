@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { listVaults } from '$lib/server/storage';
-import { verifyRequest } from '$lib/server/auth';
+import { verifyRequest } from '$lib/server/request-verification';
 import { handleServerError } from '$lib/server/error-handler';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import type { NewerVaultResponse, ErrorResponse } from '$lib/server/requestTypes';

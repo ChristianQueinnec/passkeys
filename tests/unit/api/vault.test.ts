@@ -15,6 +15,7 @@ vi.mock('$lib/server/users', () => ({
 vi.mock('$lib/server/csrf', () => ({
     validateCSRFToken: vi.fn(),
     getSessionIdFromRequest: vi.fn(),
+    verifyCSRF: vi.fn(),
 }));
 vi.mock('$lib/server/jwt', () => ({
     verifyToken: vi.fn(),
@@ -31,6 +32,7 @@ const mockAuth = (username: string | null) => {
         vi.mocked(users.getUser).mockReturnValue({ username, password: 'salt:hash' } as any);
         vi.mocked(csrf.validateCSRFToken).mockReturnValue(true);
         vi.mocked(csrf.getSessionIdFromRequest).mockReturnValue('mock-session-id');
+        vi.mocked(csrf.verifyCSRF).mockReturnValue(null);
         const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3R1c2VyIn0.signature';
         return {
             headers: new Headers({
@@ -102,7 +104,7 @@ describe('API Vault', () => {
 
     it('POST should return 403 if CSRF token invalid', async () => {
         const { headers } = mockAuth('testuser');
-        vi.mocked(csrf.validateCSRFToken).mockReturnValue(false);
+        vi.mocked(csrf.verifyCSRF).mockReturnValue(new Response(null, { status: 403 }));
         const request = new Request('http://localhost', {
             method: 'POST',
             headers,

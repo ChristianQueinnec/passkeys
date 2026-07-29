@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { updateUserPassword } from '$lib/server/users';
 import { verifyPassword } from '$lib/server/crypto-utils';
-import { verifyRequest, peekUsernameFromRequest } from '$lib/server/auth';
+import { peekUsernameFromRequest } from '$lib/server/auth';
+import { verifyRequest } from '$lib/server/request-verification';
 import { sanitizePassword, sanitizeRequestBody, validateObject } from '$lib/server/sanitizer';
 import { handleServerError } from '$lib/server/error-handler';
 import { HTTP_STATUS } from '$lib/server/http-codes';

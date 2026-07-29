@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { getAuthPayload, verifyCSRF } from '$lib/server/auth';
+import { getAuthPayload } from '$lib/server/auth';
 import { generateToken, REMEMBER_EXPIRY_SECONDS, SESSION_EXPIRY_SECONDS } from '$lib/server/jwt';
-import { generateCSRFToken, removeCSRFToken } from '$lib/server/csrf';
+import { generateCSRFToken, removeCSRFToken, verifyCSRF } from '$lib/server/csrf';
 import { AUTH_COOKIE_NAME } from '$lib/server/auth-cookie';
 import { HTTP_STATUS } from '$lib/server/http-codes';
 import { handleServerError } from '$lib/server/error-handler';

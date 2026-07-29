@@ -185,3 +185,18 @@ do.continue.on.mac :
 	npx playwright install
 
 # }}}
+# {{{ Experimentations
+
+process.passkeys.with.codex :
+	graphify extract . --code-only
+# open codex
+# /graphify does not work
+# graphify extract . --code-only  # generates ./graphify-out/
+# open -a obsidian
+#   open folder ~/Passkeys/graphify-out/
+# after updates
+	graphify . --update --code-only
+	graphify cluster-only . --backend codex
+
+
+# }}}
