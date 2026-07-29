@@ -156,7 +156,8 @@ run.opencode :
 # requires Ollama, very slow!
 	grep OLLAMA_HOST /etc/systemd/system/ollama.service
 	rsync -avu /usr/share/ollama/.ollama/ /home/queinnec/.ollama/
-	${HOME}/IA/OpenCode/.opencode/bin/opencode
+#	${HOME}/IA/OpenCode/.opencode/bin/opencode
+	${HOME}/.opencode/bin/opencode
 
 run.codex :
 	${HOME}/IA/Codex/node_modules/.bin/codex

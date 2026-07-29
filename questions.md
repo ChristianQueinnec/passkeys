@@ -1277,6 +1277,32 @@ On a smartphone (android or iphone), when installing a shortcut to the
 host running the Passkeys webapp, set the icon of the shortcut to be
 the favicon. **Unsure!**
 
+## 128 Hide password fragments
+
+Typing password fragments for easy unlocking should hide the typed characters.
+
+```
+✦ L'implémentation de cette fonctionnalité est déjà pleinement effective. Les fragments de mot de passe saisis lors du déverrouillage rapide (easy unlock) sont masqués de manière sécurisée.
+
+  Détails techniques :
+  - **Composant concerné** : `src/lib/components/Unlock.svelte`.
+  - **Modification effectuée** : L'élément `<input>` dédié à la saisie de l'easy unlock utilise désormais l'attribut `type="password"` (au lieu de `type="text"` auparavant).
+  - **Commit de référence** : Commit `4eb70b6` ("hide easy unlock password").
+  - **Tests de validation** : Les tests unitaires et de bout en bout (E2E) valident que le champ avec `data-testid="easy-unlock-input"` est correctement accédé et manipulé pour les tests automatisés, tout en masquant visuellement la saisie pour l'utilisateur.
+```
+
+## 129 Warning Dismissal and Typing Auto-Dismiss
+
+Allow to close displayed warnings.
+
+Typing in an input field should also close displayed warnings.
+
+## 130 scoped search
+
+When searching (that is when some characters appear in the search
+input field) clicking on a folder should limit the search to that
+folder.
+
 
 
 
@@ -1317,4 +1343,4 @@ Allow the webapp user to choose the inactivity timeout currently set
 to 15 minutes.
 
 Provide an implementation of `storage.ts` on Google drive or other web
-drive rather than a directory on the server. ????
+drive rather than a directory on the gserver. ????
