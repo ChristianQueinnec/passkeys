@@ -97,9 +97,26 @@
       >{i18n.t("auth.login")}</button
     >
   </form>
+
+  <div class="about-link">
+    <a href="/about" data-testid="login-about-link">{i18n.t("app.about")}</a>
+  </div>
 </div>
 
 <style>
+  .about-link {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .about-link a {
+    color: #666;
+    text-decoration: none;
+  }
+  .about-link a:hover {
+    text-decoration: underline;
+  }
+
   .card {
     max-width: 400px;
     margin: 2rem auto;

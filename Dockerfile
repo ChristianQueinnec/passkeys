@@ -30,6 +30,7 @@ WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/package.json .
+COPY --from=builder /app/passkeys.tag /app/passkeys.id ./
 
 # JWT_SECRET is generated at container startup in docker-entrypoint.sh,
 # not here — writing it in a RUN layer would bake it into the image.

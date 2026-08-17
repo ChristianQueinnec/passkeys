@@ -1291,42 +1291,44 @@ Typing password fragments for easy unlocking should hide the typed characters.
   - **Tests de validation** : Les tests unitaires et de bout en bout (E2E) valident que le champ avec `data-testid="easy-unlock-input"` est correctement accédé et manipulé pour les tests automatisés, tout en masquant visuellement la saisie pour l'utilisateur.
 ```
 
-## 129 Warning Dismissal and Typing Auto-Dismiss
+## Attempt to use `graphify`
 
-Allow to close displayed warnings.
+See `make process.passkeys` and ./graphify-questions.md 
+Could not make it work with Ollama.
 
-Typing in an input field should also close displayed warnings.
+## 129 date and version (Gemini)
+
+Display date and version of Passkeys with URL `/about`. Date is the
+date of the creation of the Docker container (see `passkeys.tag`) and
+version is the container id held in `passkeys.id`.
 
 ## 130 scoped search
 
 When searching (that is when some characters appear in the search
 input field) clicking on a folder should limit the search to that
-folder. The change of scope should be notified with a warning.
+folder. Warns the user of the scope change.
 
+
+
+## FUTURE Warning Dismissal and Typing Auto-Dismiss
+
+Allow to close displayed warnings.
+
+Typing in an input field should also close displayed warnings.
+
+allow to type longer prefix or suffix for easy unlocking
 
 copy to clipboard does not work on mac
 
 on linux, copy to clipboard should also use X clipboard
 
-Allow the user to specify the delays
-- 
-
-rendre configurables les delais 
-
-
-# FUTURE
+Determine the delays that the user may define.
+Allow the user to specify the delays. 
 
 update AGENTS.md and README.md
 
-
-##
-
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
-
-
-
-# FUTURE
 
 generate new passwords
 

@@ -1,7 +1,9 @@
 export const translations = {
     en: {
         "app.title": "Passkeys - Secure Vault",
+        "app.description": "A secure, modern web application for managing passwords and sensitive information, inspired by KeePass but designed as a web-first Progressive Web App ",
         "auth.login": "Sign In",
+        "auth.back": "Authenticate",
         "auth.username": "Username",
         "auth.password": "Password",
         "auth.unlock": "Unlock Vault",
@@ -40,6 +42,7 @@ export const translations = {
         "auth.safe_device_note": "This device was previously marked as safe. Credentials will be stored locally.",
         "auth.unsafe_device_note": "This device was previously marked as unsafe. Nothing will be stored.",
         "app.help": "Help & Documentation",
+        "app.about": "About Passkeys",
         "app.loading": "Loading...",
         "vault.new_entry": "+ Add New Credential",
         "vault.save": "Securely Save Changes",
@@ -131,7 +134,9 @@ export const translations = {
     },
     fr: {
         "app.title": "Passkeys - Coffre Sécurisé",
+        "app.description": "Une application Web sûre, moderne pour conserver mots de passe et autres informations sensibles, inspirée de KeePass.",
         "auth.login": "Se connecter",
+        "auth.back": "S'identifier",
         "auth.username": "Nom d'utilisateur",
         "auth.password": "Mot de passe",
         "auth.unlock": "Déverrouiller le coffre",
@@ -170,6 +175,7 @@ export const translations = {
         "auth.safe_device_note": "Cet appareil a été précédemment marqué comme sûr. Les identifiants seront stockés localement.",
         "auth.unsafe_device_note": "Cet appareil a été précédemment marqué comme non sûr. Rien ne sera stocké.",
         "app.help": "Aide & Documentation",
+        "app.about": "À propos de Passkeys",
         "app.loading": "Chargement...",
         "vault.new_entry": "+ Ajouter une entrée",
         "vault.save": "Enregistrer les modifications",

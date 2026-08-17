@@ -145,6 +145,7 @@ static/favicon-192.png : static/favicon.svg
 run.gemini :
 #	cd ${HOME}/IA/Gemini/ && npm update
 	${HOME}/IA/Gemini/node_modules/.bin/gemini
+# Gemini API key to be found in https://aistudio.google.com/app/api-keys
 
 run.claude :
 	claude-desktop &
@@ -165,9 +166,7 @@ run.opencode :
 
 run.codex :
 	${HOME}/IA/Codex/node_modules/.bin/codex
-# write instructions into vibecodex.md
-# then ask codex by typing:    @vibecodex.md
-# or copy/paste from questions.md
+# copy/paste from questions.md
 
 run.cursor :
 # NOT YET CONFIGURED
@@ -193,7 +192,7 @@ do.continue.on.mac :
 
 # install Graphify within ~/IA/Graphify
 
-process.passkeys.with.codex :
+process.passkeys :
 	graphify extract . --code-only
 # open codex
 # /graphify does not work
@@ -201,10 +200,12 @@ process.passkeys.with.codex :
 # open -a obsidian
 #   open folder ~/Passkeys/graphify-out/
 # after updates
-ttt:  
-	OLLAMA_BASE_URL="http://${OLLAMA_HOST}" graphify extract . \
-		--code-only --backend ollama --model qwen2.5:7b
+re.process.passkeys :
+	OLLAMA_BASE_URL="http://${OLLAMA_HOST}" \
+	OLLAMA_API_KEY=aaa \
+	graphify extract . \
+		--backend ollama --model qwen2.5:7b
 # open file:/home/queinnec/Passkeys/graphify-out/graph.html
-# obsidian graphify-out/GRAPH_REPORT.md
+# obsidian ./graphify-out/GRAPH_REPORT.md
 
 # }}}

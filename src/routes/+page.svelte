@@ -300,6 +300,14 @@
                             >
                                 {i18n.t("app.help")}
                             </a>
+                            <a
+                                href="/about"
+                                class="menu-link"
+                                data-testid="menu-about"
+                                onclick={() => (showUserMenu = false)}
+                            >
+                                {i18n.t("app.about")}
+                            </a>
                             <button
                                 onclick={handleLogout}
                                 data-testid="menu-logout"
