@@ -2,7 +2,7 @@ work :
 	./scripts/init.sh
 
 # Use docker to create the container:
-create.container :
+create.container : check.docker.configuration
 	date +%Y%m%d_%H%M%S | tr -d '\n' > passkeys.tag
 	docker buildx build \
 		--build-arg UID=$$(id -u) \
@@ -12,7 +12,7 @@ create.container :
 	docker inspect -f '{{.Id}}' passkeys:$$(cat passkeys.tag) | \
       sed -E -e 's/sha256://' -e 's/^(.{12}).*/\1/' > passkeys.id
 
-tag.container : 
+tag.container : check.docker.configuration
 	docker tag passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.tag)
 	docker tag passkeys:$$(cat passkeys.tag) \
@@ -24,7 +24,11 @@ tag.container :
 run :
 	./scripts/init.sh -u -v -e -r
 
-run.container :
+check.docker.configuration :
+	if [ -d /Applications ] ; then true ; else \
+	cd ${HOME}/.docker/ && cp -p config.json.linux config.json ; fi
+
+run.container : check.docker.configuration
 	. ./.env && PASSKEYS=$$(cat passkeys.id) docker compose up -d
 	@echo "Browse http://localhost:3000"
 	docker logs -f --tail 100 passkeys
@@ -71,7 +75,7 @@ archive.container : tag.container import.remote.vaults
 # Don't forget to be authenticated:
 #    docker login registry.queinnec.org:5000 username: codegradx
 
-run.remote.container : 
+run.remote.container : check.docker.configuration
 	rsync -avu --exclude='*~' . ${REMOTE}:Passkeys/
 	ssh ${REMOTE} make -C Passkeys do.run.remote.container
 do.run.remote.container :
@@ -187,6 +191,8 @@ do.continue.on.mac :
 # }}}
 # {{{ Experimentations
 
+# install Graphify within ~/IA/Graphify
+
 process.passkeys.with.codex :
 	graphify extract . --code-only
 # open codex
@@ -195,8 +201,10 @@ process.passkeys.with.codex :
 # open -a obsidian
 #   open folder ~/Passkeys/graphify-out/
 # after updates
-	graphify . --update --code-only
-	graphify cluster-only . --backend codex
-
+ttt:  
+	OLLAMA_BASE_URL="http://${OLLAMA_HOST}" graphify extract . \
+		--code-only --backend ollama --model qwen2.5:7b
+# open file:/home/queinnec/Passkeys/graphify-out/graph.html
+# obsidian graphify-out/GRAPH_REPORT.md
 
 # }}}

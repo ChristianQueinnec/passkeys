@@ -1301,10 +1301,17 @@ Typing in an input field should also close displayed warnings.
 
 When searching (that is when some characters appear in the search
 input field) clicking on a folder should limit the search to that
-folder.
+folder. The change of scope should be notified with a warning.
 
 
+copy to clipboard does not work on mac
 
+on linux, copy to clipboard should also use X clipboard
+
+Allow the user to specify the delays
+- 
+
+rendre configurables les delais 
 
 
 # FUTURE
@@ -1322,6 +1329,8 @@ may be stored, more persistently, in indexed db.
 # FUTURE
 
 generate new passwords
+
+provide default login when email
 
 
 

@@ -261,5 +261,8 @@ cohesion, suggesting it may eventually benefit from further  modularization."
   current structure may still be perfectly functional.
 ```
 
-please refactor as you suggest
+Please refactor as you suggest
 
+Can you commit these changes ?
+
+Provide me instead the commit message

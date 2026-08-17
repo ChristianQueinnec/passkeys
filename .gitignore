@@ -10,6 +10,7 @@ node_modules
 
 # OS
 .DS_Store
+._.DS_Store
 Thumbs.db
 
 # Env
@@ -38,3 +39,4 @@ pk.queinnec.org
 .antigravitycli/
 .#*
 vibe*.md
+graphify-out
