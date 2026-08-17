@@ -9,6 +9,7 @@
     import type { PasswordEntry, FolderNode } from "$lib/types";
     import type { Vault } from "$lib/stores/useVault.svelte";
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
+    import { toasts } from "$lib/stores/useToasts.svelte";
 
     let { onToggleView, vault } = $props();
 
@@ -23,10 +24,14 @@
 
     let selectedFolder = $state<FolderNode | null>(null);
     let filter = $state("");
+    let searchScopeSelected = $state(false);
     let displayedEntries = $derived(
         filter
             ? sortPasswordEntries(
-                  filterPasswordEntries(vault.items, filter),
+                  filterPasswordEntries(
+                      searchScopeSelected ? selectedFolder?.entries || vault.items : vault.items,
+                      filter,
+                  ),
                   i18n.language,
               )
             : sortPasswordEntries(selectedFolder?.entries || [], i18n.language),
@@ -145,6 +150,14 @@
     function toggleFolder(node: FolderNode) {
         node.isOpen = !node.isOpen;
         selectedFolder = node;
+        searchScopeSelected = true;
+        if (filter) {
+            toasts.warning(
+                i18n.t("vault.folder_search_scope", {
+                    folder: node.fullPath || i18n.t("vault.root"),
+                }),
+            );
+        }
         // displayedEntries is derived now
         folderTree = folderTree;
     }

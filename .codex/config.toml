@@ -1,0 +1,7 @@
+[[rules]]
+pattern = [ "sed", "diff", "rg",
+            "graphify update",
+            "git diff",
+            "npm run test:unit" ]
+decision = "allow"
+

@@ -1296,13 +1296,13 @@ Typing password fragments for easy unlocking should hide the typed characters.
 See `make process.passkeys` and ./graphify-questions.md 
 Could not make it work with Ollama.
 
-## 129 date and version (Gemini)
+## 129 date and version (Gemini (finished???))
 
 Display date and version of Passkeys with URL `/about`. Date is the
 date of the creation of the Docker container (see `passkeys.tag`) and
 version is the container id held in `passkeys.id`.
 
-## 130 scoped search
+## 130 scoped search (codex)
 
 When searching (that is when some characters appear in the search
 input field) clicking on a folder should limit the search to that
