@@ -1,4 +1,6 @@
-const PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+// Exclude characters commonly confused in printed or low-resolution fonts:
+// O/0, I/l/1, and lowercase o/i/l.
+const PASSWORD_CHARACTERS = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
 const SEPARATORS = ["-", ".", ";", "="];
 
 export function generatePassword(): string {

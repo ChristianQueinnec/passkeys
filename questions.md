@@ -1344,6 +1344,14 @@ When editing an entry, add a button to generate new passwords. The
 generated passwords should be like XXXX-XXXX.XXXX;XXXX=XXXX where X
 are replaced with random letters (small and capitals) and numbers.
 
+When generating random letters in passwords, avoid O, 0, l, 1, i, and
+characters that may look alike in some fonts.
+
+## 134 Default login (Codex)
+
+When editing the 'username' input field of an entry, provide a menu 
+with the email addresses used by other entries. Retain only email
+addresses used at least twice.
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
