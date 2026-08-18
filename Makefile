@@ -38,7 +38,7 @@ run.dev :
 	./scripts/init.sh -t
 	@echo "Browse now http://localhost:3000"
 	. ./.env && npm run dev
-# Use admin and password (see scripts/init.sh)
+# Use admin and password (see scripts/init.sh), the vault password is password
 
 # Run tests after checking that a server runs (dev mode or container):
 run.tests :

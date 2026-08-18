@@ -8,9 +8,9 @@ describe("KeePass CSV export", () => {
             { id: "2", title: "Untagged folder", tags: ["Personal", "Archive"] },
         ]);
         expect(csv).toBe(
-            '"Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"\r\n' +
-            '"keepass/Work/Email","A ""quoted"", entry","user","secret","https://example.test","line one\nline two","","","2024-01-15T11:03:20.000Z",""\r\n' +
-            '"keepass/Personal/Archive","Untagged folder","","","","","","","",""\r\n',
+            '"Group","Title","Username","Password","URL","Notes","TOTP","Icon","Last Modified","Created"\n' +
+            '"keepass/Work/Email","A ""quoted"", entry","user","secret","https://example.test","line one\nline two","","","2024-01-15T11:03:20.000Z",""\n' +
+            '"keepass/Personal/Archive","Untagged folder","","","","","","","",""\n',
         );
     });
 });

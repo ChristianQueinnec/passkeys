@@ -1308,24 +1308,49 @@ When searching (that is when some characters appear in the search
 input field) clicking on a folder should limit the search to that
 folder. Warns the user of the scope change.
 
-## 131 Back to KeepassX
+## 131 Back to KeepassX (codex)
 
 Add a new item (named `export to Keepass`) in the action menu to export
 the vault into a CSV file that can be imported into Keepass. This will
 reverse the effect of the KeePass2Passkeys/csv-to-json.ts script.
 
+## 132 Check
+
+Check if the task "Allow to close displayed warnings" is fully implemented.
+
+```
+ The task is not completely implemented.
+
+  - Toast warnings are dismissible via the close button in src/lib/components/
+    Toasts.svelte.
+
+  - Persistent warnings are not dismissible:
+      - Unlock security/quick-unlock messages in src/lib/components/
+        Unlock.svelte.
+
+      - Offline-mode banner in src/routes/+page.svelte.
+      - History warning hint in src/lib/components/HistoryModal.svelte.
+
+  Verification:
+
+  - npm run check: passes with 0 diagnostics.
+  - Unit tests: 341 passed, 1 unrelated KeePass CSV formatting test failed.
+  - E2E tests could not run because port 3000 is already occupied.
+```
 
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Allow to close displayed warnings.
+Check if the task "Allow to close displayed warnings" is fully implemented.
 
 Dernière synchronisation: 09/07/2026 16:59:33 pas a jour!
 
 Typing in an input field should also close displayed warnings.
 
-allow to type longer prefix or suffix for easy unlocking
+allow to type longer prefix or suffix for easy unlocking. Check
+however that they are valid.
 
 copy to clipboard does not work on mac
 
