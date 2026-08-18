@@ -8,6 +8,10 @@ secrets:
   jwt_secret:
     file: ./jwt_secret.password
 
+# .env should contain
+# JWT_SECRET
+# PASSKEYS=
+
 services:
   passkeys:
     image: registry.queinnec.org:5000/passkeys:${PASSKEYS}

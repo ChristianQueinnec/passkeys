@@ -1308,11 +1308,20 @@ When searching (that is when some characters appear in the search
 input field) clicking on a folder should limit the search to that
 folder. Warns the user of the scope change.
 
+## 131 Back to KeepassX
+
+Add a new item (named `export to Keepass`) in the action menu to export
+the vault into a CSV file that can be imported into Keepass. This will
+reverse the effect of the KeePass2Passkeys/csv-to-json.ts script.
+
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Allow to close displayed warnings.
+
+Dernière synchronisation: 09/07/2026 16:59:33 pas a jour!
 
 Typing in an input field should also close displayed warnings.
 

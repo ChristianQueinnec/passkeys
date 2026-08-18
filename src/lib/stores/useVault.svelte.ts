@@ -134,6 +134,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         closeModals: crud.closeModals,
         copyToClipboard: activity.copyToClipboard,
         openSite: activity.openSite,
+        exportItems: crypto.getDecryptedItems,
         cleanup() {
             clearEasyUnlockState();
             activity.cleanup();

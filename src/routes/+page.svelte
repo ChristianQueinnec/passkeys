@@ -17,6 +17,7 @@
     import ClipboardProgressBar from "$lib/components/ClipboardProgressBar.svelte";
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
     import { EncryptionKey } from "$lib/vaultkey";
+    import { exportToKeepassCSV } from "$lib/keepass";
 
     // Application State
     let username = $state("");
@@ -204,6 +205,23 @@
 
     let fileInput = $state<HTMLInputElement>();
 
+    async function exportToKeepass() {
+        showUserMenu = false;
+        try {
+            const csv = exportToKeepassCSV(await vault.exportItems());
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "passkeys-" + new Date().toISOString().slice(0, 10) + ".csv";
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to export vault to KeePass", error);
+            toasts.error(i18n.t("vault.export_error"));
+        }
+    }
+
     function triggerImport() {
         showUserMenu = false;
         fileInput?.click();
@@ -289,6 +307,7 @@
                                     data-testid="menu-import"
                                     >{i18n.t("vault.import")}</button
                                 >
+                                <button onclick={exportToKeepass} data-testid="menu-export-keepass">{i18n.t("vault.export_keepass")}</button>
                             {/if}
                             <a
                                 href="https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md"
