@@ -114,6 +114,8 @@ Copied credentials auto-clear from clipboard after 10 seconds.
 3. Modify fields
 4. Click **Save**
 
+The username field is an editable combo box. It suggests only email addresses that occur in at least two other entries, while still allowing a different username to be typed. The password field includes **Generate password**, which creates a password in the form `XXXX-XXXX.XXXX;XXXX=XXXX`. Generated characters are letters and numbers chosen to avoid ambiguous glyphs such as `O`, `0`, `I`, `l`, `1`, and `i`.
+
 #### Delete Entry
 
 1. Click entry to open
@@ -146,7 +148,11 @@ Passkeys caches encrypted vaults locally:
 - Offline indicator warns data may be stale
 - Changes require online connection to save
 
-### Security Features
+### Messages and Warnings
+
+Toast messages, including warnings and errors, have a close button so they can be dismissed immediately. Persistent notices such as offline status remain visible while the underlying condition applies.
+
+## Security Features
 
 **Auto-Timeout**: After 60 seconds idle, decrypted vault clears from memory. Re-enter vault key to access.
 

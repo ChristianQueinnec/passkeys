@@ -79,8 +79,10 @@ Passkeys solves the cross-platform limitations of traditional password managers 
 - **Quick Actions**: One-click copy for usernames and passwords
 - **Site Integration**: Direct links to login pages
 - **Visual Feedback**: Clear indicators for offline mode, dirty state, sync status
+- **Dismissible Feedback**: Toast warnings and errors can be closed with their close button
 - **Keyboard Shortcuts**: Efficient navigation and actions
 - **Consistent Styling**: Unified button design with proper visual hierarchy
+- **Entry Editing Assistance**: Generate strong, readable passwords and reuse frequently used email addresses through the username combobox
 
 ---
 

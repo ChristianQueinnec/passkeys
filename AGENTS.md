@@ -39,6 +39,13 @@ if the password does not contain a colon sign, that means that the
 password is not hashed. In that case, the server should rewrite the
 `users.json` file with all passwords hashed.
 
+To sum up, the files on the server look like:
+```
+data/users.json
+data/USER1/2026-07-09T14-59-33-577Z-XXXXX.vault
+data/USER2/2026-06-29T11-23-10-434Z-XXXXX.vault
+```
+
 All the accesses to the server are logged. The server
 will be ultimately deployed as a Docker container mounting the `data`
 directory where are stored information files.
@@ -50,10 +57,10 @@ is provided for English and French users.
 ## Client side
 
 The client side will run in any modern browser. It will allow some
-user to authenticate and get the most recent associated vault. When
+user to authenticate and get their most recent associated vault. When
 authenticated, the name of the user reveals a menu containing a
 `logout` button. The webapp will then ask for the vault key allowing
-to decipher that file. It must be possible to see temporarily the
+to decipher that file. It is possible to see temporarily the
 vault or login password. Report explicitly if the vault cannot be
 deciphered.
 
@@ -91,8 +98,11 @@ is also provided. Entries may be dragged and dropped onto folders in
 order to group related vault entries.
 
 Vault entries may be individually managed that is, removed or edited.
+When editing an entry, the username field is an editable combo box. It suggests only syntactically valid email addresses used by at least two other vault entries; a different username may still be entered manually. The password field provides a generator producing passwords in the form `XXXX-XXXX.XXXX;XXXX=XXXX`, using random alphanumeric characters while avoiding visually ambiguous characters such as `O`, `0`, `I`, `l`, `1`, and `i`.
 When the vault is modified, propose a button to save it on the
 server after ciphering it.
+
+Transient toast warnings and other toast messages can be closed explicitly with their close button; persistent status notices remain visible while their condition applies.
 
 ## Rules
 
@@ -109,9 +119,11 @@ regression, also run Svelte check diagnostics.
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project has a knowledge graph at graphify-out/ with god nodes,
+community structure, and cross-file relationships.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+When the user types `/graphify`, use the installed graphify skill or
+instructions before doing anything else.
 
 Rules:
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.

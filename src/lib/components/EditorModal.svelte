@@ -10,12 +10,14 @@
         isCreating,
         onClose,
         onSave,
+        getUsernameSuggestions,
     }: {
         isOpen: boolean;
         item: PasswordEntry | null;
         isCreating: boolean;
         onClose: () => void;
         onSave: (item: PasswordEntry) => void;
+        getUsernameSuggestions?: (currentId?: string) => Promise<string[]>;
     } = $props();
 </script>
 
@@ -25,6 +27,6 @@
     title={isCreating ? i18n.t("vault.new_entry") : i18n.t("common.edit")}
 >
     {#if item}
-        <Editor {item} {onSave} onCancel={onClose} />
+        <Editor {item} {onSave} {getUsernameSuggestions} onCancel={onClose} />
     {/if}
 </Modal>

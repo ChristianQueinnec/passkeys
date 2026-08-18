@@ -85,6 +85,7 @@
     onSave={vault.handleSave}
     onDeleteHistory={vault.deleteHistoryItem}
     onCopy={vault.copyToClipboard}
+    getUsernameSuggestions={vault.getUsernameSuggestions}
 />
 
 <style>

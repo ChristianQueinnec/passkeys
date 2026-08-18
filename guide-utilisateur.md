@@ -13,6 +13,7 @@ Un guide complet pour utiliser l'application web sécurisée Passkeys pour gére
 - [Organisation des Entrées](#organisation-des-entrées)
 - [Sécurité et Confidentialité](#sécurité-et-confidentialité)
 - [Mode Hors Ligne](#mode-hors-ligne)
+- [Messages et Avertissements](#messages-et-avertissements)
 - [Synchronisation Multi-Appareils](#synchronisation-multi-appareils)
 - [Dépannage](#dépannage)
 - [Questions Fréquentes](#questions-fréquentes)
@@ -104,6 +105,8 @@ Le tableau de bord est votre centre de contrôle principal avec deux vues dispon
 3. Mettez à jour les champs nécessaires
 4. Cliquez sur "Enregistrer"
 
+Le champ **Nom d’utilisateur** est une combo box modifiable. Elle suggère uniquement les adresses e-mail présentes dans au moins deux autres entrées, tout en permettant de saisir manuellement un autre nom d’utilisateur. Le champ **Mot de passe** propose le bouton **Générer un mot de passe**, qui produit un mot de passe au format `XXXX-XXXX.XXXX;XXXX=XXXX`. Les caractères ambigus comme `O`, `0`, `I`, `l`, `1` et `i` sont évités.
+
 ### Supprimer une Entrée
 
 1. Sélectionnez une entrée
@@ -112,10 +115,7 @@ Le tableau de bord est votre centre de contrôle principal avec deux vues dispon
 
 ### Générer des Mots de Passe Sécurisés
 
-1. Cliquez sur "Nouvelle Entrée"
-2. Cliquez sur l'icône de génération de mot de passe
-3. Choisissez la longueur et la complexité
-4. Le mot de passe généré sera automatiquement rempli
+Lors de la création ou de la modification d’une entrée, cliquez sur **Générer un mot de passe**. Le mot de passe produit suit le format `XXXX-XXXX.XXXX;XXXX=XXXX`, avec des lettres et des chiffres choisis aléatoirement. Les caractères difficiles à distinguer selon les polices, notamment `O`, `0`, `I`, `l`, `1` et `i`, sont exclus.
 
 ---
 
@@ -141,6 +141,10 @@ Le tableau de bord est votre centre de contrôle principal avec deux vues dispon
 - **Filtres avancés** : Combinez plusieurs termes de recherche
 
 ---
+
+## Messages et Avertissements
+
+Les messages toast, notamment les avertissements et les erreurs, disposent d’un bouton de fermeture et peuvent être masqués immédiatement. Les notifications persistantes, comme l indicateur du mode hors ligne, restent visibles tant que la situation correspondante est active.
 
 ## Sécurité et Confidentialité
 

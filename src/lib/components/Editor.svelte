@@ -2,7 +2,7 @@
     import { i18n } from "$lib/stores/useI18n.svelte";
     import { generatePassword } from "$lib/password-generator";
 
-    let { item, onSave, onCancel } = $props();
+    let { item, onSave, onCancel, getUsernameSuggestions } = $props();
 
     // Local state for the editor
     let title = $state("");
@@ -12,6 +12,7 @@
     let tags = $state("");
     let notes = $state("");
     let group = $state("");
+    let usernameSuggestions = $state<string[]>([]);
 
     // Initialize/Sync state from props
     $effect(() => {
@@ -22,6 +23,16 @@
         tags = item?.tags?.join(", ") || "";
         notes = item?.notes || "";
         group = item?.group || "";
+    });
+
+    $effect(() => {
+        const itemId = item?.id;
+        usernameSuggestions = [];
+        if (getUsernameSuggestions) {
+            getUsernameSuggestions(itemId).then((suggestions: string[]) => {
+                if (item?.id === itemId) usernameSuggestions = suggestions;
+            });
+        }
     });
 
     function handleSubmit() {
@@ -70,9 +81,15 @@
         <input
             id="username"
             type="text"
+            list="username-suggestions"
             bind:value={username}
             data-testid="edit-username"
         />
+        <datalist id="username-suggestions">
+            {#each usernameSuggestions as suggestion}
+                <option value={suggestion}></option>
+            {/each}
+        </datalist>
     </div>
     <div class="field">
         <label for="password">{i18n.t("common.password")}</label>

@@ -1349,16 +1349,53 @@ characters that may look alike in some fonts.
 
 ## 134 Default login (Codex)
 
-When editing the 'username' input field of an entry, provide a menu 
-with the email addresses used by other entries. Retain only email
-addresses used at least twice.
+Editing the 'username' field of an entry should use a combo box
+instead of an input field. The combo box should present only email
+addresses used at least by two other entries.
+
+```
+ Implemented.
+
+  - Username editing now uses an editable native combobox.
+  - Suggestions contain only syntactically valid email addresses used by at
+    least two other entries.
+
+  - The currently edited entry is excluded from the count.
+  - Works in both list and folder dashboards.
+  - Users can still enter arbitrary usernames manually.
+
+  Verification: Svelte check passed with 0 errors/warnings; all 345 unit tests
+  passed.
+```
+
+## 135 update documents
+
+Update AGENTS.md, README.md and user guides
+
+```
+ Updated:
+
+  - AGENTS.md
+  - README.md
+  - user-guide.md
+
+  Documentation now covers:
+
+  - Username email combobox behavior.
+  - Repeated-email suggestion rule.
+  - Password generation format and ambiguous-character exclusions.
+  - Dismissible toast warnings versus persistent status notices.
+```
+
+Also update accordingly the `guide-utilisateur.md` file
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Dernière synchronisation: 09/07/2026 16:59:33 not updated!
 
-Typing in an input field should also close displayed warnings.
+Typing in an input field should also close displayed temporary warnings.
 
 allow to type longer prefix or suffix for easy unlocking. Check
 however that they are valid.

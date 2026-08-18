@@ -49,6 +49,20 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         }, EASY_UNLOCK_WINDOW_MS);
     }
 
+    async function getUsernameSuggestions(currentId?: string) {
+        const entries = await crypto.getDecryptedItems();
+        const counts = new Map<string, number>();
+        for (const entry of entries) {
+            if (entry.id === currentId || !entry.username) continue;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(entry.username)) continue;
+            counts.set(entry.username, (counts.get(entry.username) || 0) + 1);
+        }
+        return [...counts.entries()]
+            .filter(([, count]) => count >= 2)
+            .map(([email]) => email)
+            .sort((a, b) => a.localeCompare(b));
+    }
+
     return {
         // State getters
         get items() {
@@ -135,6 +149,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         copyToClipboard: activity.copyToClipboard,
         openSite: activity.openSite,
         exportItems: crypto.getDecryptedItems,
+        getUsernameSuggestions,
         cleanup() {
             clearEasyUnlockState();
             activity.cleanup();

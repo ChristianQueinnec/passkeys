@@ -16,6 +16,7 @@
         onSave,
         onDeleteHistory,
         onCopy,
+        getUsernameSuggestions,
     }: {
         selectedItem?: PasswordEntry | null;
         editingItem?: PasswordEntry | null;
@@ -28,6 +29,7 @@
         onSave: (item: PasswordEntry) => void;
         onDeleteHistory: (filename: string) => void;
         onCopy: (text: string) => void;
+        getUsernameSuggestions?: (currentId?: string) => Promise<string[]>;
     } = $props();
 </script>
 
@@ -46,6 +48,7 @@
     {isCreating}
     onClose={onCloseModals}
     onSave={onSave}
+    {getUsernameSuggestions}
 />
 
 <HistoryModal
