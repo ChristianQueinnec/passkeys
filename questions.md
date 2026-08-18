@@ -1389,6 +1389,12 @@ Update AGENTS.md, README.md and user guides
 
 Also update accordingly the `guide-utilisateur.md` file
 
+## 136 DESIGN.md
+
+Are you able to generate an appropriate `DESIGN.md` file ?
+
+
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
@@ -1406,8 +1412,6 @@ on linux, copy to clipboard should also use X clipboard
 
 Determine the delays that the user may define.
 Allow the user to specify the delays. 
-
-update AGENTS.md and README.md
 
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.

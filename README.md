@@ -439,6 +439,7 @@ DATA_DIR=/app/data
 ### Technical Documentation
 
 - [AGENTS.md](AGENTS.md) - Original project specification and requirements
+- [DESIGN.md](DESIGN.md) - Current architecture and design boundaries
 - [CLAUDE.md](CLAUDE.md) - Alternative project description
 - [CSRF_PROTECTION.md](CSRF_PROTECTION.md) - CSRF implementation details
 - [INPUT_SANITIZATION.md](INPUT_SANITIZATION.md) - Input validation and sanitization guide
