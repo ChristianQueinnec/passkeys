@@ -16,5 +16,5 @@ export function exportToKeepassCSV(entries: PasswordEntry[]): string {
         const group = path ? `keepass/${path}` : "keepass";
         return [group, entry.title || "", entry.username || "", entry.password || "", entry.site || "", entry.notes || "", "", "", isoDate(entry.modified), isoDate(entry.created)].map(csvField).join(",");
     });
-    return [KEEPASS_CSV_HEADER.map(csvField).join(","), ...rows].join("\r\n") + "\r\n";
+    return [KEEPASS_CSV_HEADER.map(csvField).join(","), ...rows].join("\n") + "\n";
 }
