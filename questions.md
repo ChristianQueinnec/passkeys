@@ -1314,7 +1314,7 @@ Add a new item (named `export to Keepass`) in the action menu to export
 the vault into a CSV file that can be imported into Keepass. This will
 reverse the effect of the KeePass2Passkeys/csv-to-json.ts script.
 
-## 132 Check
+## 132 Check (codex)
 
 Check if the task "Allow to close displayed warnings" is fully implemented.
 
@@ -1338,14 +1338,17 @@ Check if the task "Allow to close displayed warnings" is fully implemented.
   - E2E tests could not run because port 3000 is already occupied.
 ```
 
+## 133 Default password (Codex)
+
+When editing an entry, add a button to generate new passwords. The
+generated passwords should be like XXXX-XXXX.XXXX;XXXX=XXXX where X
+are replaced with random letters (small and capitals) and numbers.
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
-Allow to close displayed warnings.
-Check if the task "Allow to close displayed warnings" is fully implemented.
-
-Dernière synchronisation: 09/07/2026 16:59:33 pas a jour!
+Dernière synchronisation: 09/07/2026 16:59:33 not updated!
 
 Typing in an input field should also close displayed warnings.
 
@@ -1364,11 +1367,9 @@ update AGENTS.md and README.md
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
 
-generate new passwords
-
 provide default login when email
 
-
+use DESIGN.md ?
 
 # Potential FUTURE
 

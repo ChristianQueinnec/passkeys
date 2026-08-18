@@ -1,5 +1,6 @@
 <script lang="ts">
     import { i18n } from "$lib/stores/useI18n.svelte";
+    import { generatePassword } from "$lib/password-generator";
 
     let { item, onSave, onCancel } = $props();
 
@@ -38,6 +39,10 @@
             group: group.trim() || undefined,
         });
     }
+
+    function handleGeneratePassword() {
+        password = generatePassword();
+    }
 </script>
 
 <div class="editor">
@@ -71,12 +76,20 @@
     </div>
     <div class="field">
         <label for="password">{i18n.t("common.password")}</label>
-        <input
-            id="password"
-            type="text"
-            bind:value={password}
-            data-testid="edit-password"
-        />
+        <div class="password-field">
+            <input
+                id="password"
+                type="text"
+                bind:value={password}
+                data-testid="edit-password"
+            />
+            <button
+                type="button"
+                class="secondary generate-password"
+                onclick={handleGeneratePassword}
+                data-testid="generate-password"
+            >{i18n.t("common.generate_password")}</button>
+        </div>
     </div>
     <div class="field">
         <label for="group">{i18n.t("common.group")}</label>
@@ -133,6 +146,17 @@
     }
     textarea {
         height: 100px;
+    }
+    .password-field {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .password-field input {
+        flex: 1;
+        min-width: 0;
+    }
+    .generate-password {
+        white-space: nowrap;
     }
     .actions {
         margin-top: 1rem;
