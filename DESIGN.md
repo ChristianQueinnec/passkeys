@@ -105,6 +105,10 @@ The editor has two deliberate conveniences:
   letters and digits while excluding visually ambiguous characters such as
   `O`, `0`, `I`, `l`, `1`, and `i`.
 
+### User-configurable security delays
+
+The user menu exposes security-delay settings in minutes for the inactivity lock and quick-unlock availability. On a trusted device, these values are persisted locally; on an untrusted device, they apply only to the current session.
+
 ### Synchronization
 
 Synchronization can discard unsaved local changes only after confirmation.

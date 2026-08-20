@@ -1368,7 +1368,7 @@ addresses used at least by two other entries.
   passed.
 ```
 
-## 135 update documents
+## 135 update documents (Codex)
 
 Update AGENTS.md, README.md and user guides
 
@@ -1389,11 +1389,91 @@ Update AGENTS.md, README.md and user guides
 
 Also update accordingly the `guide-utilisateur.md` file
 
-## 136 DESIGN.md
+## 136 DESIGN.md (codex)
 
 Are you able to generate an appropriate `DESIGN.md` file ?
 
+```
+ Created DESIGN.md with:
 
+  - System and trust boundaries.
+  - Client/server architecture.
+  - Vault lifecycle and synchronization.
+  - Security model.
+  - UI conventions.
+  - Data model.
+  - Testing and extension guidelines.
+
+  Also linked it from the technical documentation section of README.md.
+```
+
+## 137 Clipboard problem (codex)
+
+On linux, copy to clipboard should also use X clipboard
+
+```
+ The current implementation already uses navigator.clipboard.writeText() in
+  src/lib/stores/vault/activity.svelte.ts, which writes to the Linux browser’s
+  system clipboard (the X11 CLIPBOARD selection, or Wayland equivalent).
+
+  A web app cannot directly execute xclip or write the X11 PRIMARY selection.
+  Doing so would require a native helper or desktop wrapper and would risk
+  exposing plaintext secrets to the server.
+
+  If you specifically need middle-click/PRIMARY selection support, Passkeys
+  would need a separate native Linux integration.
+```
+
+## 138 Delays definition (Codex)
+
+Determine the delays that the user may define.
+
+```
+ Current delay-related settings are:
+
+   Behavior                  Production    Configurable by     Source
+                                default    user?
+  ━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━
+   New-vault polling         60 seconds    No UI;              static/client-
+                                           deployment          settings.json
+                                           config only
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Inactivity security       15 minutes    No UI;              static/client-
+   lock                                    deployment          settings.json
+                                           config only
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Clipboard clearing        10 seconds    No UI;              static/client-
+                                           deployment          settings.json
+                                           config only
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Quick unlock                  1 hour    No; fixed in        src/lib/vault/
+   availability                            code                easyUnlock.ts
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Toast auto-             5 seconds by    Code may            src/lib/stores/
+   dismissal                    default    override per        useToasts.svelte
+                                           toast; no UI        .ts
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Trusted-device              24 hours    No; server          src/lib/server/
+   session                                 constant            jwt.ts
+  ─────────────────────  ───────────────  ──────────────────  ──────────────────
+   Untrusted-device             2 hours    No; server          src/lib/server/
+   session                                 constant            jwt.ts
+
+  Test-only delays are separate: polling is 1 second, inactivity timeout is 1
+  hour, and clipboard clearing is 1 second.
+
+  There is currently no settings form for users. The production client delays
+  can be changed by modifying static/client-settings.json before deployment.
+```
+
+Gather all delays into `static/client-settings.json` or 
+`src/lib/server/delays.ts` for server-defined delays.
+
+Allow the user to modify the following delays:
+- Inactivity security lock 
+- Quick unlock availability
+Provide an action menu item for these modifications. Use minutes as units.
+Store these settings permanently if the device is trusted.
 
 
 
@@ -1406,19 +1486,14 @@ Typing in an input field should also close displayed temporary warnings.
 allow to type longer prefix or suffix for easy unlocking. Check
 however that they are valid.
 
-copy to clipboard does not work on mac
-
-on linux, copy to clipboard should also use X clipboard
-
 Determine the delays that the user may define.
-Allow the user to specify the delays. 
 
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
 
-provide default login when email
+link to the user guide in the right language.
+Store guides on pk server.
 
-use DESIGN.md ?
 
 # Potential FUTURE
 

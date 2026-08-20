@@ -1,6 +1,7 @@
 import { sortPasswordEntries, sanitizeItems } from "$lib/vault";
 import type { PasswordEntry } from "$lib/types";
 import { i18n } from "./useI18n.svelte";
+import { settings } from "./useSettings.svelte";
 import type { EncryptionKey } from "$lib/vaultkey";
 
 import { VaultState } from "./vault/state.svelte";
@@ -10,7 +11,6 @@ import { createVaultCrud } from "./vault/crud";
 import { createVaultHistory } from "./vault/history";
 import { createVaultActivity } from "./vault/activity.svelte";
 import {
-    EASY_UNLOCK_WINDOW_MS,
     createEasyUnlockChallenge,
     validateEasyUnlockAnswer,
 } from "$lib/vault/easyUnlock";
@@ -34,6 +34,14 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         state.easyUnlockChallenge = null;
     }
 
+    function refreshEasyUnlockTimer() {
+        if (!rememberedMasterPassword || !state.easyUnlockChallenge) return;
+        if (easyUnlockTimer) clearTimeout(easyUnlockTimer);
+        easyUnlockTimer = setTimeout(() => {
+            clearEasyUnlockState();
+        }, settings.current.quickUnlockTimeout);
+    }
+
     function rememberMasterPassword(masterPassword: string) {
         clearEasyUnlockState();
 
@@ -46,7 +54,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         state.easyUnlockChallenge = challenge;
         easyUnlockTimer = setTimeout(() => {
             clearEasyUnlockState();
-        }, EASY_UNLOCK_WINDOW_MS);
+        }, settings.current.quickUnlockTimeout);
     }
 
     async function getUsernameSuggestions(currentId?: string) {
@@ -123,6 +131,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         },
         rememberMasterPassword,
         clearEasyUnlockState,
+        refreshEasyUnlockTimer,
         getRememberedMasterPassword() {
             return rememberedMasterPassword;
         },
@@ -133,6 +142,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         lockNow() {
             activity.lockNow();
         },
+        resetInactivityTimer: activity.resetInactivityTimer,
 
         // Methods
         loadVault: core.loadVault,

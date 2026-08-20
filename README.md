@@ -47,6 +47,7 @@ Passkeys solves the cross-platform limitations of traditional password managers 
 - **CSRF Protection**: Token-based protection for all state-changing operations
 - **Password Hashing**: Server-side scrypt hashing for authentication credentials
 - **Safe/Unsafe Device Modes**: Configurable persistence based on device trust level
+- **Configurable Security Delays**: Set inactivity-lock and quick-unlock durations in minutes; trusted devices persist them locally
 
 ### 📱 Progressive Web App
 

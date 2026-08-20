@@ -140,6 +140,10 @@ a warning to remind the user to remove these unciphered vaults as soon
 as possible once downloaded and ciphered in a browser and saved on the
 server.
 
+### Paramètres des délais de sécurité
+
+Depuis le menu utilisateur, vous pouvez modifier en minutes le délai de verrouillage après inactivité et la durée de disponibilité du déverrouillage rapide. Sur un appareil sûr, ces valeurs sont conservées localement ; sur un appareil non sûr, elles ne s appliquent qu à la session en cours.
+
 ### Offline Mode
 
 Passkeys caches encrypted vaults locally:

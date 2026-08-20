@@ -168,6 +168,10 @@ Les messages toast, notamment les avertissements et les erreurs, disposent d’u
 
 ---
 
+### Paramètres des délais de sécurité
+
+Depuis le menu utilisateur, vous pouvez modifier en minutes le délai de verrouillage après inactivité et la durée de disponibilité du déverrouillage rapide. Sur un appareil sûr, ces valeurs sont conservées localement ; sur un appareil non sûr, elles ne s appliquent qu à la session en cours.
+
 ## Mode Hors Ligne
 
 ### Travailler Hors Ligne

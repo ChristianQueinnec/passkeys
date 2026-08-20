@@ -14,6 +14,7 @@
     import { toasts } from "$lib/stores/useToasts.svelte";
     import ChangeLoginPasswordModal from "$lib/components/ChangeLoginPasswordModal.svelte";
     import ChangeVaultPasswordModal from "$lib/components/ChangeVaultPasswordModal.svelte";
+    import SecuritySettingsModal from "$lib/components/SecuritySettingsModal.svelte";
     import ClipboardProgressBar from "$lib/components/ClipboardProgressBar.svelte";
     import LanguageSwitcher from "$lib/components/LanguageSwitcher.svelte";
     import { EncryptionKey } from "$lib/vaultkey";
@@ -30,6 +31,7 @@
     let showUserMenu = $state(false);
     let showChangeLoginPasswordModal = $state(false);
     let showChangeVaultPasswordModal = $state(false);
+    let showSecuritySettingsModal = $state(false);
     let unlockMessage = $state("");
 
     function forceUnlocking() {
@@ -181,6 +183,11 @@
         showUserMenu = !showUserMenu;
     }
 
+    function changeSecuritySettings() {
+        showSecuritySettingsModal = true;
+        showUserMenu = false;
+    }
+
     function changeLoginPassword() {
         showChangeLoginPasswordModal = true;
         showUserMenu = false;
@@ -295,6 +302,11 @@
                                     >{i18n.t("vault.sync")}</button
                                 >
                                 <button
+                                    onclick={changeSecuritySettings}
+                                    data-testid="menu-security-settings"
+                                    >{i18n.t("settings.menu")}</button
+                                >
+                                <button
                                     onclick={() => {
                                         showUserMenu = false;
                                         showChangeVaultPasswordModal = true;
@@ -375,6 +387,15 @@
 <ChangeLoginPasswordModal
     isOpen={showChangeLoginPasswordModal}
     onClose={() => (showChangeLoginPasswordModal = false)}
+/>
+
+<SecuritySettingsModal
+    isOpen={showSecuritySettingsModal}
+    onClose={() => (showSecuritySettingsModal = false)}
+    onSaved={() => {
+        vault.resetInactivityTimer();
+        vault.refreshEasyUnlockTimer();
+    }}
 />
 
 <ChangeVaultPasswordModal

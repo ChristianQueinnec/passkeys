@@ -136,5 +136,5 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         }
     }
 
-    return { copyToClipboard, openSite, cleanup, lockNow };
+    return { copyToClipboard, openSite, cleanup, lockNow, resetInactivityTimer: resetTimer };
 }
