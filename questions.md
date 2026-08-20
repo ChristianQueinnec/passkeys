@@ -1475,6 +1475,26 @@ Allow the user to modify the following delays:
 Provide an action menu item for these modifications. Use minutes as units.
 Store these settings permanently if the device is trusted.
 
+``` Implemented.
+
+  - Added a Security Delays action to the unlocked user menu.
+  - Users can configure, in minutes:
+      - Inactivity security lock.
+      - Quick-unlock availability.
+
+  - Values are validated as positive whole numbers.
+  - Trusted devices persist the settings in localStorage.
+  - Untrusted devices keep changes only for the current session.
+  - Active inactivity and quick-unlock timers update immediately.
+  - Added English/French translations and updated all design/user guides.
+```
+
+## 139 link to documentation (codex)
+
+Documentation, that is `guide-utilisateur.md` and `user-guide.md` are
+now stored in the `./static/` directory. Adapt the action menu item to 
+serve these files according to the current language but only on demand:
+no need to cache them locally.
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
