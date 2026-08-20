@@ -1491,10 +1491,12 @@ Store these settings permanently if the device is trusted.
 
 ## 139 link to documentation (codex)
 
-Documentation, that is `guide-utilisateur.md` and `user-guide.md` are
+Documentation, that is `guide-utilisateur.md` and `user-guide.md`, are
 now stored in the `./static/` directory. Adapt the action menu item to 
 serve these files according to the current language but only on demand:
 no need to cache them locally.
+
+mime type lacks UTF8, markdown to be converted to html
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss

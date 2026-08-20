@@ -26,7 +26,7 @@ test.describe('Help Menu Item', () => {
 
         const helpLink = page.getByTestId('menu-help');
         await expect(helpLink).toBeVisible();
-        await expect(helpLink).toHaveAttribute('href', 'https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md');
+        await expect(helpLink).toHaveAttribute('href', '/user-guide.md');
         await expect(helpLink).toHaveAttribute('target', '_blank');
 
         // Verify it opens in a new tab
@@ -35,7 +35,7 @@ test.describe('Help Menu Item', () => {
             helpLink.click()
         ]);
 
-        expect(newPage.url()).toBe('https://github.com/ChristianQueinnec/passkeys/blob/main/user-guide.md');
+        expect(new URL(newPage.url()).pathname).toBe('/user-guide.md');
 
         // Verify menu is closed after click
         await expect(helpLink).not.toBeVisible();
