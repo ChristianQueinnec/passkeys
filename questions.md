@@ -1496,7 +1496,15 @@ now stored in the `./static/` directory. Adapt the action menu item to
 serve these files according to the current language but only on demand:
 no need to cache them locally.
 
-mime type lacks UTF8, markdown to be converted to html
+PROBLEMS: 
+- mime type lacks UTF8, 
+- markdown to be converted to html
+- the filename should be in i18n.
+
+Fixed by hand
+
+
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss

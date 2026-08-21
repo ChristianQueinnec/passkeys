@@ -322,7 +322,7 @@
                                 <button onclick={exportToKeepass} data-testid="menu-export-keepass">{i18n.t("vault.export_keepass")}</button>
                             {/if}
                             <a
-                                href={i18n.language === "fr" ? "/guide-utilisateur.md" : "/user-guide.md"}
+                                href={i18n.t("doc.file")}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="menu-link"

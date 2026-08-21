@@ -142,7 +142,8 @@ export const translations = {
         "api.password_failed": "Failed to update password",
         "api.vault_exists_failed": "Failed to check vault existence",
         "api.delete_failed": "Failed to delete vault",
-        "api.renew_failed": "Token renewal failed"
+        "api.renew_failed": "Token renewal failed",
+        "doc.file": "/user-guide.html"
     },
     fr: {
         "app.title": "Passkeys - Coffre Sécurisé",
@@ -287,7 +288,8 @@ export const translations = {
         "api.password_failed": "Échec de la mise à jour du mot de passe",
         "api.vault_exists_failed": "Échec de la vérification de l'existence du coffre",
         "api.delete_failed": "Échec de la suppression du coffre",
-        "api.renew_failed": "Échec du renouvellement du jeton"
+        "api.renew_failed": "Échec du renouvellement du jeton",
+        "doc.file": "/guide-utilisateur.html"
     }
 };
 

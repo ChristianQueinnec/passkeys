@@ -2,7 +2,7 @@ work :
 	./scripts/init.sh
 
 # Use docker to create the container:
-create.container : check.docker.configuration
+create.container : check.docker.configuration generate.doc
 	date +%Y%m%d_%H%M%S | tr -d '\n' > passkeys.tag
 	docker buildx build \
 		--build-arg UID=$$(id -u) \
@@ -85,6 +85,9 @@ do.run.remote.container :
 	   docker network create --subnet 172.55.0.0/16 snipnet ; fi
 	-docker rm -f passkeys
 	docker compose up -d
+
+generate.doc :
+	for f in *guid*.md ; do pandoc -s $$f -o static/$${f%.md}.html ; done
 
 regenerate.env :
 	{ echo "JWT_SECRET=jwt-secret" ;\
