@@ -431,7 +431,9 @@
     }
     main {
         flex: 1;
-        overflow: hidden;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
     .offline-banner {
         background: #fff3cd;

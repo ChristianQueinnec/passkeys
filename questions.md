@@ -1503,26 +1503,26 @@ PROBLEMS:
 
 Fixed by hand
 
+## 140 longer fragments (codex)
 
+Allow to type longer prefix or suffix for easy unlocking. Check
+however that they are valid.
+
+## 141 scroll down
+
+When the content cannot be entirely displayed, add a scroll down bar
+on the right. Do not add that scroll down bar when the content is 
+entirely visible.
 
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
-Dernière synchronisation: 09/07/2026 16:59:33 not updated!
-
 Typing in an input field should also close displayed temporary warnings.
-
-allow to type longer prefix or suffix for easy unlocking. Check
-however that they are valid.
-
-Determine the delays that the user may define.
 
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
 
-link to the user guide in the right language.
-Store guides on pk server.
 
 
 # Potential FUTURE

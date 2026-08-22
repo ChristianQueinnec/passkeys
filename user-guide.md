@@ -30,7 +30,7 @@ makes me revive that idea. The `Passkeys` project was born.
 
 **History**: Automatic versioning lets you restore previous vault states.
 
-**Auto-Security**: 60-second inactivity timeout clears decrypted data. 10-second clipboard auto-clear protects copied credentials.
+**Auto-Security**: The inactivity timeout clears decrypted data, and copied credentials are auto-cleared. Quick unlock accepts a requested minimum prefix or suffix, including longer values only when they match the vault key exactly.
 
 ### Security Model
 

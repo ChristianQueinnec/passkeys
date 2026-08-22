@@ -137,7 +137,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         },
         validateEasyUnlockAnswer(answer: string) {
             if (!state.easyUnlockChallenge) return false;
-            return validateEasyUnlockAnswer(state.easyUnlockChallenge, answer);
+            return validateEasyUnlockAnswer(state.easyUnlockChallenge, answer, rememberedMasterPassword ?? undefined);
         },
         lockNow() {
             activity.lockNow();

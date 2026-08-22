@@ -91,7 +91,7 @@
 <style>
     .dashboard {
         display: flex;
-        height: 100vh;
+        height: 100%;
     }
     .sidebar {
         width: 100%;

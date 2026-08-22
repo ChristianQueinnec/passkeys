@@ -38,4 +38,14 @@ describe('Easy unlock helper', () => {
         expect(validateEasyUnlockAnswer(challenge, 'Secr')).toBe(true);
         expect(validateEasyUnlockAnswer(challenge, 'secr')).toBe(false);
     });
+
+    it("accepts longer valid prefixes and suffixes", () => {
+        const first = { position: "first" as const, length: 3 as const, answer: "Sup" };
+        const last = { position: "last" as const, length: 3 as const, answer: "123" };
+
+        expect(validateEasyUnlockAnswer(first, "Super", "SuperSecret123")).toBe(true);
+        expect(validateEasyUnlockAnswer(last, "t123", "SuperSecret123")).toBe(true);
+        expect(validateEasyUnlockAnswer(first, "Sue", "SuperSecret123")).toBe(false);
+        expect(validateEasyUnlockAnswer(first, "SuperSecret1234", "SuperSecret123")).toBe(false);
+    });
 });

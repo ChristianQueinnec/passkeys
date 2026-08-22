@@ -29,6 +29,13 @@ export function createEasyUnlockChallenge(
 export function validateEasyUnlockAnswer(
     challenge: EasyUnlockChallenge,
     answer: string,
+    password?: string,
 ) {
-    return challenge.answer === answer;
+    if (!password) return challenge.answer === answer;
+    if (answer.length < challenge.length || answer.length > password.length) return false;
+
+    const expected = challenge.position === "first"
+        ? password.slice(0, answer.length)
+        : password.slice(-answer.length);
+    return expected === answer;
 }

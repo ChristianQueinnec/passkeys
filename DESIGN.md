@@ -129,7 +129,7 @@ size, and whether the snapshot is ciphered.
 ## Security design
 
 - Vault encryption and decryption happen in the browser.
-- The vault key is never sent to the server and is not persisted.
+- The vault key is never sent to the server and is not persisted. Quick unlock asks for a minimum prefix or suffix, and accepts longer input only when it remains an exact valid prefix or suffix of the remembered vault key.
 - Trusted devices may persist an encrypted vault and session information;
   untrusted devices avoid persistent sensitive storage.
 - A security timeout clears active plaintext and requires unlocking again.
