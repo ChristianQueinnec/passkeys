@@ -26,7 +26,7 @@ test.describe('Help Menu Item', () => {
 
         const helpLink = page.getByTestId('menu-help');
         await expect(helpLink).toBeVisible();
-        await expect(helpLink).toHaveAttribute('href', '/user-guide.md');
+        await expect(helpLink).toHaveAttribute('href', '/user-guide.html');
         await expect(helpLink).toHaveAttribute('target', '_blank');
 
         // Verify it opens in a new tab
@@ -35,9 +35,29 @@ test.describe('Help Menu Item', () => {
             helpLink.click()
         ]);
 
-        expect(new URL(newPage.url()).pathname).toBe('/user-guide.md');
+        expect(new URL(newPage.url()).pathname).toBe('/user-guide.html');
 
         // Verify menu is closed after click
+        await expect(helpLink).not.toBeVisible();
+    });
+
+    test('should use the French guide when French is selected', async ({ page, context }) => {
+        await page.getByTestId('lang-switcher-btn').click();
+        await page.locator('.lang-option').filter({ hasText: 'FR' }).click();
+        await page.getByTestId('user-menu-btn').click();
+
+        const helpLink = page.getByTestId('menu-help');
+        await expect(helpLink).toBeVisible();
+        await expect(helpLink).toHaveAttribute('href', '/guide-utilisateur.html');
+
+        const [newPage] = await Promise.all([
+            context.waitForEvent('page'),
+            helpLink.click()
+        ]);
+
+        await newPage.waitForLoadState();
+        expect(new URL(newPage.url()).pathname).toBe('/guide-utilisateur.html');
+        await expect(newPage).toHaveTitle('guide-utilisateur');
         await expect(helpLink).not.toBeVisible();
     });
 });

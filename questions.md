@@ -1501,18 +1501,22 @@ PROBLEMS:
 - markdown to be converted to html
 - the filename should be in i18n.
 
-Fixed by hand
+Fixed by hand using html version
 
 ## 140 longer fragments (codex)
 
 Allow to type longer prefix or suffix for easy unlocking. Check
 however that they are valid.
 
-## 141 scroll down
+## 141 scroll down (codex)
 
 When the content cannot be entirely displayed, add a scroll down bar
 on the right. Do not add that scroll down bar when the content is 
 entirely visible.
+
+## 142 check FR help (codex)
+
+Add tests related to i18n in `tests/e2e/help_menu.spec.ts`
 
 
 
