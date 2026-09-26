@@ -1544,10 +1544,53 @@ Inside `src/lib/stores/useVault.svelte.ts` I changed the constant 2
 into a client constant named 'minEmailCount' (see
 `useSettings.svelte.ts`). Propose me additional tests.
 
-# 145 Allow Passkey webapp to be 'always on visible workspace'
+# 145 Allow Passkey webapp to be 'always on visible workspace' (codex)
 
 I am using Ubuntu and I want the Passkey SPA webapp to be 'always on
 visible workspace'. How to do it ?
+
+Unfortunately, right-click in the title bar does not show 'always on
+visible workspace' unlike the other windows. The title bar is not
+the one set by the window manager.
+
+```
+Solution: alt-space 
+```
+
+## 146 Use 'pageshow' ?
+
+Is it useful to use the 'pageshow' event to refresh the jwt token if
+needed as mentioned in this article
+https://medium.com/skillstuff/the-browser-feature-most-frontend-developers-completely-ignore-59803d2561f4
+
+```
+• Searched the web for MDN pageshow event persisted bfcache visibilitychange pa…
+
+Yes, but only as a defensive enhancement—not as the primary JWT mechanism.
+
+In this project:
+
+The JWT is stored in an HttpOnly cookie, so the browser cannot inspect its expiry directly.
+
+The token is already renewed after a successful vault unlock in src/routes/+page.svelte:145.
+
+Any API 401 already clears sensitive state and returns to login in src/lib/api.ts:27.
+
+Tokens last 2 hours for normal sessions and 24 hours for trusted devices.
+
+pageshow is useful when a page returns from the browser back/forward cache; that is the article’s main point. It does not cover ordinary tab/window resumption, where visibilitychange is more appropriate. MDN (https://developer.mozilla.org/en-US/docs/Web/API/Window/pageshow_event)
+
+Recommendation: add a guarded refresh only when the vault is unlocked, preferably on:
+
+pageshow when event.persisted === true
+
+visibilitychange when the document becomes visible, with a cooldown such as 5–10 minutes
+
+Do not renew on every pageshow unconditionally, because that could silently extend an active session indefinitely. The existing 401 handling should remain the final authority when the cookie has expired.
+```
+
+OK so we do not do anything!
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
