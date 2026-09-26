@@ -11,6 +11,7 @@ describe('Settings Store', () => {
         expect(settings.current.pollForUpdatesInterval).toBe(60000);
         expect(settings.current.inactivityTimeout).toBe(900000);
         expect(settings.current.masterPasswordSalt).toBe('mvp_salt_fixed');
+        expect(settings.current.minEmailCount).toBe(3);
     });
 
     it('should mock loading settings from server', async () => {
@@ -44,5 +45,16 @@ describe('Settings Store', () => {
 
         expect(settings.current.pollForUpdatesInterval).toBe(60000);
         expect(settings.loaded).toBe(true);
+    });
+
+    it('should load the minimum email count from client settings', async () => {
+        globalThis.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({ minEmailCount: 2 })
+        });
+
+        await settings.load();
+
+        expect(settings.current.minEmailCount).toBe(2);
     });
 });

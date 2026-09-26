@@ -6,5 +6,7 @@
     "quickUnlockTimeout": 3600000,
     "clipboardTimeout": 10000,
     "masterPasswordSalt": "mvp_salt_fixed",
-    "pbkdf2Iterations": 100000
+    "pbkdf2Iterations": 100000,
+    "pbkdf2IterationsTest": 100000,
+    minEmailCount: 3
 }

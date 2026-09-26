@@ -1,9 +1,0 @@
-[[rules]]
-pattern = [ "sed", "diff", "rg",
-            "graphify",
-            "git diff",
-            "git status",
-            "git show",
-            "npm run test:unit" ]
-decision = "allow"
-

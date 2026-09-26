@@ -1519,6 +1519,36 @@ entirely visible.
 Add tests related to i18n in `tests/e2e/help_menu.spec.ts`
 
 
+## 143 introspection relative to issue 134 (gemini)
+
+Issue 134 stated "Editing the 'username' field of an entry should use
+a combo box instead of an input field. The combo box should present
+only email addresses used at least by two other entries.". What are
+the files that were modified ?
+
+``` 
+The feature for Issue 134 was implemented in commit f3883b4, modifying the
+  following source files:
+
+   - src/lib/stores/useVault.svelte.ts
+   - src/lib/components/Editor.svelte
+   - src/lib/components/EditorModal.svelte
+   - src/lib/components/VaultModals.svelte
+   - src/lib/components/Dashboard.svelte
+   - src/lib/components/FolderDashboard.svelte
+```
+
+## 144 next (codex)
+
+Inside `src/lib/stores/useVault.svelte.ts` I changed the constant 2
+into a client constant named 'minEmailCount' (see
+`useSettings.svelte.ts`). Propose me additional tests.
+
+# 145 Allow Passkey webapp to be 'always on visible workspace'
+
+I am using Ubuntu and I want the Passkey SPA webapp to be 'always on
+visible workspace'. How to do it ?
+
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
@@ -1543,8 +1573,8 @@ incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password, re-ciphering it regularly
 
-Allow the webapp user to choose the inactivity timeout currently set
-to 15 minutes.
-
 Provide an implementation of `storage.ts` on Google drive or other web
-drive rather than a directory on the gserver. ????
+drive rather than a directory on the server. ????
+
+use 'pageshow' event to refresh the jwt token if needed.
+cf. https://medium.com/skillstuff/the-browser-feature-most-frontend-developers-completely-ignore-59803d2561f4

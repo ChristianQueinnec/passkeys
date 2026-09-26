@@ -66,7 +66,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
             counts.set(entry.username, (counts.get(entry.username) || 0) + 1);
         }
         return [...counts.entries()]
-            .filter(([, count]) => count >= 2)
+            .filter(([, count]) => count >= settings.current.minEmailCount)
             .map(([email]) => email)
             .sort((a, b) => a.localeCompare(b));
     }

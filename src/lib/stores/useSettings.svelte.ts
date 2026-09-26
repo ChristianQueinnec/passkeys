@@ -10,6 +10,7 @@ export interface ClientSettings {
     masterPasswordSalt: string;
     pbkdf2Iterations: number;
     pbkdf2IterationsTest: number;
+    minEmailCount: number;
 }
 
 const SECURITY_SETTINGS_KEY = "passkeys_security_delays";
@@ -23,7 +24,8 @@ const defaultSettings: ClientSettings = {
     clipboardTimeout: 10000,
     masterPasswordSalt: "mvp_salt_fixed",
     pbkdf2Iterations: 100000,
-    pbkdf2IterationsTest: 100
+    pbkdf2IterationsTest: 100,
+    minEmailCount: 3
 };
 
 function createSettingsStore() {
