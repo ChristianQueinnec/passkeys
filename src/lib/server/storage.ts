@@ -6,8 +6,10 @@ import { sanitizeUsername } from '$lib/server/sanitizer';
 import lockfile from 'proper-lockfile';
 import settings from './server-settings.json';
 import logger from '$lib/server/logger';
+import * as googleDriveStorage from '$lib/server/google-drive-storage';
 
 const DATA_DIR = path.resolve(process.cwd(), settings.storage.dataDir);
+const USE_GOOGLE_DRIVE = (process.env.STORAGE_PROVIDER ?? settings.storage.provider) === 'google-drive';
 
 // Ensure DATA_DIR exists at module load time (synchronous — happens once).
 if (!fs.existsSync(DATA_DIR)) {
@@ -39,6 +41,7 @@ export const getUserDir = (username: string): string => {
  * Called only from write operations (saveVault).
  */
 export const ensureUserDir = async (username: string): Promise<string> => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.ensureUserFolder(username);
     const userDir = getUserDir(username);
     await fsp.mkdir(userDir, { recursive: true });
     return userDir;
@@ -48,6 +51,7 @@ export const ensureUserDir = async (username: string): Promise<string> => {
  * List vault metadata for a user, sorted newest-first.
  */
 export const listVaults = async (username: string) => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.listVaults(username);
     const userDir = getUserDir(username);
 
     try {
@@ -84,6 +88,7 @@ export const listVaults = async (username: string) => {
  * filename collisions (fixes report finding #17 / N10).
  */
 export const saveVault = async (username: string, content: string): Promise<string> => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.saveVault(username, content);
     const userDir = await ensureUserDir(username);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const suffix = crypto.randomBytes(4).toString('hex');
@@ -101,6 +106,7 @@ export const saveVault = async (username: string, content: string): Promise<stri
 };
 
 export const getVault = async (username: string, filename: string): Promise<string | null> => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.getVault(username, filename);
     const userDir = getUserDir(username);
     const filePath = path.join(userDir, filename);
     try {
@@ -111,12 +117,14 @@ export const getVault = async (username: string, filename: string): Promise<stri
 };
 
 export const getLatestVault = async (username: string): Promise<string | null> => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.getLatestVault(username);
     const vaults = await listVaults(username);
     if (vaults.length === 0) return null;
     return getVault(username, vaults[0].name);
 };
 
 export const deleteVault = async (username: string, filename: string): Promise<void> => {
+    if (USE_GOOGLE_DRIVE) return googleDriveStorage.deleteVault(username, filename);
     const userDir = getUserDir(username);
     const filePath = path.join(userDir, filename);
     try {

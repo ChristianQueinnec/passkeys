@@ -8,5 +8,5 @@
     "masterPasswordSalt": "mvp_salt_fixed",
     "pbkdf2Iterations": 100000,
     "pbkdf2IterationsTest": 100000,
-    minEmailCount: 3
+    "minEmailCount": 3
 }

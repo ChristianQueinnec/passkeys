@@ -1591,6 +1591,11 @@ Do not renew on every pageshow unconditionally, because that could silently exte
 
 OK so we do not do anything!
 
+## 147 Google drive remote storage
+
+Provide an implementation of `storage.ts` on Google drive or other web
+drive rather than (as now) a directory on the server.
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
@@ -1618,6 +1623,3 @@ hide better the vault password, re-ciphering it regularly
 
 Provide an implementation of `storage.ts` on Google drive or other web
 drive rather than a directory on the server. ????
-
-use 'pageshow' event to refresh the jwt token if needed.
-cf. https://medium.com/skillstuff/the-browser-feature-most-frontend-developers-completely-ignore-59803d2561f4
