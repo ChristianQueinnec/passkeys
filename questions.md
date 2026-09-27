@@ -1596,6 +1596,49 @@ OK so we do not do anything!
 Provide an implementation of `storage.ts` on Google drive or other web
 drive rather than (as now) a directory on the server.
 
+```
+Implemented Google Drive-backed vault storage.
+
+Changes:
+
+Added src/lib/server/google-drive-storage.ts
+OAuth refresh-token support
+User folders and vault files in Google Drive
+List, upload, download, latest, and delete operations
+Pagination and token refresh handling
+
+Updated src/lib/server/storage.ts to select the backend.
+
+Added provider configuration to src/lib/server/server-settings.json.
+
+Documented required environment variables in .env.example.
+
+Filesystem storage remains the default for compatibility.
+
+Enable Drive storage with:
+
+STORAGE_PROVIDER=google-drive
+GOOGLE_DRIVE_FOLDER_ID=optional-parent-folder-id
+GOOGLE_DRIVE_CLIENT_ID=...
+GOOGLE_DRIVE_CLIENT_SECRET=...
+GOOGLE_DRIVE_REFRESH_TOKEN=...
+
+Validation completed:
+
+350 unit tests passed.
+109 E2E tests passed.
+Svelte diagnostics passed with 0 errors and 0 warnings.
+Graph updated.
+```
+
+## 148 refactor storage
+
+Create `src/lib/server/filesystem-storage.ts` (with code specific to
+filesystem storage) similar to
+`src/lib/server/google-drive-storage.ts` and let
+`src/lib/server/storage.ts` be an interface to either one based on
+the `STORAGE_PROVIDER` environment variable.
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
