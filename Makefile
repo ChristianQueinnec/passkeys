@@ -11,6 +11,7 @@ create.container : check.docker.configuration generate.doc
 		-t passkeys:$$(cat passkeys.tag) .
 	docker inspect -f '{{.Id}}' passkeys:$$(cat passkeys.tag) | \
       sed -E -e 's/sha256://' -e 's/^(.{12}).*/\1/' > passkeys.id
+# @cajou 12 min
 
 tag.container : check.docker.configuration
 	docker tag passkeys:$$(cat passkeys.tag) \
