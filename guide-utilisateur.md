@@ -32,6 +32,11 @@ Passkeys est une application web moderne et sécurisée pour gérer vos mots de 
 - **Application Web Progressive** : Installez-la comme une application native sur n'importe quel appareil
 - **Open Source** : Construit avec des technologies modernes et maintenables
 
+L'administrateur du serveur peut conserver les versions chiffrées du coffre
+sur le disque du serveur ou dans Google Drive. Ce choix est transparent pour
+l'utilisateur : le chiffrement a toujours lieu dans le navigateur avant le
+transfert. Le fichier des comptes utilisateurs reste conservé côté serveur.
+
 ---
 
 ## Premiers Pas
@@ -240,6 +245,10 @@ Depuis le menu utilisateur, vous pouvez modifier en minutes le délai de verroui
 
 ### Q : Mes données sont-elles sécurisées sur vos serveurs ?
 **R** : Oui ! Toutes vos données sont chiffrées côté client avant d'être envoyées à nos serveurs. Nous ne stockons que des données chiffrées et n'avons aucun moyen de les déchiffrer.
+
+L'administrateur peut choisir de conserver ces données chiffrées dans un
+répertoire local ou dans Google Drive ; ce choix ne donne pas au fournisseur
+de stockage la clé de votre coffre-fort.
 
 ### Q : Puis-je importer des données depuis d'autres gestionnaires de mots de passe ?
 **R** : Actuellement, Passkeys prend en charge l'importation depuis KeePass. D'autres formats seront ajoutés à l'avenir.

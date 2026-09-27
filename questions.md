@@ -1631,13 +1631,18 @@ Svelte diagnostics passed with 0 errors and 0 warnings.
 Graph updated.
 ```
 
-## 148 refactor storage
+## 148 Refactor storage
 
 Create `src/lib/server/filesystem-storage.ts` (with code specific to
 filesystem storage) similar to
 `src/lib/server/google-drive-storage.ts` and let
 `src/lib/server/storage.ts` be an interface to either one based on
 the `STORAGE_PROVIDER` environment variable.
+
+Update project and user's documentation files accordingly.
+
+
+
 
 
 

@@ -211,6 +211,29 @@ KeePass2Passkeys/csv-to-json.ts YOUR.csv data/${USER}/vault-from-keepass.vault
 #  -3- History, delete vault-from-keepass.vault
 ```
 
+## Server Deployment and Storage
+
+The server administrator can store vault revisions either in the local
+`data/` directory or in Google Drive. This choice does not change the client
+application: vaults are encrypted in the browser before they are uploaded.
+
+The default is the local filesystem. To use Google Drive, configure the server
+with:
+
+```bash
+STORAGE_PROVIDER=google-drive
+GOOGLE_DRIVE_FOLDER_ID=optional-parent-folder-id
+GOOGLE_DRIVE_CLIENT_ID=...
+GOOGLE_DRIVE_CLIENT_SECRET=...
+GOOGLE_DRIVE_REFRESH_TOKEN=...
+```
+
+The Drive account must be allowed to access the parent folder. Passkeys creates
+a separate folder for each user and stores vault history as `.vault` files.
+The server-side `data/users.json` file remains local because it contains login
+credentials and is not part of vault storage. An access token can be used for
+testing, but a refresh token is required for a long-running deployment.
+
 ## Docker Installation (TBD)
 
 ### Prerequisites
@@ -337,6 +360,9 @@ services:
 - `volumes`: Mount local `data/` directory
 - `ports`: Expose port 3000 for web access
 - `restart`: Auto-restart on failure
+- For Google Drive storage, pass the `STORAGE_PROVIDER` and
+  `GOOGLE_DRIVE_*` variables to the container and keep the local `data/`
+  volume for `users.json` and server state.
 
 ### Directory Structure
 

@@ -29,6 +29,20 @@ connexion enoncées plus haut (nom de connexion et mot de passe).
 Inventez un mot de passe pour le coffre-fort initial qui a été
 engendré en guise d'exemple.
 
+## Stockage des coffres-forts
+
+Par défaut, les versions des coffres-forts sont stockées dans le
+répertoire `data/` du serveur. Il est également possible d'utiliser
+Google Drive en configurant le serveur avec
+`STORAGE_PROVIDER=google-drive`, `GOOGLE_DRIVE_CLIENT_ID`,
+`GOOGLE_DRIVE_CLIENT_SECRET` et `GOOGLE_DRIVE_REFRESH_TOKEN` ;
+`GOOGLE_DRIVE_FOLDER_ID` permet de choisir un dossier parent.
+
+Le compte Google doit avoir accès à ce dossier. Passkeys crée un
+sous-dossier par utilisateur et y conserve les fichiers `.vault`.
+Le fichier local `data/users.json` reste nécessaire pour
+l'authentification ; seul le stockage des coffres-forts est déporté.
+
 ## Export depuis KeePass
 
 Exportez vos informations sous la forme d'un CSV, disons `pass.csv`,

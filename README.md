@@ -151,7 +151,8 @@ Server Stores Encrypted File (no decryption)
 
 - **SvelteKit**: Server-side API routes
 - **Node.js**: Runtime environment
-- **Filesystem**: JSON-based storage (users and vaults)
+- **Configurable storage**: local filesystem or Google Drive for vault files
+- **Local server data**: JSON-based user credentials and rate-limit state
 - **bcrypt**: Secure password hashing
 
 ### Testing
@@ -197,7 +198,7 @@ npm run dev
 
 ### Initial Setup
 
-1. Create `data/users.json`:
+1. Create `data/users.json` (required for both storage providers):
 ```json
 [
   {
@@ -209,7 +210,7 @@ npm run dev
 
 2. Passwords will be automatically hashed on first server read
 
-3. Create initial vault (optional) in `data/admin/`:
+3. With the default filesystem provider, create an initial vault (optional) in `data/admin/`:
 ```json
 [
   {
@@ -418,13 +419,35 @@ Set environment variables in `docker-compose.yml` or `.env`:
 PORT=5173
 NODE_ENV=production
 DATA_DIR=/app/data
+STORAGE_PROVIDER=filesystem
 ```
+
+Vault storage can be moved from the server filesystem to Google Drive. Set
+`STORAGE_PROVIDER=google-drive` and provide an OAuth refresh-token
+configuration:
+
+```bash
+STORAGE_PROVIDER=google-drive
+GOOGLE_DRIVE_FOLDER_ID=optional-parent-folder-id
+GOOGLE_DRIVE_CLIENT_ID=...
+GOOGLE_DRIVE_CLIENT_SECRET=...
+GOOGLE_DRIVE_REFRESH_TOKEN=...
+```
+
+`GOOGLE_DRIVE_ACCESS_TOKEN` may be used for short-lived development sessions,
+but a refresh token is recommended for production. The Drive account must
+have access to the configured parent folder. Passkeys creates one folder per
+user and stores each vault revision as a `.vault` file. The server still keeps
+`users.json` and rate-limit state locally; only vault files use the selected
+provider.
 
 ### Production Considerations
 
 1. **HTTPS Required**: Always use TLS in production
-2. **Secure Data Directory**: Restrict filesystem permissions
-3. **Regular Backups**: Backup `data/` directory regularly
+2. **Secure local data**: Restrict permissions on `data/`, which still contains
+   authentication data even when vaults use Google Drive
+3. **Regular Backups**: Back up the local data directory and the configured
+   Google Drive folder, according to the selected provider
 4. **Rate Limiting**: Implement request rate limits
 5. **Monitoring**: Log authentication attempts and errors
 
