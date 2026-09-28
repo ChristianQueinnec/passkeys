@@ -1697,7 +1697,76 @@ editingItem, or dirtySecrets.
 
 When removing sensible information, please use overwriting with random data.
 
-Instrument the code to measure the duration of the deciphering of the vault.
+```
+Implemented best-effort random overwriting before sensitive data is discarded:
+
+Plaintext entry fields in selectedItem, editingItem, and dirtySecrets
+Remembered master password
+Easy-unlock challenge answer
+
+Added helpers in src/lib/vault.ts and regression tests.
+
+JavaScript strings are immutable, so this cannot guarantee forensic erasure, but it replaces active references with random data before clearing them.
+
+Validation:
+
+352 unit tests passed.
+109 E2E tests passed.
+Svelte diagnostics passed with 0 errors/warnings.
+  Worked for 6m 45s · 11:48 AM
+The active goal is to reduce exposure of vault secrets in browser memory. Unlock timing instrumentation, inactivity cleanup, and best-effort random overwriting for entry data, remembered passwords, and easy-unlock answers are implemented, with regression coverage. Validation passed: 352 unit tests, 109 E2E tests, and clean Svelte diagnostics. Forensic erasure remains impossible to guarantee because JavaScript strings are immutable.
+```
+
+## 150 Sensible strings
+
+I wrote `src/lib/sensible-string.ts` as a class to hold sensible data. 
+Instead of strings, use Uint8Array that can be overwritten. Do you
+see problems with that approach ?
+
+```
+The approach is sound as a best-effort measure, but the current implementation has several problems.
+
+The file currently fails TypeScript diagnostics with 11 errors:
+
+encoder and decoder should be SensibleString.encoder.encode(...) and .decode(...).
+
+_bytes and _sensible are not declared.
+
+_sensible is a boolean but is used as if it were the byte array.
+
+Assigning 'X' to a Uint8Array is invalid; bytes must be numeric.
+
+return this. is incomplete.
+
+Use primitive string, not boxed String.
+
+Conceptually, even a corrected implementation cannot guarantee complete erasure:
+
+get() recreates a normal JavaScript string, which may be copied by the runtime.
+
+UI inputs, JSON parsing, TextDecoder, logging, and Web Crypto APIs can create additional copies.
+
+JavaScript provides no guaranteed control over garbage collection or JIT-created copies.
+
+The class must never expose its internal Uint8Array directly.
+
+A safer design would:
+
+Store Uint8Array | null.
+Decode only when necessary.
+Make erase() idempotent.
+Overwrite the byte array with random bytes or zeroes, then set it to null.
+Throw from get() after erasure.
+Avoid retaining the string returned by get() longer than needed.
+
+So this is a useful improvement for actively managed buffers, but it should be described as best-effort memory hygiene—not guaranteed secure memory wiping.
+```
+
+Please make that class better.
+
+
+Instrument the code to measure the duration of the deciphering of the
+vault and print it in the console.
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
