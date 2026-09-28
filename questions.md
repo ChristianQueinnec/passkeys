@@ -1641,9 +1641,64 @@ the `STORAGE_PROVIDER` environment variable.
 
 Update project and user's documentation files accordingly.
 
+## 149 Presence of the vault password 
+
+Tell me when the vault password appears deciphered in the memory of
+the browser and how long.
+
+```
+The vault password/master password appears in browser memory at unlock time:
+
+It is held in the unlock form’s Svelte state while typed.
+
+It is passed to handleUnlock() and used to derive the AES CryptoKey.
+
+After successful unlocking, the plaintext password is deliberately retained for quick unlock in rememberedMasterPassword (src/lib/stores/useVault.svelte.ts:47).
+
+Durations:
+
+Plaintext master password for quick unlock: 1 hour by default (quickUnlockTimeout = 3600000).
+
+Derived CryptoKey: 15 minutes after inactivity by default (inactivityTimeout = 900000). Keyboard, click, and touch activity reset this timer.
+
+On manual logout, session expiration/401, or inactivity lock, the CryptoKey is removed and the remembered plaintext password is cleared.
+
+The unlock input is destroyed when the UI leaves the unlock phase, but JavaScript garbage collection is not immediate or guaranteed.
+
+Vault entry passwords also appear transiently in JavaScript memory whenever decrypted for display, editing, copying, or export. Clipboard contents are cleared after 10 seconds by default.
+
+The application does not explicitly overwrite strings or guarantee forensic removal from browser memory.
+```
+
+What is the duration of the computation of the derived cryptokey ?
+Instrument the code to measure that duration and print it in the console.
+
+Tell me when the vault appears deciphered in the memory of the browser
+and how long.
+
+```
+The vault’s decrypted contents appear in browser memory in these situations:
+
+During initial loading: decrypt() creates a plaintext JSON string and parses it into entries. The plaintext is then sanitized and normally becomes eligible for garbage collection when loadVault() finishes—typically milliseconds to seconds.
+
+When an entry is opened: the full decrypted entry is stored in selectedItem until the modal is closed.
+
+When an entry is edited: the full entry is stored in editingItem and also in dirtySecrets after saving edits.
+
+During copying/exporting: decrypted values exist for the duration of that operation.
+
+Important: the 15-minute inactivity lock removes the derived CryptoKey, but it does not currently clear selectedItem, editingItem, or dirtySecrets. Therefore, a decrypted entry can remain in JavaScript memory beyond the inactivity timeout—potentially until the modal is closed, changes are saved/deleted, or the page is reloaded.
+
+The encrypted vault itself remains in memory as ciphertext.
+```
+
+Ensure that the 15-minute inactivity lock also clear selectedItem,
+editingItem, or dirtySecrets.
+
+Instrument the code to measure the duration of the deciphering of the vault.
 
 
-
+When removing sensible information, please use overwriting. 
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
@@ -1668,6 +1723,3 @@ stored on the server since none can be written by the server.
 incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password, re-ciphering it regularly
-
-Provide an implementation of `storage.ts` on Google drive or other web
-drive rather than a directory on the server. ????

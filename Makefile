@@ -170,6 +170,7 @@ run.codex :
 	${HOME}/IA/Codex/node_modules/.bin/codex
 # copy/paste from questions.md
 # type `process vibe.md`
+# Note: codex really uses graphify!
 
 run.opencode :
 # requires Ollama, very slow!

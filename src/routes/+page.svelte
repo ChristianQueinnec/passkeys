@@ -131,7 +131,13 @@
                 ? settings.current.pbkdf2IterationsTest
                 : settings.current.pbkdf2Iterations;
 
-        encryptionKey.set = await pbkdf2(masterPassword, salt, iterations);
+        const keyDerivationStartedAt = performance.now();
+        const derivedKey = await pbkdf2(masterPassword, salt, iterations);
+        const keyDerivationDurationMs = performance.now() - keyDerivationStartedAt;
+        console.info(
+            `Vault key derivation completed in ${keyDerivationDurationMs.toFixed(2)} ms (${iterations} PBKDF2 iterations)`,
+        );
+        encryptionKey.set = derivedKey;
         // Load vault once key is derived
         const success = await vault.loadVault();
 
