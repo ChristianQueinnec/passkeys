@@ -1,4 +1,4 @@
-import { sortPasswordEntries, sanitizeItems } from "$lib/vault";
+import { sortPasswordEntries, sanitizeItems, overwriteSensitiveString } from "$lib/vault";
 import type { PasswordEntry } from "$lib/types";
 import { i18n } from "./useI18n.svelte";
 import { settings } from "./useSettings.svelte";
@@ -29,6 +29,12 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         if (easyUnlockTimer) {
             clearTimeout(easyUnlockTimer);
             easyUnlockTimer = null;
+        }
+        if (rememberedMasterPassword) {
+            rememberedMasterPassword = overwriteSensitiveString(rememberedMasterPassword);
+        }
+        if (state.easyUnlockChallenge) {
+            state.easyUnlockChallenge.answer = overwriteSensitiveString(state.easyUnlockChallenge.answer);
         }
         rememberedMasterPassword = null;
         state.easyUnlockChallenge = null;

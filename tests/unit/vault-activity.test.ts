@@ -28,6 +28,7 @@ describe('Vault activity locking', () => {
         expect(state.selectedItem).toBeNull();
         expect(state.editingItem).toBeNull();
         expect(state.dirtySecrets.size).toBe(0);
+        expect(entry.password).not.toBe('secret');
         expect(key.isSet).toBe(false);
         expect(onLock).toHaveBeenCalledOnce();
     });

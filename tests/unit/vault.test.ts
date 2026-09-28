@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortPasswordEntries, filterPasswordEntries, normalizeVaultItems } from '../../src/lib/vault';
+import { sortPasswordEntries, filterPasswordEntries, normalizeVaultItems, overwriteSensitiveEntry } from '../../src/lib/vault';
 import type { PasswordEntry } from '../../src/lib/types';
 
 describe('Vault Utilities', () => {
@@ -97,6 +97,26 @@ describe('Vault Utilities', () => {
             ];
             const normalized = normalizeVaultItems(rawItems);
             expect(normalized[0].title).toBe('Untitled');
+        });
+    });
+
+    describe('overwriteSensitiveEntry', () => {
+        it('replaces plaintext entry fields with random data', () => {
+            const entry: PasswordEntry = {
+                id: '1', title: 'Title', username: 'user@example.com', password: 'secret',
+                site: 'https://example.com', group: 'Private', tags: ['tag'], notes: 'note',
+            };
+
+            overwriteSensitiveEntry(entry);
+
+            expect(entry.id).toBe('1');
+            expect(entry.title).not.toBe('Title');
+            expect(entry.username).not.toBe('user@example.com');
+            expect(entry.password).not.toBe('secret');
+            expect(entry.site).not.toBe('https://example.com');
+            expect(entry.group).not.toBe('Private');
+            expect(entry.tags?.[0]).not.toBe('tag');
+            expect(entry.notes).not.toBe('note');
         });
     });
 });

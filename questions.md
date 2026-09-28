@@ -1695,10 +1695,9 @@ The encrypted vault itself remains in memory as ciphertext.
 Ensure that the 15-minute inactivity lock also clear selectedItem,
 editingItem, or dirtySecrets.
 
+When removing sensible information, please use overwriting with random data.
+
 Instrument the code to measure the duration of the deciphering of the vault.
-
-
-When removing sensible information, please use overwriting. 
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss

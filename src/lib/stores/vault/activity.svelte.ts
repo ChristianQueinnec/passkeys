@@ -3,6 +3,7 @@ import { settings } from "../useSettings.svelte";
 import { untrack } from "svelte";
 import type { VaultState } from "./state.svelte";
 import type { VaultCrypto } from "./crypto";
+import { overwriteSensitiveEntry } from "$lib/vault";
 
 export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
     let clipboardTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -15,9 +16,15 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
             clipboardInterval = null;
         }
         state.clipboardRemainingTime = null;
-        // Remove all decrypted entry references when the vault locks. The
-        // encryption key alone is not sufficient: selected/editing entries
-        // and pending edits may still contain plaintext credentials.
+        // Randomize decrypted entry fields before removing their references.
+        const entriesToWipe = new Set([
+            state.selectedItem,
+            state.editingItem,
+            ...state.dirtySecrets.values(),
+        ]);
+        for (const entry of entriesToWipe) {
+            if (entry) overwriteSensitiveEntry(entry);
+        }
         state.selectedItem = null;
         state.editingItem = null;
         state.dirtySecrets.clear();
