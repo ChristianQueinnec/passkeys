@@ -1,34 +1,48 @@
 /**
-   A class to store sensible string that is, a string that can be
-   erased in place. 
-
-   */
-
+ * Stores a string in mutable UTF-8 bytes so the backing storage can be
+ * overwritten when the value is no longer needed.
+ *
+ * This is best-effort protection: JavaScript strings are immutable, and
+ * callers should avoid retaining the value returned by {@link get} longer
+ * than necessary.
+ */
 export class SensibleString {
-    static encoder = new TextEncoder();
-    static decoder = new TextDecoder();
-    
-    constructor (string: String) {
-        this._bytes = SensibleString.encoder.encode(string);
-        this._sensible = true;
+    private static readonly encoder = new TextEncoder();
+    private static readonly decoder = new TextDecoder();
+    private static readonly randomChunkSize = 65_536;
+
+    private bytes: Uint8Array | null;
+
+    constructor(value: string) {
+        this.bytes = SensibleString.encoder.encode(value);
     }
 
-    get () {
-        if ( this._sensible ) {
-            return SensibleString.decoder.decode(this._bytes);
+    /** Returns the value while it has not been erased. */
+    get(): string {
+        if (this.bytes === null) {
+            throw new Error('sensible string has been erased');
         }
-        throw new Error('lost sensible string');
+
+        return SensibleString.decoder.decode(this.bytes);
     }
 
-    erase () {
-        if ( this._sensible ) {
-            for ( let i=0 ; i<this._bytes.length ; i++ ) {
-                this._bytes[i] = 0;
-            }
+    /** Whether the mutable backing storage has already been erased. */
+    get erased(): boolean {
+        return this.bytes === null;
+    }
+
+    /** Overwrites and releases the backing storage. This operation is idempotent. */
+    erase(): void {
+        if (this.bytes === null) {
+            return;
         }
-        this._bytes = null;
-        this._sensible = false;
-        return this;
+
+        for (let offset = 0; offset < this.bytes.length; offset += SensibleString.randomChunkSize) {
+            const end = Math.min(offset + SensibleString.randomChunkSize, this.bytes.length);
+            globalThis.crypto.getRandomValues(this.bytes.subarray(offset, end));
+        }
+        this.bytes.fill(0);
+        this.bytes = null;
     }
 }
 
