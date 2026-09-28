@@ -15,6 +15,12 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
             clipboardInterval = null;
         }
         state.clipboardRemainingTime = null;
+        // Remove all decrypted entry references when the vault locks. The
+        // encryption key alone is not sufficient: selected/editing entries
+        // and pending edits may still contain plaintext credentials.
+        state.selectedItem = null;
+        state.editingItem = null;
+        state.dirtySecrets.clear();
         state.encryptionKey.remove();
         state.onLock();
     }
