@@ -7,6 +7,7 @@ export interface ClientSettings {
     inactivityTimeoutTest: number;
     quickUnlockTimeout: number;
     clipboardTimeout: number;
+    passwordRevealTimeout: number;
     masterPasswordSalt: string;
     pbkdf2Iterations: number;
     pbkdf2IterationsTest: number;
@@ -22,6 +23,7 @@ const defaultSettings: ClientSettings = {
     inactivityTimeoutTest: 3600000,
     quickUnlockTimeout: 3600000,
     clipboardTimeout: 10000,
+    passwordRevealTimeout: 5000,
     masterPasswordSalt: "mvp_salt_fixed",
     pbkdf2Iterations: 100000,
     pbkdf2IterationsTest: 100,

@@ -62,4 +62,28 @@ test.describe('Vault Operations', () => {
         // Verify deletion
         await expect(page.getByText('Updated Site')).not.toBeVisible();
     });
+
+    test('should reveal and select an edited password, then mask it again', async ({ page }) => {
+        await page.getByTestId('new-entry-btn').click();
+        const password = page.getByTestId('edit-password');
+
+        await expect(password).toHaveAttribute('type', 'password');
+        await password.fill('secret123');
+        await password.click();
+
+        await expect(password).toHaveAttribute('type', 'text');
+        await expect(password).toHaveValue('secret123');
+        await expect.poll(() =>
+            password.evaluate((element) => {
+                const input = element as HTMLInputElement;
+                return {
+                start: input.selectionStart,
+                end: input.selectionEnd,
+                };
+            }),
+        ).toEqual({ start: 0, end: 9 });
+
+        await page.waitForTimeout(5100);
+        await expect(password).toHaveAttribute('type', 'password');
+    });
 });

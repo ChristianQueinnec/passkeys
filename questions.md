@@ -1764,9 +1764,36 @@ So this is a useful improvement for actively managed buffers, but it should be d
 
 Please make that class better.
 
+Is this class useful to improve the security of sensible data ?
 
-Instrument the code to measure the duration of the deciphering of the
-vault and print it in the console.
+```
+Yes, but only as a limited, best-effort improvement.
+
+SensibleString can reduce the lifetime of sensitive data in its mutable Uint8Array, and erase() can overwrite that buffer. It may help against accidental retention of the backing bytes.
+
+However, it does not provide strong memory security:
+
+get() recreates an immutable JavaScript string.
+
+JavaScript engines and browser APIs may copy strings internally.
+
+Garbage collection cannot be controlled.
+
+The application currently stores vault fields as ordinary strings; SensibleString is only used by its tests.
+
+It does not protect against XSS, browser extensions, DevTools, screenshots, or compromised runtime code.
+
+So the class is useful as a defense-in-depth primitive, but not as a guarantee that sensitive data has been securely erased. Its security benefit would require integrating it into the actual password/key lifecycle and minimizing calls to get().
+```
+
+OK, forget class SensibleString.
+
+## 151 Linux X clipboard
+
+While editing an entry, let a click on the stars hiding a password to
+reveal that password and select it, the password should be hidden
+again after five seconds (use a new parameter in client settings for
+that duration).
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
@@ -1791,3 +1818,6 @@ stored on the server since none can be written by the server.
 incorporate __TESTING__ into client-settings.json ?
 
 hide better the vault password, re-ciphering it regularly
+
+Instrument the code to measure the duration of the deciphering of the
+vault and print it in the console.
