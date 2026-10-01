@@ -1557,7 +1557,7 @@ the one set by the window manager.
 Solution: alt-space 
 ```
 
-## 146 Use 'pageshow' ?
+## 146 Use 'pageshow' ? (codex)
 
 Is it useful to use the 'pageshow' event to refresh the jwt token if
 needed as mentioned in this article
@@ -1591,7 +1591,7 @@ Do not renew on every pageshow unconditionally, because that could silently exte
 
 OK so we do not do anything!
 
-## 147 Google drive remote storage
+## 147 Google drive remote storage (codex)
 
 Provide an implementation of `storage.ts` on Google drive or other web
 drive rather than (as now) a directory on the server.
@@ -1631,7 +1631,7 @@ Svelte diagnostics passed with 0 errors and 0 warnings.
 Graph updated.
 ```
 
-## 148 Refactor storage
+## 148 Refactor storage (codex)
 
 Create `src/lib/server/filesystem-storage.ts` (with code specific to
 filesystem storage) similar to
@@ -1641,7 +1641,7 @@ the `STORAGE_PROVIDER` environment variable.
 
 Update project and user's documentation files accordingly.
 
-## 149 Presence of the vault password 
+## 149 Presence of the vault password  (codex)
 
 Tell me when the vault password appears deciphered in the memory of
 the browser and how long.
@@ -1717,7 +1717,7 @@ Svelte diagnostics passed with 0 errors/warnings.
 The active goal is to reduce exposure of vault secrets in browser memory. Unlock timing instrumentation, inactivity cleanup, and best-effort random overwriting for entry data, remembered passwords, and easy-unlock answers are implemented, with regression coverage. Validation passed: 352 unit tests, 109 E2E tests, and clean Svelte diagnostics. Forensic erasure remains impossible to guarantee because JavaScript strings are immutable.
 ```
 
-## 150 Sensible strings
+## 150 Sensible strings (codex)
 
 I wrote `src/lib/sensible-string.ts` as a class to hold sensible data. 
 Instead of strings, use Uint8Array that can be overwritten. Do you
@@ -1788,12 +1788,19 @@ So the class is useful as a defense-in-depth primitive, but not as a guarantee t
 
 OK, forget class SensibleString.
 
-## 151 Linux X clipboard
+## 151 Linux X clipboard (codex)
 
 While editing an entry, let a click on the stars hiding a password to
 reveal that password and select it, the password should be hidden
 again after five seconds (use a new parameter in client settings for
 that duration).
+
+Revert to previous version. When looking at the details of an entry
+(and not when editing the entry) let a click on the stars hiding a
+password to reveal that password and select it, the password should be
+hidden again after five seconds (use a new parameter in client
+settings for that duration).
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss

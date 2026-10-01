@@ -2,8 +2,10 @@
     import Modal from "$lib/components/Modal.svelte";
     import type { PasswordEntry } from "$lib/types";
     import { i18n } from "$lib/stores/useI18n.svelte";
+    import { settings } from "$lib/stores/useSettings.svelte";
     import snarkdown from "snarkdown";
     import DOMPurify from "dompurify";
+    import { onDestroy } from "svelte";
 
     let {
         isOpen,
@@ -21,9 +23,45 @@
         onCopy: (text: string) => void;
     } = $props();
 
+    let passwordVisible = $state(false);
+    let passwordInput = $state<HTMLInputElement | undefined>(undefined);
+    let passwordRevealTimer: ReturnType<typeof setTimeout> | undefined;
+
     const renderedNotes = $derived(
         item?.notes ? DOMPurify.sanitize(snarkdown(item.notes)) : "",
     );
+
+    $effect(() => {
+        item?.id;
+        passwordVisible = false;
+        clearPasswordRevealTimer();
+    });
+
+    function clearPasswordRevealTimer() {
+        if (passwordRevealTimer !== undefined) {
+            clearTimeout(passwordRevealTimer);
+            passwordRevealTimer = undefined;
+        }
+    }
+
+    function hidePassword() {
+        clearPasswordRevealTimer();
+        passwordVisible = false;
+    }
+
+    function revealPassword() {
+        if (passwordVisible) return;
+
+        passwordVisible = true;
+        passwordRevealTimer = setTimeout(hidePassword, settings.current.passwordRevealTimeout);
+
+        requestAnimationFrame(() => {
+            passwordInput?.focus();
+            passwordInput?.select();
+        });
+    }
+
+    onDestroy(clearPasswordRevealTimer);
 </script>
 
 <Modal {isOpen} {onClose} title={item?.title}>
@@ -45,7 +83,15 @@
             </div>
             <div class="field">
                 <strong>{i18n.t("common.password")}:</strong>
-                <span>********</span>
+                <input
+                    class="password-display"
+                    type={passwordVisible ? "text" : "password"}
+                    value={item.password || ""}
+                    readonly
+                    bind:this={passwordInput}
+                    onclick={revealPassword}
+                    data-testid="details-password"
+                />
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.password || "")}
@@ -151,5 +197,9 @@
     .small {
         font-size: 0.8rem;
         padding: 0.25rem 0.5rem;
+    }
+    .password-display {
+        min-width: 0;
+        flex: 1;
     }
 </style>

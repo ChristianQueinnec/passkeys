@@ -1,8 +1,6 @@
 <script lang="ts">
     import { i18n } from "$lib/stores/useI18n.svelte";
-    import { settings } from "$lib/stores/useSettings.svelte";
     import { generatePassword } from "$lib/password-generator";
-    import { onDestroy } from "svelte";
 
     let { item, onSave, onCancel, getUsernameSuggestions } = $props();
 
@@ -15,17 +13,12 @@
     let notes = $state("");
     let group = $state("");
     let usernameSuggestions = $state<string[]>([]);
-    let passwordVisible = $state(false);
-    let passwordInput: HTMLInputElement | undefined;
-    let passwordRevealTimer: ReturnType<typeof setTimeout> | undefined;
 
     // Initialize/Sync state from props
     $effect(() => {
         title = item?.title || "";
         username = item?.username || "";
         password = item?.password || "";
-        passwordVisible = false;
-        clearPasswordRevealTimer();
         site = item?.site || "";
         tags = item?.tags?.join(", ") || "";
         notes = item?.notes || "";
@@ -62,31 +55,6 @@
         password = generatePassword();
     }
 
-    function clearPasswordRevealTimer() {
-        if (passwordRevealTimer !== undefined) {
-            clearTimeout(passwordRevealTimer);
-            passwordRevealTimer = undefined;
-        }
-    }
-
-    function hidePassword() {
-        clearPasswordRevealTimer();
-        passwordVisible = false;
-    }
-
-    function revealPassword() {
-        if (passwordVisible) return;
-
-        passwordVisible = true;
-        passwordRevealTimer = setTimeout(hidePassword, settings.current.passwordRevealTimeout);
-
-        requestAnimationFrame(() => {
-            passwordInput?.focus();
-            passwordInput?.select();
-        });
-    }
-
-    onDestroy(clearPasswordRevealTimer);
 </script>
 
 <div class="editor">
@@ -129,10 +97,8 @@
         <div class="password-field">
             <input
                 id="password"
-                type={passwordVisible ? "text" : "password"}
+                type="text"
                 bind:value={password}
-                bind:this={passwordInput}
-                onclick={revealPassword}
                 data-testid="edit-password"
             />
             <button

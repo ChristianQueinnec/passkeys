@@ -63,12 +63,18 @@ test.describe('Vault Operations', () => {
         await expect(page.getByText('Updated Site')).not.toBeVisible();
     });
 
-    test('should reveal and select an edited password, then mask it again', async ({ page }) => {
+    test('should reveal and select a password in details, then mask it again', async ({ page }) => {
         await page.getByTestId('new-entry-btn').click();
-        const password = page.getByTestId('edit-password');
+        const editorPassword = page.getByTestId('edit-password');
 
+        await expect(editorPassword).toHaveAttribute('type', 'text');
+        await editorPassword.fill('secret123');
+        await page.getByTestId('edit-title').fill('Password Details Test');
+        await page.getByTestId('edit-save').click();
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Password Details Test' }).getByTestId('view-details-btn').click();
+
+        const password = page.getByTestId('details-password');
         await expect(password).toHaveAttribute('type', 'password');
-        await password.fill('secret123');
         await password.click();
 
         await expect(password).toHaveAttribute('type', 'text');
