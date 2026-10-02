@@ -205,6 +205,7 @@ do.continue.on.mac :
 
 process.passkeys :
 	graphify extract . --code-only
+	graphify cluster-only .
 # open codex
 # /graphify does not work
 # graphify extract . --code-only  # generates ./graphify-out/

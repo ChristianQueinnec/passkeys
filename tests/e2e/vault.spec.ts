@@ -31,7 +31,7 @@ test.describe('Vault Operations', () => {
     test('should create, edit and delete a vault entry', async ({ page }) => {
         // Create
         await page.getByTestId('new-entry-btn').click();
-        await expect(page.getByTestId('modal-title')).toBeVisible(); // Need to add data-testid to Modal.svelte title
+        await expect(page.getByTestId('modal-title')).toBeVisible();
 
         await page.getByTestId('edit-title').fill('Test Site');
         await page.getByTestId('edit-username').fill('testuser');
@@ -45,8 +45,8 @@ test.describe('Vault Operations', () => {
         await expect(page.getByText('Test Site')).toBeVisible();
 
         // Edit
-        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Test Site' }).getByTestId('view-details-btn').click(); // Need to add to PasswordList
-        await page.getByTestId('details-edit').click(); // Need to add to DetailsModal
+        await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Test Site' }).getByTestId('view-details-btn').click();
+        await page.getByTestId('details-edit').click();
         await page.getByTestId('edit-title').fill('Updated Site');
         await page.getByTestId('edit-save').click();
 
@@ -74,10 +74,10 @@ test.describe('Vault Operations', () => {
         await page.locator('[data-testid="vault-item"]').filter({ hasText: 'Password Details Test' }).getByTestId('view-details-btn').click();
 
         const password = page.getByTestId('details-password');
-        await expect(password).toHaveAttribute('type', 'password');
+        await expect(password).toHaveAttribute('type', 'text');
+        await expect(password).toHaveValue('********');
         await password.click();
 
-        await expect(password).toHaveAttribute('type', 'text');
         await expect(password).toHaveValue('secret123');
         await expect.poll(() =>
             password.evaluate((element) => {
@@ -90,6 +90,6 @@ test.describe('Vault Operations', () => {
         ).toEqual({ start: 0, end: 9 });
 
         await page.waitForTimeout(5100);
-        await expect(password).toHaveAttribute('type', 'password');
+        await expect(password).toHaveValue('********');
     });
 });
