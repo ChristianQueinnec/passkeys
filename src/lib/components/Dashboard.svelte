@@ -7,10 +7,19 @@
     import FolderIcon from "$lib/icons/FolderIcon.svelte";
     import { i18n } from "$lib/stores/useI18n.svelte";
 
-    let { onToggleView, vault } = $props();
+    let {
+        onToggleView,
+        vault,
+        filter = "",
+        onFilterChange,
+    }: {
+        onToggleView: () => void;
+        vault: Vault;
+        filter?: string;
+        onFilterChange: (value: string) => void;
+    } = $props();
 
     // View-specific state
-    let filter = $state("");
     let filteredFiles = $derived(
         sortPasswordEntries(
             filterPasswordEntries(vault.items, filter),
@@ -43,13 +52,15 @@
             <input
                 type="text"
                 placeholder={i18n.t("vault.filter_placeholder")}
-                bind:value={filter}
+                value={filter}
+                oninput={(event) =>
+                    onFilterChange((event.currentTarget as HTMLInputElement).value)}
                 data-testid="filter-input"
             />
             {#if filter}
                 <button
                     class="reset-filter"
-                    onclick={() => (filter = "")}
+                    onclick={() => onFilterChange("")}
                     data-testid="reset-filter"
                     title={i18n.t("vault.filter_reset")}
                     aria-label={i18n.t("vault.filter_reset")}

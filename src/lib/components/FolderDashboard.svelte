@@ -11,7 +11,17 @@
     import { filterPasswordEntries, sortPasswordEntries } from "$lib/vault";
     import { toasts } from "$lib/stores/useToasts.svelte";
 
-    let { onToggleView, vault } = $props();
+    let {
+        onToggleView,
+        vault,
+        filter = "",
+        onFilterChange,
+    }: {
+        onToggleView: () => void;
+        vault: Vault;
+        filter?: string;
+        onFilterChange: (value: string) => void;
+    } = $props();
 
     let folderTree = $state<FolderNode>({
         name: i18n.t("vault.root"),
@@ -23,7 +33,6 @@
     });
 
     let selectedFolder = $state<FolderNode | null>(null);
-    let filter = $state("");
     let searchScopeSelected = $state(false);
     let displayedEntries = $derived(
         filter
@@ -251,13 +260,15 @@
                     <input
                         type="text"
                         placeholder={i18n.t("vault.filter_placeholder")}
-                        bind:value={filter}
+                        value={filter}
+                        oninput={(event) =>
+                            onFilterChange((event.currentTarget as HTMLInputElement).value)}
                         data-testid="filter-input"
                     />
                     {#if filter}
                         <button
                             class="reset-filter"
-                            onclick={() => (filter = "")}
+                            onclick={() => onFilterChange("")}
                             data-testid="reset-filter"
                             title={i18n.t("vault.filter_reset")}
                         >

@@ -62,4 +62,17 @@ test.describe('Filter Operations', () => {
         await expect(page.getByText('AnotherItem')).toBeVisible();
         await expect(resetBtn).not.toBeVisible();
     });
+
+    test('should preserve the filter when switching views', async ({ page }) => {
+        const filterInput = page.getByTestId('filter-input');
+        await filterInput.fill('Unique');
+
+        await page.getByTestId('toggle-view-btn').click();
+        await expect(page.locator('.folder-dashboard')).toBeVisible();
+        await expect(page.getByTestId('filter-input')).toHaveValue('Unique');
+
+        await page.getByTestId('toggle-view-btn').click();
+        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.getByTestId('filter-input')).toHaveValue('Unique');
+    });
 });

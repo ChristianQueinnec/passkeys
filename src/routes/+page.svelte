@@ -24,6 +24,7 @@
     let username = $state("");
     let encryptionKey = $state(new EncryptionKey(null)); // Encapsulated key
     let useFolderView = $state(true); // Default to folder view
+    let vaultFilter = $state("");
 
     // 0 = Login, 1 = Unlock, 2 = Dashboard
     let phase = $state(0);
@@ -382,9 +383,19 @@
             />
         {:else if phase === 2 && encryptionKey.isSet}
             {#if useFolderView}
-                <FolderDashboard {vault} onToggleView={toggleDashboardView} />
+                <FolderDashboard
+                    {vault}
+                    onToggleView={toggleDashboardView}
+                    filter={vaultFilter}
+                    onFilterChange={(value) => (vaultFilter = value)}
+                />
             {:else}
-                <Dashboard {vault} onToggleView={toggleDashboardView} />
+                <Dashboard
+                    {vault}
+                    onToggleView={toggleDashboardView}
+                    filter={vaultFilter}
+                    onFilterChange={(value) => (vaultFilter = value)}
+                />
             {/if}
         {/if}
     </main>
