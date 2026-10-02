@@ -24,7 +24,7 @@
     } = $props();
 
     let passwordVisible = $state(false);
-    let passwordSpan = $state<HTMLInputElement | undefined>(undefined);
+    let passwordInput = $state<HTMLInputElement | undefined>(undefined);
     let passwordRevealTimer: ReturnType<typeof setTimeout> | undefined;
 
     const renderedNotes = $derived(
@@ -56,8 +56,8 @@
         passwordRevealTimer = setTimeout(hidePassword, settings.current.passwordRevealTimeout);
 
         requestAnimationFrame(() => {
-            passwordSpan?.focus();
-            passwordSpan?.select();
+            passwordInput?.focus();
+            passwordInput?.select();
         });
     }
 
@@ -83,14 +83,15 @@
             </div>
             <div class="field">
                 <strong>{i18n.t("common.password")}:</strong>
-                <span
+                <input
                     class="password-display"
                     type="text"
                     readonly
-                    bind:this={passwordSpan}
+                    bind:this={passwordInput}
                     onclick={revealPassword}
+                    value={passwordVisible ? item.password : "********"}
                     data-testid="details-password"
-                >{passwordVisible ? item.password : "********"}</span>
+                />
                 <button
                     class="small"
                     onclick={() => item && onCopy(item.password || "")}

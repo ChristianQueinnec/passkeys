@@ -163,6 +163,7 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
         handleDelete: crud.handleDelete,
         closeModals: crud.closeModals,
         copyToClipboard: activity.copyToClipboard,
+        copyTextToClipboard: activity.copyTextToClipboard,
         openSite: activity.openSite,
         exportItems: crypto.getDecryptedItems,
         getUsernameSuggestions,

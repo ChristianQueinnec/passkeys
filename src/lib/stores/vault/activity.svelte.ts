@@ -61,18 +61,7 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         };
     });
 
-    async function copyToClipboard(itemId: string, field: 'username' | 'password') {
-        let text = "";
-        const dirty = state.dirtySecrets.get(itemId);
-        if (dirty) {
-            text = dirty[field] || "";
-        } else {
-            const fullItem = await crypto.getDecryptedItem(itemId);
-            if (fullItem) {
-                text = fullItem[field] || "";
-            }
-        }
-
+    async function copyTextToClipboard(text: string) {
         if (!text) return;
 
         setTimeout(async () => {
@@ -82,7 +71,7 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
                 console.error("Failed to copy to clipboard", e);
             }
         }, 0);
-        
+
         if (clipboardTimeout) {
             clearTimeout(clipboardTimeout);
         }
@@ -123,6 +112,21 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         }, duration);
     }
 
+    async function copyToClipboard(itemId: string, field: 'username' | 'password') {
+        let text = "";
+        const dirty = state.dirtySecrets.get(itemId);
+        if (dirty) {
+            text = dirty[field] || "";
+        } else {
+            const fullItem = await crypto.getDecryptedItem(itemId);
+            if (fullItem) {
+                text = fullItem[field] || "";
+            }
+        }
+
+        await copyTextToClipboard(text);
+    }
+
     async function openSite(itemId: string) {
         let url = "";
         const dirty = state.dirtySecrets.get(itemId);
@@ -149,5 +153,5 @@ export function createVaultActivity(state: VaultState, crypto: VaultCrypto) {
         }
     }
 
-    return { copyToClipboard, openSite, cleanup, lockNow, resetInactivityTimer: resetTimer };
+    return { copyToClipboard, copyTextToClipboard, openSite, cleanup, lockNow, resetInactivityTimer: resetTimer };
 }

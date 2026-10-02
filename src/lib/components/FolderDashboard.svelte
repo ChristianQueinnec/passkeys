@@ -354,7 +354,7 @@
         onDelete={vault.handleDelete}
         onSave={vault.handleSave}
         onDeleteHistory={vault.deleteHistoryItem}
-        onCopy={vault.copyToClipboard}
+        onCopy={vault.copyTextToClipboard}
         getUsernameSuggestions={vault.getUsernameSuggestions}
     />
 </div>
