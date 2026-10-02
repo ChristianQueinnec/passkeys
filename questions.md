@@ -1801,6 +1801,13 @@ password to reveal that password and select it, the password should be
 hidden again after five seconds (use a new parameter in client
 settings for that duration).
 
+## 152 Ease searching
+
+When switching from list view to folder view or back and if a non null
+string fragment is present in the search input, keep it in the search
+input of the next view. In list view, the search is global that is, not
+reduced to a folder.
+
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
