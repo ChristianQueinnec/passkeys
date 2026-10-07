@@ -12,6 +12,7 @@ esac
 export JWT_SECRET="build-only-secret"
 export NODE_ENV=production
 export PKG_CACHE_PATH="${PKG_CACHE_PATH:-/tmp/passkeys-pkg-cache}"
+node scripts/ensure-local-user.mjs
 npm run build
 node scripts/prepare-package.mjs
 node scripts/bundle-server.mjs
