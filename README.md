@@ -167,6 +167,23 @@ Server Stores Encrypted File (no decryption)
 - **Docker Compose**: Multi-container orchestration
 - **PWA**: Service worker for offline functionality
 
+### Local executable
+
+The application can also be distributed as a local server executable for
+Linux or macOS. It listens only on `http://localhost:54123` by default and
+stores its server data in `~/.config/passkeys`.
+
+```bash
+npm run package:linux       # Linux x64
+npm run package:macos       # macOS arm64
+./dist/passkeys-linux-x64/passkeys
+```
+
+The generated executable is distributed with its `build/` runtime directory.
+The launcher creates a private JWT signing secret on first run; it never
+needs to be supplied by the user. `PASSKEYS_DATA_DIR`, `HOST`, `PORT`, and
+`ORIGIN` may be set to override the local defaults.
+
 ---
 
 ## Getting Started

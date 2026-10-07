@@ -86,6 +86,7 @@
                 <input
                     class="password-display"
                     type="text"
+                    id="details-password"
                     readonly
                     bind:this={passwordInput}
                     onclick={revealPassword}
@@ -201,5 +202,6 @@
     .password-display {
         min-width: 8rem;
         min-height: 1rem;
+        border: 0px;
     }
 </style>

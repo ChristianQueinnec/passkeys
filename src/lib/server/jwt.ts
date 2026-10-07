@@ -1,17 +1,41 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import logger from '$lib/server/logger';
+import { DATA_DIR } from './data-path';
+
+const isPackaged = Boolean((process as NodeJS.Process & { pkg?: unknown }).pkg);
 
 if (process.env.NODE_ENV === 'production' &&
-    !process.env.JWT_SECRET) {
+    !process.env.JWT_SECRET && !isPackaged) {
     throw new Error("Missing JWT_SECRET");
 }
 
 // JWT Secret - In production, this MUST be set via environment variable
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
+const JWT_SECRET = process.env.JWT_SECRET || (isPackaged ? getPackagedSecret() : (() => {
     const secret = crypto.randomBytes(32).toString('hex');
     logger.warn('Using generated JWT_SECRET. Set JWT_SECRET environment variable for production!');
     return secret;
-})();
+})());
+
+function getPackagedSecret(): string {
+    const secretPath = path.join(DATA_DIR, '.jwt-secret');
+    fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
+    try {
+        const existing = fs.readFileSync(secretPath, 'utf8').trim();
+        if (existing) return existing;
+    } catch (error: any) {
+        if (error.code !== 'ENOENT') throw error;
+    }
+    const secret = crypto.randomBytes(32).toString('hex');
+    const fd = fs.openSync(secretPath, 'wx', 0o600);
+    try {
+        fs.writeFileSync(fd, `${secret}\n`, 'utf8');
+    } finally {
+        fs.closeSync(fd);
+    }
+    return secret;
+}
 
 // Token lifetimes.
 // Exported so login/renew can set cookie maxAge to the exact same value —

@@ -5,8 +5,9 @@ import type { User } from '$lib/types';
 import lockfile from 'proper-lockfile';
 import logger from '$lib/server/logger';
 import settings from './server-settings.json';
+import { DATA_DIR } from './data-path';
 
-const USERS_FILE = path.join(process.cwd(), settings.storage.dataDir, settings.storage.usersFile);
+const USERS_FILE = path.join(DATA_DIR, settings.storage.usersFile);
 
 // Module-level cache.  Populated on first read; invalidated by any write.
 // Eliminates the synchronous disk read + JSON parse on every authenticated

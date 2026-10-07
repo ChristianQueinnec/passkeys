@@ -1808,6 +1808,14 @@ string fragment is present in the search input, keep it in the search
 input of the next view. In list view, the search is global that is, not
 reduced to a folder.
 
+## 153 Ease testers
+
+Propose a script to package the whole Passkeys application into a
+linux or macosx executable. People may download that executable, run
+it on their local laptop and access it with `http://localhost:54123`.
+The executable is the Passkeys server and use the `~/.config/passkeys`
+directory for server storage. Explain your decisions before generating
+code.
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
