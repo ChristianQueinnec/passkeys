@@ -10,10 +10,12 @@ const handlerEntry = 'build/handler.js';
 let handler = await readFile(handlerEntry, 'utf8');
 handler = handler.replace('await server.init({', 'const initialization = server.init({');
 handler = handler.replace('fileURLToPath(import.meta.url)', '__filename');
-handler = handler.replace(
-    'const handler = sequence(\n',
-    'const ensureInitialized = (req, res, next) => initialization.then(() => next()).catch(next);\n\nconst handler = sequence(\n',
-);
+if (!handler.includes('const ensureInitialized =')) {
+    handler = handler.replace(
+        'const handler = sequence(\n',
+        'const ensureInitialized = (req, res, next) => initialization.then(() => next()).catch(next);\n\nconst handler = sequence(\n',
+    );
+}
 handler = handler.replace(
     "([serve(path.join(dir, 'client'), true), serve_prerendered(), ssr].filter(Boolean))",
     "([ensureInitialized, serve(path.join(dir, 'client'), true), serve_prerendered(), ssr].filter(Boolean))",
