@@ -152,8 +152,13 @@ static/favicon-192.png : static/favicon.svg
 # {{{ Generate executable
 
 generate.for.linux : scripts/package-local.sh
+	-rm -rf dist/
+	-rm -rf ${HOME}/.config/passkeys/
 	npm run package:linux
-# @cajou:
+	@echo " *** Run dist/passkeys-linux-x64/passkeys"
+	@cat ${HOME}/.config/passkeys/users.json
+	@echo " *** then browse http://127.0.0.1:54123"
+# @cajou: 10s
 
 # }}}
 

@@ -53,15 +53,5 @@
 		"playwright-core": "1.58.0",
 		"@playwright/test": "1.58.0"
 	},
-	"license": "GPL3",
-	"pkg": {
-		"assets": ["build/**/*"],
-		"scripts": ["build/server.cjs"],
-        "targets": [
-            "passkeys-linux-x64",
-            "passkeys-macos-x64",
-            "passkeys-macos-arm64",
-            "passkeys-win-x64"],
-        "outputPath": "dist"
-  }
+	"license": "GPL3"
 }

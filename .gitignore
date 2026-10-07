@@ -39,7 +39,7 @@ pk.queinnec.org
 .antigravitycli/
 .#*
 vibe*.md
-graphify-out
 *.kdbx
-
-/dist/
+dist/
+graphify-questions.md 
+graphify-out/
