@@ -27,4 +27,4 @@ process.env.HOST ||= '127.0.0.1';
 process.env.PORT ||= '54123';
 process.env.ORIGIN ||= `http://${process.env.HOST}:${process.env.PORT}`;
 process.chdir(root);
-require('../build/server.cjs');
+require(path.join(root, 'build', 'server.cjs'));

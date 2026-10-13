@@ -56,7 +56,6 @@
 	"license": "GPL3",
 	"pkg": {
 		"assets": ["build/**/*"],
-		"scripts": ["build/server.cjs"],
         "targets": [
             "passkeys-linux-x64",
             "passkeys-macos-x64",

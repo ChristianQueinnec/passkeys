@@ -153,7 +153,6 @@ static/favicon-192.png : static/favicon.svg
 
 generate.for.linux : scripts/package-local.sh
 	npm run package:linux
-# @cajou:
 
 # }}}
 
