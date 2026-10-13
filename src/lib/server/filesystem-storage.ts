@@ -6,7 +6,8 @@ import { sanitizeUsername } from '$lib/server/sanitizer';
 import lockfile from 'proper-lockfile';
 import settings from './server-settings.json';
 import logger from '$lib/server/logger';
-import { DATA_DIR } from './data-path';
+
+const DATA_DIR = path.resolve(process.cwd(), settings.storage.dataDir);
 
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });

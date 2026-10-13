@@ -6,9 +6,6 @@
 	"scripts": {
 		"dev": "vite dev --port 3000",
 		"build": "vite build",
-		"package:local": "scripts/package-local.sh",
-		"package:linux": "scripts/package-local.sh linux-x64",
-		"package:macos": "scripts/package-local.sh macos-arm64",
 		"preview": "vite preview --port 3000",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -27,8 +24,6 @@
 		"@sveltejs/adapter-node": "^5.4.0",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
-		"esbuild": "^0.27.2",
-		"@yao-pkg/pkg": "^6.11.0",
 		"@types/dompurify": "^3.0.5",
 		"@types/node": "^25.0.1",
 		"@types/proper-lockfile": "^4.1.4",
@@ -53,8 +48,5 @@
 		"playwright-core": "1.58.0",
 		"@playwright/test": "1.58.0"
 	},
-	"license": "GPL3",
-	"pkg": {
-		"assets": ["build/**/*"]
-	}
+	"license": "GPL3"
 }

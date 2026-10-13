@@ -3,9 +3,8 @@ import path from 'node:path';
 import lockfile from 'proper-lockfile';
 import logger from './logger';
 import settings from './server-settings.json';
-import { DATA_DIR } from './data-path';
 
-const STATS_FILE = path.join(DATA_DIR, settings.storage.rateLimitFile);
+const STATS_FILE = path.join(process.cwd(), settings.storage.dataDir, settings.storage.rateLimitFile);
 
 interface IpStats {
     failures: number;
