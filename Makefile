@@ -148,6 +148,20 @@ static/favicon-192.png : static/favicon.svg
 
 # }}}
 
+
+# {{{ Generate executable
+
+generate.for.linux : scripts/package-local.sh
+	-rm -rf dist/
+	-rm -rf ${HOME}/.config/passkeys/
+	npm run package:linux
+	@echo " *** Run dist/passkeys-linux-x64/passkeys"
+	@cat ${HOME}/.config/passkeys/users.json
+	@echo " *** then browse http://127.0.0.1:54123"
+# @cajou: 10s
+
+# }}}
+
 # ############################## AI
 
 # {{{ Run AI agent
@@ -220,4 +234,10 @@ re.process.passkeys :
 # open file:/home/queinnec/Passkeys/graphify-out/graph.html
 # obsidian ./graphify-out/GRAPH_REPORT.md
 
+# }}}
+
+
+# {{{ Git stuff
+revert.to.before.153 :
+	git revert ec65d071def..HEAD
 # }}}
