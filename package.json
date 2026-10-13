@@ -14,7 +14,6 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
-		"test:package": "scripts/test-packaged.sh",
 		"reset-db": "scripts/init.sh -t",
 		"test:e2e": "npm run reset-db && npx playwright test tests/e2e --workers=1",
 		"tests": "make run.tests",
@@ -53,9 +52,6 @@
 		"playwright": "1.58.0",
 		"playwright-core": "1.58.0",
 		"@playwright/test": "1.58.0"
-	},
-	"pkg": {
-		"assets": ["build/**/*"]
 	},
 	"license": "GPL3"
 }

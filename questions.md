@@ -1801,14 +1801,14 @@ password to reveal that password and select it, the password should be
 hidden again after five seconds (use a new parameter in client
 settings for that duration).
 
-## 152 Ease searching (codex)
+## 152 Ease searching
 
 When switching from list view to folder view or back and if a non null
 string fragment is present in the search input, keep it in the search
 input of the next view. In list view, the search is global that is, not
 reduced to a folder.
 
-## 153 Ease testers (codex)
+## 153 Ease testers
 
 Propose a script to package the whole Passkeys application into a
 linux or macosx executable. People may download that executable, run
@@ -1832,20 +1832,6 @@ Fix this problem:
   Use a string literal as an argument for 'require', or leave it
   as is and specify the resolved file name in 'scripts' option.
 Created dist/passkeys-linux-x64/passkeys
-
-Can you write additional tests to check the packaged Password app.
-
-Do you see why I cannot commit the current worktree ?
-The problem is 
-```
-~/Passkeys$ git commit -m 'final state of ease testers issue' .
-error: inflate: data stream error (incorrect header check)
-error: unable to unpack 28eff7a8315d8adea459c6878c67ace07ccbf82e header
-fatal: loose object 28eff7a8315d8adea459c6878c67ace07ccbf82e (stored in .git/objects/28/eff7a8315d8adea459c6878c67ace07ccbf82e) is corrupt
-```
-
-OK Let's go back to before issue #153.
-git revert ec65d071def..HEAD
 
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
