@@ -1822,17 +1822,6 @@ default `~/.config/passkeys/users.json` with user the current LOGIN
 and as password a 8 letters random password. These two values should
 be displayed prominently to the user running the script.
 
-Fix this problem:
-
-> pkg@6.23.0
-> Warning Cannot resolve 'path.join(root, 'build', 'server.cjs')'
-  /home/queinnec/Passkeys/scripts/local-server.cjs
-  Dynamic require may fail at run time, because the requested file
-  is unknown at compilation time and not included into executable.
-  Use a string literal as an argument for 'require', or leave it
-  as is and specify the resolved file name in 'scripts' option.
-Created dist/passkeys-linux-x64/passkeys
-
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
