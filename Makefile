@@ -148,14 +148,6 @@ static/favicon-192.png : static/favicon.svg
 
 # }}}
 
-
-# {{{ Generate executable
-
-generate.for.linux : scripts/package-local.sh
-	npm run package:linux
-
-# }}}
-
 # ############################## AI
 
 # {{{ Run AI agent

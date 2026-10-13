@@ -1817,11 +1817,6 @@ The executable is the Passkeys server and use the `~/.config/passkeys`
 directory for server storage. Explain your decisions before generating
 code.
 
-Improve the `scripts/package-local.sh` to create, if missing, a
-default `~/.config/passkeys/users.json` with user the current LOGIN
-and as password a 8 letters random password. These two values should
-be displayed prominently to the user running the script.
-
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 

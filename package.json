@@ -55,12 +55,6 @@
 	},
 	"license": "GPL3",
 	"pkg": {
-		"assets": ["build/**/*"],
-        "targets": [
-            "passkeys-linux-x64",
-            "passkeys-macos-x64",
-            "passkeys-macos-arm64",
-            "passkeys-win-x64"],
-        "outputPath": "dist"
-  }
+		"assets": ["build/**/*"]
+	}
 }
