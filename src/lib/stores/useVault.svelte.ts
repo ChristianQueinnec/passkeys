@@ -65,16 +65,66 @@ export function useVault(encryptionKey: EncryptionKey, onLock: () => void) {
 
     async function getUsernameSuggestions(currentId?: string) {
         const entries = await crypto.getDecryptedItems();
-        const counts = new Map<string, number>();
+        const groups = new Map<string, { totalCount: number; variants: Map<string, number> }>();
+
         for (const entry of entries) {
             if (entry.id === currentId || !entry.username) continue;
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(entry.username)) continue;
-            counts.set(entry.username, (counts.get(entry.username) || 0) + 1);
+
+            const canonical = entry.username.toLowerCase();
+            let group = groups.get(canonical);
+            if (!group) {
+                group = { totalCount: 0, variants: new Map() };
+                groups.set(canonical, group);
+            }
+            group.totalCount += 1;
+            group.variants.set(entry.username, (group.variants.get(entry.username) || 0) + 1);
         }
-        return [...counts.entries()]
-            .filter(([, count]) => count >= settings.current.minEmailCount)
-            .map(([email]) => email)
-            .sort((a, b) => a.localeCompare(b));
+
+        function countCapitals(s: string): number {
+            let count = 0;
+            for (const ch of s) {
+                if (ch !== ch.toLowerCase()) count++;
+            }
+            return count;
+        }
+
+        function pickBestVariant(variants: Map<string, number>): string {
+            const list = [...variants.keys()];
+            list.sort((a, b) => {
+                const capsA = countCapitals(a);
+                const capsB = countCapitals(b);
+                // 1. Prefer variant without capitals (or fewest capitals)
+                if (capsA !== capsB) {
+                    return capsA - capsB;
+                }
+                // 2. Prefer higher frequency variant among tied capital counts
+                const countA = variants.get(a) || 0;
+                const countB = variants.get(b) || 0;
+                if (countA !== countB) {
+                    return countB - countA;
+                }
+                // 3. Alphabetical tie-breaker
+                return a.localeCompare(b);
+            });
+            return list[0];
+        }
+
+        const qualifying = [...groups.values()]
+            .filter((group) => group.totalCount >= settings.current.minEmailCount)
+            .map((group) => ({
+                email: pickBestVariant(group.variants),
+                count: group.totalCount,
+            }));
+
+        qualifying.sort((a, b) => {
+            if (b.count !== a.count) {
+                return b.count - a.count; // decreasing order of uses
+            }
+            return a.email.localeCompare(b.email);
+        });
+
+        return qualifying.map((item) => item.email);
     }
 
     return {

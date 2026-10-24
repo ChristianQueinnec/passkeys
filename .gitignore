@@ -43,3 +43,4 @@ vibe*.md
 dist/
 graphify-questions.md 
 graphify-out/
+.unison*
