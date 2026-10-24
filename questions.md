@@ -1949,6 +1949,8 @@ looks good, I moved your script into scripts/quickstart.mjs` and I made it execu
   - Added "test:scripts" script to package.json and included it in Makefile's run.tests.
 ```
 
+Please write a `scripts/quickstart-README.md` for `scripts/quickstart.mjs` explaining how to use it and how to remove the created data.
+
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Typing in an input field should also close displayed temporary warnings.
