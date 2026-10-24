@@ -218,8 +218,8 @@ do.continue.on.mac :
 # install Graphify within ~/IA/Graphify
 
 process.passkeys :
-	graphify extract . --code-only
-	graphify cluster-only .
+	${HOME}/.local/bin/graphify extract . --code-only
+	${HOME}/.local/bin/graphify cluster-only .
 # open codex
 # /graphify does not work
 # graphify extract . --code-only  # generates ./graphify-out/

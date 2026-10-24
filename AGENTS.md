@@ -13,6 +13,7 @@ written in Typescript with help of SvelteKit and Vite.
 ## Server side
 
 The server side will offer an API (prefixed by `/api/`)
+
 - to post login information (with username and password),
 - to get the vault associated to the authenticated user,
 - to list the vaults associated to the authenticated user with their date of recording,
@@ -20,7 +21,7 @@ The server side will offer an API (prefixed by `/api/`)
 - to remove a vault based on its date of recording.
 
 The default url of the server side (the `/` url) will deliver the
-code of the client side. 
+code of the client side.
 
 The server has no clue about how to decipher the vaults that is, the
 crypted files of information. The server stores these vaults with
@@ -30,7 +31,7 @@ displayed with ISO convention. However there is a special case needed
 when importing passwords information (from Keepass for instance): a
 vault may contain an unciphered array of Password entries. This
 unciphered vault will be rewritten as soon as downloaded to a client
-that cipher it and store it back ciphered. Unciphered vaults are 
+that cipher it and store it back ciphered. Unciphered vaults are
 explicitly signalled in the vault history.
 
 Users' names and their hashed passwords are stored in a json file
@@ -40,6 +41,7 @@ password is not hashed. In that case, the server should rewrite the
 `users.json` file with all passwords hashed.
 
 To sum up, the files on the server look like:
+
 ```
 data/users.json
 data/USER1/2026-07-09T14-59-33-577Z-XXXXX.vault
@@ -65,17 +67,17 @@ vault or login password. Report explicitly if the vault cannot be
 deciphered.
 
 Authentication tokens are automatically renewed when the vault is
-successfully unlocked. If an API call is rejected with a 401 
-Unauthorized error (e.g., due to session expiration), the client 
-automatically forces reauthentication by clearing sensitive data and 
+successfully unlocked. If an API call is rejected with a 401
+Unauthorized error (e.g., due to session expiration), the client
+automatically forces reauthentication by clearing sensitive data and
 returning to the login screen.
 
 if on a safe device, when the client receives a vault, it stores it
 persistently but still ciphered in the browser so it may be used in
-case of missing Internet connectivity. Storage operations are 
-resilient to corruption or environmental restrictions. Of course, 
-reusing that stored vault requires vault key. Report to the user that 
-the vault might be out of date and allow to synchronize with the new 
+case of missing Internet connectivity. Storage operations are
+resilient to corruption or environmental restrictions. Of course,
+reusing that stored vault requires vault key. Report to the user that
+the vault might be out of date and allow to synchronize with the new
 version held in the server.
 
 On an unsafe device, the vault and authentication information should
@@ -126,8 +128,9 @@ When the user types `/graphify`, use the installed graphify skill or
 instructions before doing anything else.
 
 Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+
+- For codebase questions, first run `${HOME}/.local/bin/graphify query "<question>"` when graphify-out/graph.json exists. Use `${HOME}/.local/bin/graphify path "<A>" "<B>"` for relationships and `${HOME}/.local/bin/graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
 - Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- After modifying code, run `${HOME}/.local/bin/graphify update .` to keep the graph current (AST-only, no API cost).

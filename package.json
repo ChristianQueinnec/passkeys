@@ -15,7 +15,8 @@
 		"test:e2e": "npm run reset-db && npx playwright test tests/e2e --workers=1",
 		"tests": "make run.tests",
 		"build:container": "docker compose build",
-		"demo": "make run.demo"
+		"demo": "make run.demo",
+		"graphify.e2e": "make process.passkeys"
 	},
 	"devDependencies": {
 		"@playwright/mcp": "^0.0.75",
