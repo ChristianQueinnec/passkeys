@@ -46,6 +46,7 @@ run.dev :
 run.tests :
 	npm run check
 	npm run test:unit
+	npm run test:scripts
 #	npm run test:e2e
 	m run.tests.e2e
 

@@ -1934,6 +1934,21 @@ emails by decreasing order of uses.
   - Added new unit test suite in tests/unit/email-suggestions.test.ts.
 ```
 
+## 155 Attract new users
+
+I am looking to make Passkeys public. This requires that it is easy to run it locally with the absolute minimal settings that is, for instance, download a script (what language?) from the git repo, and run it locally. The script should create a synthetized username from the current OS user name and the hostname, and an associated random password, and start the server, showing the URL where to access the web interface. The script should be fast, explain what it does and what data it create (user, password, keys on the server). It should also explain how to remove it completely. This is for linux, macosx and windows. Do not change any files but propose a script and explain your decisions.
+
+looks good, I moved your script into scripts/quickstart.mjs` and I made it executable: `chmod +x scripts/quickstart.mjs`. Now you can run it with`./scripts/quickstart.mjs`. Please write a test for that script (in`tests/scripts/`) using a temporary test directory within`/tmp`.
+
+```
+ Implemented:
+  - Created test suite in tests/scripts/quickstart.test.ts using isolated temporary directories in /tmp.
+  - Verifies synthesized username creation (<user>@<host>), random 8-character password without ambiguous characters, and data/users.json initialization.
+  - Verifies that existing data/users.json is preserved without overwriting.
+  - Verifies graceful server termination on SIGINT.
+  - Added "test:scripts" script to package.json and included it in Makefile's run.tests.
+```
+
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Typing in an input field should also close displayed temporary warnings.
@@ -1941,7 +1956,7 @@ Typing in an input field should also close displayed temporary warnings.
 The ciphered vault (held in localStorage with key `offline_vault`)
 may be stored, more persistently, in indexed db.
 
-# Potential FUTURE
+## Potential FUTURE
 
 bypass Login page if coming from authenticated nginx proxy ?
 

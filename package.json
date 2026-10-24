@@ -1,7 +1,7 @@
 {
 	"name": "passkeys",
 	"private": true,
-	"version": "0.1.31",
+	"version": "0.1.32",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev --port 3000",
@@ -11,6 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest run tests/unit",
+		"test:scripts": "vitest run tests/scripts",
 		"reset-db": "scripts/init.sh -t",
 		"test:e2e": "npm run reset-db && npx playwright test tests/e2e --workers=1",
 		"tests": "make run.tests",
