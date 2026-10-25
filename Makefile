@@ -20,7 +20,8 @@ tag.container : check.docker.configuration
 		registry.queinnec.org:5000/passkeys:$$(cat passkeys.id)
 	docker tag passkeys:$$(cat passkeys.tag) \
 		registry.queinnec.org:5000/passkeys
-	git commit -m 'Tagged' passkeys.id passkeys.tag && git push
+	git commit -m 'Tagged' passkeys.id passkeys.tag
+	-git push
 # @cajou: 10 minutes
 
 run :
