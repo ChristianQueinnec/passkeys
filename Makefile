@@ -174,6 +174,9 @@ run.gemini :
 run.claude :
 	claude-desktop &
 
+run.antigravity :
+	open -a 'Antigravity IDE'
+
 run.mistral :
 #	cd ~/.local/share/uv/ ; rm -rf tools/mistral-vibe/
 #   cd ~/.local/share/uv/ ; uv tool install --force mistral-vibe

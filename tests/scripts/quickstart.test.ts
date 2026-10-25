@@ -168,4 +168,23 @@ describe('scripts/quickstart.mjs', () => {
             fs.rmSync(tempDir, { recursive: true, force: true });
         }
     });
+
+    it('fails cleanly with a helpful error message and without creating data/ when executed outside a repository', async () => {
+        const emptyTempDir = fs.mkdtempSync(path.join('/tmp', 'passkeys-test-empty-'));
+        const testPort = 45681;
+
+        try {
+            const result = await runQuickstart(emptyTempDir, testPort);
+
+            expect(result.exitCode).toBe(1);
+            expect(result.output).toContain('Passkeys repository not found in current directory');
+            expect(result.output).toContain('git clone https://github.com/ChristianQueinnec/passkeys.git');
+
+            // Ensure no data/ directory or users.json was created
+            expect(fs.existsSync(path.join(emptyTempDir, 'data'))).toBe(false);
+        } finally {
+            fs.rmSync(emptyTempDir, { recursive: true, force: true });
+        }
+    });
 });
+

@@ -1951,6 +1951,58 @@ looks good, I moved your script into scripts/quickstart.mjs` and I made it execu
 
 Please write a `scripts/quickstart-README.md` for `scripts/quickstart.mjs` explaining how to use it and how to remove the created data.
 
+Modify `scripts/quickstart-README.md` to include how to download the scripts quickstart from the git repo.
+
+I tried the script within `/tmp/passkeystest/` and obtain that:
+
+```
+bibou-143:passkeystest queinnec$ curl -fsSL  https://raw.githubusercontent.com/ChristianQueinnec/passkeys/main/scripts/quickstart.mjs | node
+
+====================================================
+             Passkeys Local Quickstart              
+====================================================
+
+What this script is doing:
+  1. Generated secure session keys in memory (JWT secret).
+  2. Initialized data/users.json with your synthesized local login.
+     (The server will automatically hash this password with PBKDF2 on first start).
+  3. Starting the Passkeys web server.
+
+----------------------------------------------------
+ Your Login Credentials:
+   Login / Username :  queinnec@bibou-143
+   Password         :  GDrdkcpB
+   (Note: Save this password! You will need it to log in).
+   Web Interface    :  http://localhost:3000
+----------------------------------------------------
+
+How to completely remove Passkeys and its data:
+  1. Stop this server anytime with Ctrl+C.
+  2. Delete server data: rm -rf data/
+  3. Clear browser cache/storage for http://localhost:3000 (removes offline vault copy).
+
+Starting server...
+
+npm error code ENOENT
+npm error syscall open
+npm error path /private/tmp/passkeystest/package.json
+npm error errno -2
+npm error enoent Could not read package.json: Error: ENOENT: no such file or directory, open '/private/tmp/passkeystest/package.json'
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: /Users/queinnec/.npm/_logs/2026-10-24T17_49_15_772Z-debug-0.log
+bibou-143:passkeystest queinnec$ ls
+data
+bibou-143:passkeystest queinnec$ 
+```
+
+Implemented (Option 2):
+- Added preflight check in `scripts/quickstart.mjs` verifying `package.json` exists in `process.cwd()` before touching the filesystem.
+- If missing, halts cleanly with exit code 1, avoids creating orphaned `data/` directories, and displays the exact 1-line clone + setup command.
+- Updated `scripts/quickstart-README.md` to guide new users to clone and run in one step:
+  `git clone https://github.com/ChristianQueinnec/passkeys.git && cd passkeys && npm install && ./scripts/quickstart.mjs`
+- Added test in `tests/scripts/quickstart.test.ts` verifying graceful exit and absence of orphaned `data/` directory when run outside a repository.
+
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Typing in an input field should also close displayed temporary warnings.

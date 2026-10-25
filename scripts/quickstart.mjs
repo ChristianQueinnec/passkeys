@@ -49,8 +49,9 @@ function generateJwtSecret() {
 }
 
 // ANSI colors (disabled if no TTY)
-const useColor = process.stdout.isTTY;
+const useColor = Boolean(process.stdout.isTTY || process.stderr.isTTY);
 const c = {
+    red: (s) => (useColor ? `\x1b[31m${s}\x1b[0m` : s),
     green: (s) => (useColor ? `\x1b[32m${s}\x1b[0m` : s),
     cyan: (s) => (useColor ? `\x1b[36m${s}\x1b[0m` : s),
     yellow: (s) => (useColor ? `\x1b[33m${s}\x1b[0m` : s),
@@ -61,6 +62,22 @@ const c = {
 console.log('\n' + c.bold('===================================================='));
 console.log(c.bold('             Passkeys Local Quickstart              '));
 console.log(c.bold('====================================================\n'));
+
+// Preflight check: Ensure quickstart is run from the root of a Passkeys workspace
+const PKG_FILE = path.resolve(process.cwd(), 'package.json');
+if (!fs.existsSync(PKG_FILE)) {
+    console.error(c.bold(c.red('❌ Error: Passkeys repository not found in current directory.')));
+    console.error(`Could not find ${c.bold('package.json')} in:\n  ${process.cwd()}\n`);
+    console.error('quickstart.mjs launches the local web server and requires the Passkeys codebase.');
+    console.error('\n' + c.cyan('To clone and run Passkeys from scratch, run:') + '\n');
+    console.error(c.bold('  git clone https://github.com/ChristianQueinnec/passkeys.git'));
+    console.error(c.bold('  cd passkeys'));
+    console.error(c.bold('  npm install'));
+    console.error(c.bold('  ./scripts/quickstart.mjs\n'));
+    console.error(c.dim('Or in a single command:\n'));
+    console.error(c.bold('  git clone https://github.com/ChristianQueinnec/passkeys.git && cd passkeys && npm install && ./scripts/quickstart.mjs\n'));
+    process.exit(1);
+}
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {

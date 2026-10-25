@@ -15,19 +15,42 @@ The script itself has **zero external npm dependencies** and uses only the Node.
 
 ---
 
+## Quickstart for New Users (From Scratch)
+
+Passkeys is a full-stack web application requiring its source files and dependencies to run the local server. If you do not have the repository cloned yet, you can clone and run it with a single chained command:
+
+### Linux & macOS
+
+```bash
+git clone https://github.com/ChristianQueinnec/passkeys.git && cd passkeys && npm install && ./scripts/quickstart.mjs
+```
+
+### Windows (PowerShell)
+
+```powershell
+git clone https://github.com/ChristianQueinnec/passkeys.git; cd passkeys; npm install; node scripts\quickstart.mjs
+```
+
+> **Note**: `quickstart.mjs` includes a preflight check. If run outside the root of a Passkeys repository (where `package.json` is missing), it halts safely without creating any data directories and displays the cloning command above.
+
+---
+
 ## How to Run
 
 ### Linux & macOS
 
 Make sure the script is executable (it usually is by default):
+
 ```bash
 chmod +x scripts/quickstart.mjs
 ```
 
 Then run:
+
 ```bash
 ./scripts/quickstart.mjs
 ```
+
 *(or `node scripts/quickstart.mjs`)*
 
 ### Windows (Command Prompt or PowerShell)
@@ -41,10 +64,13 @@ node scripts\quickstart.mjs
 By default, the server runs on port **3000**. To run on another port, set the `PORT` environment variable:
 
 - **Linux / macOS**:
+
   ```bash
   PORT=5000 ./scripts/quickstart.mjs
   ```
+
 - **Windows (PowerShell)**:
+
   ```powershell
   $env:PORT=5000; node scripts\quickstart.mjs
   ```
@@ -92,14 +118,19 @@ To remove all traces of local data created by the server and browser:
 ### 1. Delete Server Data Directory
 
 - **Linux / macOS**:
+
   ```bash
   rm -rf data/
   ```
+
 - **Windows (Command Prompt)**:
+
   ```cmd
   rmdir /s /q data
   ```
+
 - **Windows (PowerShell)**:
+
   ```powershell
   Remove-Item -Recurse -Force data
   ```
