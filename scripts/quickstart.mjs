@@ -68,7 +68,7 @@ const PKG_FILE = path.resolve(process.cwd(), 'package.json');
 if (!fs.existsSync(PKG_FILE)) {
     console.error(c.bold(c.red('❌ Error: Passkeys repository not found in current directory.')));
     console.error(`Could not find ${c.bold('package.json')} in:\n  ${process.cwd()}\n`);
-    console.error('quickstart.mjs launches the local web server and requires the Passkeys codebase.');
+    console.error('quickstart.mjs requires the Passkeys codebase.');
     console.error('\n' + c.cyan('To clone and run Passkeys from scratch, run:') + '\n');
     console.error(c.bold('  git clone https://github.com/ChristianQueinnec/passkeys.git'));
     console.error(c.bold('  cd passkeys'));
