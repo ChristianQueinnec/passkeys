@@ -2003,6 +2003,14 @@ Implemented (Option 2):
   `git clone https://github.com/ChristianQueinnec/passkeys.git && cd passkeys && npm install && ./scripts/quickstart.mjs`
 - Added test in `tests/scripts/quickstart.test.ts` verifying graceful exit and absence of orphaned `data/` directory when run outside a repository.
 
+## 156 security in public git
+
+Check the remote git repository (recently made public) to see whether
+there are some leaked secrets.
+
+
+
+
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
 Typing in an input field should also close displayed temporary warnings.
