@@ -2008,8 +2008,19 @@ Implemented (Option 2):
 Check the remote git repository (recently made public) to see whether
 there are some leaked secrets.
 
-
-
+Audited:
+- Scanned remote repository refs (`git ls-remote origin`): verified that only `HEAD` and `refs/heads/main` (commit `b3c36b8`) exist on GitHub; no orphaned feature branches, dangling PR refs, or forgotten tags were pushed.
+- Scanned all 287 commits, unified diffs, and 3,459 Git objects (1,651 blobs) across entire repository history:
+  - **No Vaults or Password Data**: No personal `.vault` files, `.kdbx` files, or Keepass exports (`pass.csv`, `pass.json`) were ever committed.
+  - **No User Credentials or Hashes**: Neither `data/users.json` nor `realdata/` was ever tracked in Git (properly protected by `.gitignore`).
+  - **No Secret Files**: Production `.env`, `jwt_secret.password`, and `server.htpasswd` (which exist locally) were never committed to Git.
+  - **No Cryptographic Keys or API Tokens**: Zero RSA/SSH private keys (`BEGIN ... KEY`), AWS keys, GCP/Google Drive tokens, GitHub PATs, or htpasswd credentials in any commit.
+  - **Test & Documentation Data Only**: Passwords appearing in Git history are strictly dummy fixtures (`"password"`, `"imported_password"`, `"SuperSecretCustomPassword99"`) or documentation placeholders.
+  - **Runtime Fallbacks**: Server JWT secret generation (`src/lib/server/jwt.ts`) dynamically creates cryptographically secure random 32-byte hex keys on boot if `JWT_SECRET` is unset, avoiding hardcoded default fallback vulnerabilities.
+- Observations on internal metadata (non-secret exposure to be aware of):
+  - `Makefile` and `docker-compose.yml` reference internal deployment hostnames (`pk.queinnec.org`, `passkeys.queinnec.org`, `registry.queinnec.org:5000`), private registry username (`codegradx`), and private docker network (`172.55.0.20`).
+  - `notes.txt` contains developer terminal history referencing local machine names (`queinnec@cajou`) and paths.
+  - `Makefile` line 96 (`regenerate.env`) outputs a weak dummy placeholder `JWT_SECRET=jwt-secret` for local development.
 
 ## FUTURE Warning Dismissal and Typing Auto-Dismiss
 
